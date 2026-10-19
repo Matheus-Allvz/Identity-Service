@@ -1,0 +1,15 @@
+Papel: Analista de Requisitos do módulo M-08 (Acessos), UT-3-08.
+Lê SÓ: Etapa2/spec-v2/pacotes/pacote-M-08.md (o teu pacote de contexto; o que não está lá não existe),
+Etapa1/03_guia_preenchimento_template.md §2 e §G-50, e o modelo Etapa1/template/50-modulos/M-nn-modelo.md.
+NÃO lês a spec v1.0, outros módulos nem o 90 completo.
+Escreves SÓ: Etapa2/spec-v2/50-modulos/M-08-acessos.md.
+IDs: só da tua faixa (cabeçalho do pacote / 00 §4): RN RN-100 a RN-109, PRS PRS-180 a PRS-189, Q Q-100 a Q-109; CA-18.m do teu RF (RF-18).
+Tarefa: especificar o módulo segundo a Fase 3 do processo (E1 §4): interface IF-09 (IAccessQueries, operações IF-09.1 a IF-09.8), implementação única das Regras de Negócio de Acesso (RG-01 a RG-13),
+RF (RF-18), RN em SE/ENTÃO/SENÃO, EX, tabela de concorrência/idempotência/retoma, CA em Gherkin com borda em cada CA e cobertura mínima,
+rastreabilidade e PRS. Cumpre as linhas "Entradas para a UT-3-08" (IF-09.5 pela ordem da linha, IF-09.7 devolve GroupMembershipKind com D-22 em ExecuteWithBypassAsync, filtros explícitos por userId e tenants sem depender de AllowedTenants por PRS-07, IF-09.4 aplica RG-01 só a vínculo ACTIVE) e os PRS de módulo que estão no fim do teu pacote.
+Teto do ficheiro do módulo: 11 KiB (máximo rigoroso: não ultrapassar 11.8 KiB para respeitar o orçamento de 60 KiB da Onda 4).
+Se precisares de algo partilhado que não está no pacote: NÃO inventes nem alteres; regista em "Pedidos de alteração".
+Ambiguidade: regista em "Dúvidas" com a hipótese mais simples marcada.
+Lint 0 (termos proibidos do guia §2.3; nenhum placeholder por preencher).
+Entrega: (1) ficheiro e tamanho; (2) totais RF/RN/EP/EV/CA/@critico/Σw; (3) pedidos de alteração; (4) dúvidas com hipótese; (5) PRS e Q novos.
+Ao terminar: maestri ask "Carcará" "Entrega UT-3-08: M-08 concluído. Ficheiro: Etapa2/spec-v2/50-modulos/M-08-acessos.md"

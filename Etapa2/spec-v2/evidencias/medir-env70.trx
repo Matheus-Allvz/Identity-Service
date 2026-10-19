@@ -1,0 +1,435 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="9156a0a2-8037-497f-9f28-7e11228277c9" name="ACT@ALLVZ-WORK 2026-10-19 18:04:35" runUser="ALLVZ-WORK\ACT" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-19T18:04:35.3770489-03:00" queuing="2026-10-19T18:04:35.3770494-03:00" start="2026-10-19T18:04:27.2840529-03:00" finish="2026-10-19T18:06:03.0061566-03:00" />
+  <TestSettings name="default" id="c63c3ac7-7c29-41d7-8443-93f97d99ea06">
+    <Deployment runDeploymentRoot="ACT_ALLVZ-WORK_2026-10-19_18_04_35" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="bab93d73-2784-4856-a097-c299ceb7be29" testId="1a8c97c6-6176-d7ed-19a9-a9c208c4f82c" testName="IdentityService.Tests.Medicoes.ArranqueSemVariavelFalha" computerName="ALLVZ-WORK" duration="00:00:00.0086246" startTime="2026-10-19T18:05:58.6321209-03:00" endTime="2026-10-19T18:05:58.6400882-03:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="bab93d73-2784-4856-a097-c299ceb7be29">
+      <Output>
+        <StdOut>sem DB: InvalidOperationException missing DB_CONNECTION_STRING</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="1a9c3571-3fbe-4f5f-85ec-cc140a400f42" testId="2bed1905-b017-acf0-2380-f1f4b77e9666" testName="IdentityService.Tests.Medicoes.TimeoutXunit" computerName="ALLVZ-WORK" duration="00:00:00.0293325" startTime="2026-10-19T18:05:58.6403812-03:00" endTime="2026-10-19T18:05:58.6729411-03:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1a9c3571-3fbe-4f5f-85ec-cc140a400f42" />
+    <UnitTestResult executionId="8fe19764-a7f7-440f-b457-e041cae1a460" testId="d462a8a1-b4b3-d9b4-fabd-56a086c87c7f" testName="IdentityService.Tests.Medicoes.L03_Kafka" computerName="ALLVZ-WORK" duration="00:00:58.1791232" startTime="2026-10-19T18:04:45.9383155-03:00" endTime="2026-10-19T18:05:44.1179373-03:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8fe19764-a7f7-440f-b457-e041cae1a460">
+      <Output>
+        <StdOut>kafka start 4690 ms, bs=plaintext://127.0.0.1:64758/&#xD;
+produce Persisted 5082 ms&#xD;
+paused: Local_MsgTimedOut after 3038 ms&#xD;
+after unpause: Persisted 10 ms (produtor antigo)&#xD;
+stopped: Local_MsgTimedOut after 3031 ms</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="e84a84ac-4222-458d-8ca8-22826a8a18b6" testId="e2b11eef-2897-9f07-9aef-1b929ebb0a0f" testName="IdentityService.Tests.Cunhagem.CunharComPayloadLiteral" computerName="ALLVZ-WORK" duration="00:00:00.0712292" startTime="2026-10-19T18:04:45.8666694-03:00" endTime="2026-10-19T18:04:45.9380393-03:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e84a84ac-4222-458d-8ca8-22826a8a18b6">
+      <Output>
+        <StdOut>Header: {"alg":"RS256","kid":"key-2026-01","typ":"JWT"}&#xD;
+Claims: {"jti":"0192","sub":"u","iat":1000,"exp":1900,"tenant_id":null,"allowed_tenants":[],"iss":"identity-service","aud":"b2b-platform"}</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="fb353764-b270-4714-aedd-9ed25684cc14" testId="72e939ac-a3c0-9f3b-fa51-4c640bef1821" testName="IdentityService.Tests.MedicoesA61.Medicao_B_EfCore_PostgresParado" computerName="ALLVZ-WORK" duration="00:00:10.2434396" startTime="2026-10-19T18:04:35.3569711-03:00" endTime="2026-10-19T18:04:45.5859036-03:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="fb353764-b270-4714-aedd-9ed25684cc14">
+      <Output>
+        <StdOut>--- CASO B1 (estratégia por omissão): ---&#xD;
+Excecao exterior: System.InvalidOperationException&#xD;
+Mensagem: An exception has been raised that is likely due to a transient failure.&#xD;
+InnerException: Npgsql.NpgsqlException: Failed to connect to 127.0.0.1:64749&#xD;
+--- CASO B2 (estratégia desligada): ---&#xD;
+Excecao exterior: Npgsql.NpgsqlException&#xD;
+Mensagem: Failed to connect to 127.0.0.1:64749&#xD;
+InnerException: System.Net.Sockets.SocketException: Nenhuma conexão pôde ser feita porque a máquina de destino as recusou ativamente.&#xD;
+--- CASO B3 (EnableRetryOnFailure com maxRetryCount=1): ---&#xD;
+Excecao exterior: Microsoft.EntityFrameworkCore.Storage.RetryLimitExceededException&#xD;
+Mensagem: The maximum number of retries (1) was exceeded while executing database operations with 'NpgsqlRetryingExecutionStrategy'. See the inner exception for the most recent failure.&#xD;
+InnerException: Npgsql.NpgsqlException: Failed to connect to 127.0.0.1:64749</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="f2172db1-eb88-41b7-b109-a61c6c8e168b" testId="df7992d5-6380-bf85-8a12-94e498babafa" testName="IdentityService.Tests.MedicoesA61.Medicao_C_Redis_HierarquiaExcecoes" computerName="ALLVZ-WORK" duration="00:00:00.1491184" startTime="2026-10-19T18:04:45.7140691-03:00" endTime="2026-10-19T18:04:45.8630855-03:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f2172db1-eb88-41b7-b109-a61c6c8e168b">
+      <Output>
+        <StdOut>RedisTimeoutException base: System.TimeoutException&#xD;
+RedisConnectionException base: StackExchange.Redis.RedisException</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="0f9f07b1-1db0-4b30-b25c-eb5a0129cfd6" testId="ea76048f-b1aa-32b3-20ff-030e0b016c29" testName="IdentityService.Tests.Medicoes.L05_FalhasViaWaf" computerName="ALLVZ-WORK" duration="00:00:14.5122633" startTime="2026-10-19T18:05:44.1186058-03:00" endTime="2026-10-19T18:05:58.6314094-03:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0f9f07b1-1db0-4b30-b25c-eb5a0129cfd6">
+      <Output>
+        <StdOut>{"keys":[],"now":1792444945,"env":"Testing"} real=1792443946&#xD;
+redis parado: 503 {"type":"https://tools.ietf.org/html/rfc9110#section-15.6.4","title":"Service Unavailable","status":503,"detail":"RedisConnectionException"} em 5520 ms&#xD;
+redis parado (2.º): 503 em 5993 ms&#xD;
+pg parado: 503 {"type":"https://tools.ietf.org/html/rfc9110#section-15.6.4","title":"Service Unavailable","status":503,"detail":"NpgsqlException:IOException"} em 127 ms</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="2799fef3-00c5-4839-9681-09401a25f03f" testId="a4a5b299-2192-7255-29be-daa7a9ff0745" testName="IdentityService.Tests.MedicoesA61.Medicao_D_Jwt_IssuerSigningKeyResolver" computerName="ALLVZ-WORK" duration="00:00:00.1275427" startTime="2026-10-19T18:04:45.5875961-03:00" endTime="2026-10-19T18:04:45.7138526-03:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2799fef3-00c5-4839-9681-09401a25f03f">
+      <Output>
+        <StdOut>ValidateTokenAsync RETORNOU: IsValid=False, Exception=System.Security.Cryptography.CryptographicException: Chave criptografica indisponivel</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="6495c7ae-caf2-4d64-bdbb-9c703e8a6ac6" testId="b342b9ec-c4ff-5ffa-d8c3-dfd9d6e4e40b" testName="IdentityService.Tests.KestrelTeste.WafComKestrel" computerName="ALLVZ-WORK" duration="00:00:02.3119150" startTime="2026-10-19T18:06:00.5901196-03:00" endTime="2026-10-19T18:06:02.9026922-03:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6495c7ae-caf2-4d64-bdbb-9c703e8a6ac6">
+      <Output>
+        <StdOut>base=http://localhost:5000/ jwks={"keys":[],"now":1792444462,"env":"Testing"} real=1792443962</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="4f2ce1e1-ce0a-487c-a166-f71ad5b44336" testId="31a379c5-5d61-44a7-7ec6-1eef496e8dc7" testName="IdentityService.Tests.MedicoesA61.Medicao_A_EfCore_Rls_E_Unicidade" computerName="ALLVZ-WORK" duration="00:00:05.6345475" startTime="2026-10-19T18:04:29.6967617-03:00" endTime="2026-10-19T18:04:35.3400338-03:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4f2ce1e1-ce0a-487c-a166-f71ad5b44336">
+      <Output>
+        <StdOut>RLS Exception: Microsoft.EntityFrameworkCore.DbUpdateException&#xD;
+RLS InnerException: Npgsql.PostgresException&#xD;
+RLS SqlState: 42501&#xD;
+Unicidade Exception: Microsoft.EntityFrameworkCore.DbUpdateException&#xD;
+Unicidade InnerException: Npgsql.PostgresException&#xD;
+Unicidade SqlState: 23505</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="ae28f181-15b0-4d48-bbcc-61c3332b1d19" testId="0a04ce53-b17a-4038-3836-735f46c036ea" testName="IdentityService.Tests.Medicoes.L04_PoolReset" computerName="ALLVZ-WORK" duration="00:00:01.9160735" startTime="2026-10-19T18:05:58.6732499-03:00" endTime="2026-10-19T18:06:00.5896698-03:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ae28f181-15b0-4d48-bbcc-61c3332b1d19">
+      <Output>
+        <StdOut>CS: Host=127.0.0.1;Port=64853;Database=postgres;Username=postgres;Password=postgres&#xD;
+dentro: identity_app|true&#xD;
+reaberta no pool padrao: postgres||&#xD;
+NoReset=true reaberta: identity_app|true</StdOut>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="IdentityService.Tests.Medicoes.L04_PoolReset" storage="c:\users\act\documents\personal\identity-service\etapa2\spec-v2\evidencias\env70\tests\identityservice.tests\bin\debug\net10.0\identityservice.tests.dll" id="0a04ce53-b17a-4038-3836-735f46c036ea">
+      <Execution id="ae28f181-15b0-4d48-bbcc-61c3332b1d19" />
+      <TestMethod codeBase="C:\Users\ACT\Documents\Personal\Identity-Service\Etapa2\spec-v2\evidencias\env70\tests\IdentityService.Tests\bin\Debug\net10.0\IdentityService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="IdentityService.Tests.Medicoes" name="L04_PoolReset" />
+    </UnitTest>
+    <UnitTest name="IdentityService.Tests.MedicoesA61.Medicao_B_EfCore_PostgresParado" storage="c:\users\act\documents\personal\identity-service\etapa2\spec-v2\evidencias\env70\tests\identityservice.tests\bin\debug\net10.0\identityservice.tests.dll" id="72e939ac-a3c0-9f3b-fa51-4c640bef1821">
+      <Execution id="fb353764-b270-4714-aedd-9ed25684cc14" />
+      <TestMethod codeBase="C:\Users\ACT\Documents\Personal\Identity-Service\Etapa2\spec-v2\evidencias\env70\tests\IdentityService.Tests\bin\Debug\net10.0\IdentityService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="IdentityService.Tests.MedicoesA61" name="Medicao_B_EfCore_PostgresParado" />
+    </UnitTest>
+    <UnitTest name="IdentityService.Tests.KestrelTeste.WafComKestrel" storage="c:\users\act\documents\personal\identity-service\etapa2\spec-v2\evidencias\env70\tests\identityservice.tests\bin\debug\net10.0\identityservice.tests.dll" id="b342b9ec-c4ff-5ffa-d8c3-dfd9d6e4e40b">
+      <Execution id="6495c7ae-caf2-4d64-bdbb-9c703e8a6ac6" />
+      <TestMethod codeBase="C:\Users\ACT\Documents\Personal\Identity-Service\Etapa2\spec-v2\evidencias\env70\tests\IdentityService.Tests\bin\Debug\net10.0\IdentityService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="IdentityService.Tests.KestrelTeste" name="WafComKestrel" />
+    </UnitTest>
+    <UnitTest name="IdentityService.Tests.MedicoesA61.Medicao_D_Jwt_IssuerSigningKeyResolver" storage="c:\users\act\documents\personal\identity-service\etapa2\spec-v2\evidencias\env70\tests\identityservice.tests\bin\debug\net10.0\identityservice.tests.dll" id="a4a5b299-2192-7255-29be-daa7a9ff0745">
+      <Execution id="2799fef3-00c5-4839-9681-09401a25f03f" />
+      <TestMethod codeBase="C:\Users\ACT\Documents\Personal\Identity-Service\Etapa2\spec-v2\evidencias\env70\tests\IdentityService.Tests\bin\Debug\net10.0\IdentityService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="IdentityService.Tests.MedicoesA61" name="Medicao_D_Jwt_IssuerSigningKeyResolver" />
+    </UnitTest>
+    <UnitTest name="IdentityService.Tests.Medicoes.L03_Kafka" storage="c:\users\act\documents\personal\identity-service\etapa2\spec-v2\evidencias\env70\tests\identityservice.tests\bin\debug\net10.0\identityservice.tests.dll" id="d462a8a1-b4b3-d9b4-fabd-56a086c87c7f">
+      <Execution id="8fe19764-a7f7-440f-b457-e041cae1a460" />
+      <TestMethod codeBase="C:\Users\ACT\Documents\Personal\Identity-Service\Etapa2\spec-v2\evidencias\env70\tests\IdentityService.Tests\bin\Debug\net10.0\IdentityService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="IdentityService.Tests.Medicoes" name="L03_Kafka" />
+    </UnitTest>
+    <UnitTest name="IdentityService.Tests.Cunhagem.CunharComPayloadLiteral" storage="c:\users\act\documents\personal\identity-service\etapa2\spec-v2\evidencias\env70\tests\identityservice.tests\bin\debug\net10.0\identityservice.tests.dll" id="e2b11eef-2897-9f07-9aef-1b929ebb0a0f">
+      <Execution id="e84a84ac-4222-458d-8ca8-22826a8a18b6" />
+      <TestMethod codeBase="C:\Users\ACT\Documents\Personal\Identity-Service\Etapa2\spec-v2\evidencias\env70\tests\IdentityService.Tests\bin\Debug\net10.0\IdentityService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="IdentityService.Tests.Cunhagem" name="CunharComPayloadLiteral" />
+    </UnitTest>
+    <UnitTest name="IdentityService.Tests.Medicoes.L05_FalhasViaWaf" storage="c:\users\act\documents\personal\identity-service\etapa2\spec-v2\evidencias\env70\tests\identityservice.tests\bin\debug\net10.0\identityservice.tests.dll" id="ea76048f-b1aa-32b3-20ff-030e0b016c29">
+      <Execution id="0f9f07b1-1db0-4b30-b25c-eb5a0129cfd6" />
+      <TestMethod codeBase="C:\Users\ACT\Documents\Personal\Identity-Service\Etapa2\spec-v2\evidencias\env70\tests\IdentityService.Tests\bin\Debug\net10.0\IdentityService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="IdentityService.Tests.Medicoes" name="L05_FalhasViaWaf" />
+    </UnitTest>
+    <UnitTest name="IdentityService.Tests.Medicoes.ArranqueSemVariavelFalha" storage="c:\users\act\documents\personal\identity-service\etapa2\spec-v2\evidencias\env70\tests\identityservice.tests\bin\debug\net10.0\identityservice.tests.dll" id="1a8c97c6-6176-d7ed-19a9-a9c208c4f82c">
+      <Execution id="bab93d73-2784-4856-a097-c299ceb7be29" />
+      <TestMethod codeBase="C:\Users\ACT\Documents\Personal\Identity-Service\Etapa2\spec-v2\evidencias\env70\tests\IdentityService.Tests\bin\Debug\net10.0\IdentityService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="IdentityService.Tests.Medicoes" name="ArranqueSemVariavelFalha" />
+    </UnitTest>
+    <UnitTest name="IdentityService.Tests.Medicoes.TimeoutXunit" storage="c:\users\act\documents\personal\identity-service\etapa2\spec-v2\evidencias\env70\tests\identityservice.tests\bin\debug\net10.0\identityservice.tests.dll" id="2bed1905-b017-acf0-2380-f1f4b77e9666">
+      <Execution id="1a9c3571-3fbe-4f5f-85ec-cc140a400f42" />
+      <TestMethod codeBase="C:\Users\ACT\Documents\Personal\Identity-Service\Etapa2\spec-v2\evidencias\env70\tests\IdentityService.Tests\bin\Debug\net10.0\IdentityService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="IdentityService.Tests.Medicoes" name="TimeoutXunit" />
+    </UnitTest>
+    <UnitTest name="IdentityService.Tests.MedicoesA61.Medicao_A_EfCore_Rls_E_Unicidade" storage="c:\users\act\documents\personal\identity-service\etapa2\spec-v2\evidencias\env70\tests\identityservice.tests\bin\debug\net10.0\identityservice.tests.dll" id="31a379c5-5d61-44a7-7ec6-1eef496e8dc7">
+      <Execution id="4f2ce1e1-ce0a-487c-a166-f71ad5b44336" />
+      <TestMethod codeBase="C:\Users\ACT\Documents\Personal\Identity-Service\Etapa2\spec-v2\evidencias\env70\tests\IdentityService.Tests\bin\Debug\net10.0\IdentityService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="IdentityService.Tests.MedicoesA61" name="Medicao_A_EfCore_Rls_E_Unicidade" />
+    </UnitTest>
+    <UnitTest name="IdentityService.Tests.MedicoesA61.Medicao_C_Redis_HierarquiaExcecoes" storage="c:\users\act\documents\personal\identity-service\etapa2\spec-v2\evidencias\env70\tests\identityservice.tests\bin\debug\net10.0\identityservice.tests.dll" id="df7992d5-6380-bf85-8a12-94e498babafa">
+      <Execution id="f2172db1-eb88-41b7-b109-a61c6c8e168b" />
+      <TestMethod codeBase="C:\Users\ACT\Documents\Personal\Identity-Service\Etapa2\spec-v2\evidencias\env70\tests\IdentityService.Tests\bin\Debug\net10.0\IdentityService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="IdentityService.Tests.MedicoesA61" name="Medicao_C_Redis_HierarquiaExcecoes" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="1a8c97c6-6176-d7ed-19a9-a9c208c4f82c" executionId="bab93d73-2784-4856-a097-c299ceb7be29" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2bed1905-b017-acf0-2380-f1f4b77e9666" executionId="1a9c3571-3fbe-4f5f-85ec-cc140a400f42" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d462a8a1-b4b3-d9b4-fabd-56a086c87c7f" executionId="8fe19764-a7f7-440f-b457-e041cae1a460" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e2b11eef-2897-9f07-9aef-1b929ebb0a0f" executionId="e84a84ac-4222-458d-8ca8-22826a8a18b6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="72e939ac-a3c0-9f3b-fa51-4c640bef1821" executionId="fb353764-b270-4714-aedd-9ed25684cc14" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="df7992d5-6380-bf85-8a12-94e498babafa" executionId="f2172db1-eb88-41b7-b109-a61c6c8e168b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ea76048f-b1aa-32b3-20ff-030e0b016c29" executionId="0f9f07b1-1db0-4b30-b25c-eb5a0129cfd6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a4a5b299-2192-7255-29be-daa7a9ff0745" executionId="2799fef3-00c5-4839-9681-09401a25f03f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b342b9ec-c4ff-5ffa-d8c3-dfd9d6e4e40b" executionId="6495c7ae-caf2-4d64-bdbb-9c703e8a6ac6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="31a379c5-5d61-44a7-7ec6-1eef496e8dc7" executionId="4f2ce1e1-ce0a-487c-a166-f71ad5b44336" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="0a04ce53-b17a-4038-3836-735f46c036ea" executionId="ae28f181-15b0-4d48-bbcc-61c3332b1d19" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Resultados que não estão em uma lista" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="Todos os resultados carregados" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="11" executed="11" passed="11" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:01.14]   Discovering: IdentityService.Tests&#xD;
+[xUnit.net 00:00:01.18]   Discovered:  IdentityService.Tests&#xD;
+[xUnit.net 00:00:01.20]   Starting:    IdentityService.Tests&#xD;
+[testcontainers.org 00:00:00.12] Connected to Docker:&#xD;
+  Host: npipe://./pipe/docker_engine&#xD;
+  Server Version: 29.7.2&#xD;
+  Kernel Version: 6.18.33.2-microsoft-standard-WSL2&#xD;
+  API Version: 1.55&#xD;
+  Operating System: Docker Desktop&#xD;
+  Total Memory: 15.49 GB&#xD;
+  Labels: &#xD;
+    com.docker.desktop.address=npipe://\\.\pipe\docker_cli&#xD;
+[testcontainers.org 00:00:00.34] Docker container 1da227437702 created&#xD;
+[testcontainers.org 00:00:00.40] Start Docker container 1da227437702&#xD;
+[testcontainers.org 00:00:00.58] Wait for Docker container 1da227437702 to complete readiness checks&#xD;
+[testcontainers.org 00:00:01.63] Docker container 1da227437702 ready&#xD;
+[testcontainers.org 00:00:01.75] Docker container 2b792556a8b1 created&#xD;
+[testcontainers.org 00:00:01.76] Start Docker container 2b792556a8b1&#xD;
+[testcontainers.org 00:00:01.94] Wait for Docker container 2b792556a8b1 to complete readiness checks&#xD;
+[testcontainers.org 00:00:01.96] Execute "pg_isready --host localhost --dbname postgres --username postgres" at Docker container 2b792556a8b1&#xD;
+[testcontainers.org 00:00:03.08] Execute "pg_isready --host localhost --dbname postgres --username postgres" at Docker container 2b792556a8b1&#xD;
+[testcontainers.org 00:00:03.14] Docker container 2b792556a8b1 ready&#xD;
+[testcontainers.org 00:00:03.87] Delete Docker container 2b792556a8b1&#xD;
+[testcontainers.org 00:00:04.28] Docker container 77e028460a42 created&#xD;
+[testcontainers.org 00:00:04.29] Start Docker container 77e028460a42&#xD;
+[testcontainers.org 00:00:04.50] Wait for Docker container 77e028460a42 to complete readiness checks&#xD;
+[testcontainers.org 00:00:04.52] Execute "pg_isready --host localhost --dbname postgres --username postgres" at Docker container 77e028460a42&#xD;
+[testcontainers.org 00:00:05.61] Execute "pg_isready --host localhost --dbname postgres --username postgres" at Docker container 77e028460a42&#xD;
+[testcontainers.org 00:00:05.67] Docker container 77e028460a42 ready&#xD;
+[testcontainers.org 00:00:05.78] Stop Docker container 77e028460a42&#xD;
+[testcontainers.org 00:00:14.31] Delete Docker container 77e028460a42&#xD;
+[testcontainers.org 00:00:14.93] Docker container dcc518b65db2 created&#xD;
+[testcontainers.org 00:00:14.94] Start Docker container dcc518b65db2&#xD;
+[testcontainers.org 00:00:15.36] Add file to tar archive: Content length: 126 byte(s), Target file: "/testcontainers.sh", UID: 0, GID: 0, Mode: 0755&#xD;
+[testcontainers.org 00:00:15.37] Copy tar archive to container: Content length: 126 byte(s), Docker container: dcc518b65db2&#xD;
+[testcontainers.org 00:00:15.38] Wait for Docker container dcc518b65db2 to complete readiness checks&#xD;
+[testcontainers.org 00:00:19.51] Docker container dcc518b65db2 ready&#xD;
+[testcontainers.org 00:00:20.46] Pause Docker container dcc518b65db2&#xD;
+[testcontainers.org 00:00:23.54] Unpause Docker container dcc518b65db2&#xD;
+[testcontainers.org 00:00:23.58] Stop Docker container dcc518b65db2&#xD;
+%6|1792443894.951|FAIL|rdkafka#consumer-2| [thrd:127.0.0.1:64758/1]: 127.0.0.1:64758/1: Disconnected: connection closed by peer: POLLHUP (after 3721ms in state UP)&#xD;
+%6|1792443894.951|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:64758/1]: 127.0.0.1:64758/1: Disconnected: connection closed by peer: POLLHUP (after 3861ms in state UP)&#xD;
+%6|1792443894.951|FAIL|rdkafka#consumer-2| [thrd:GroupCoordinator]: GroupCoordinator: 127.0.0.1:64758: Disconnected: connection closed by peer: POLLHUP (after 3706ms in state UP)&#xD;
+%3|1792443894.951|ERROR|rdkafka#producer-1| [thrd:127.0.0.1:64758/1]: 1/1 brokers are down&#xD;
+%3|1792443894.951|ERROR|rdkafka#consumer-2| [thrd:127.0.0.1:64758/1]: 1/1 brokers are down&#xD;
+%6|1792443894.951|FAIL|rdkafka#producer-3| [thrd:127.0.0.1:64758/1]: 127.0.0.1:64758/1: Disconnected: connection closed by peer: POLLHUP (after 123ms in state UP)&#xD;
+%3|1792443894.952|ERROR|rdkafka#producer-3| [thrd:127.0.0.1:64758/1]: 1/1 brokers are down&#xD;
+%6|1792443894.953|FAIL|rdkafka#consumer-2| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Disconnected: connection closed by peer: POLLHUP (after 1ms in state APIVERSION_QUERY)&#xD;
+%6|1792443894.954|FAIL|rdkafka#producer-3| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Disconnected: connection closed by peer: POLLHUP (after 1ms in state APIVERSION_QUERY)&#xD;
+%6|1792443895.026|FAIL|rdkafka#producer-3| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Disconnected: connection closed by peer: POLLHUP (after 0ms in state APIVERSION_QUERY)&#xD;
+%6|1792443895.057|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Disconnected: connection closed by peer: POLLHUP (after 0ms in state APIVERSION_QUERY)&#xD;
+%6|1792443895.075|FAIL|rdkafka#producer-3| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Disconnected: connection closed by peer: POLLHUP (after 1ms in state APIVERSION_QUERY)&#xD;
+%6|1792443895.119|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Disconnected: connection closed by peer: POLLHUP (after 0ms in state APIVERSION_QUERY)&#xD;
+%6|1792443895.137|FAIL|rdkafka#producer-3| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Disconnected: connection closed by peer: POLLHUP (after 1ms in state APIVERSION_QUERY)&#xD;
+%6|1792443895.166|FAIL|rdkafka#consumer-2| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Disconnected: connection closed by peer: POLLHUP (after 0ms in state APIVERSION_QUERY, 1 identical error(s) suppressed)&#xD;
+%6|1792443895.167|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Disconnected: connection closed by peer: POLLHUP (after 0ms in state APIVERSION_QUERY)&#xD;
+%6|1792443895.197|FAIL|rdkafka#producer-3| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Disconnected: connection closed by peer: POLLHUP (after 1ms in state APIVERSION_QUERY)&#xD;
+%6|1792443895.244|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Disconnected: connection closed by peer: POLLHUP (after 0ms in state APIVERSION_QUERY)&#xD;
+%6|1792443895.274|FAIL|rdkafka#producer-3| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Disconnected: connection closed by peer: POLLHUP (after 0ms in state APIVERSION_QUERY)&#xD;
+%6|1792443895.305|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Disconnected: connection closed by peer: POLLHUP (after 0ms in state APIVERSION_QUERY)&#xD;
+%6|1792443895.335|FAIL|rdkafka#producer-3| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Disconnected: connection closed by peer: POLLHUP (after 0ms in state APIVERSION_QUERY)&#xD;
+%6|1792443895.352|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Disconnected: connection closed by peer: POLLHUP (after 1ms in state APIVERSION_QUERY)&#xD;
+%6|1792443895.396|FAIL|rdkafka#producer-3| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Disconnected: connection closed by peer: POLLHUP (after 0ms in state APIVERSION_QUERY)&#xD;
+%6|1792443895.428|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Disconnected: connection closed by peer: POLLHUP (after 0ms in state APIVERSION_QUERY)&#xD;
+%6|1792443895.459|FAIL|rdkafka#producer-3| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Disconnected: connection closed by peer: POLLHUP (after 0ms in state APIVERSION_QUERY)&#xD;
+%6|1792443895.490|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Disconnected: connection closed by peer: POLLHUP (after 0ms in state APIVERSION_QUERY)&#xD;
+%6|1792443895.507|FAIL|rdkafka#producer-3| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Disconnected: connection closed by peer: POLLHUP (after 1ms in state APIVERSION_QUERY)&#xD;
+%6|1792443895.538|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Disconnected: connection closed by peer: POLLHUP (after 1ms in state APIVERSION_QUERY)&#xD;
+%6|1792443895.568|FAIL|rdkafka#producer-3| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Disconnected: connection closed by peer: POLLHUP (after 1ms in state APIVERSION_QUERY)&#xD;
+%6|1792443895.613|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Disconnected: connection closed by peer: POLLHUP (after 0ms in state APIVERSION_QUERY)&#xD;
+%6|1792443895.644|FAIL|rdkafka#producer-3| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Disconnected: connection closed by peer: POLLHUP (after 0ms in state APIVERSION_QUERY)&#xD;
+%6|1792443895.676|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Disconnected: connection closed by peer: POLLHUP (after 0ms in state APIVERSION_QUERY)&#xD;
+%6|1792443895.707|FAIL|rdkafka#producer-3| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Disconnected: connection closed by peer: POLLHUP (after 0ms in state APIVERSION_QUERY)&#xD;
+%6|1792443895.808|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Disconnected: connection closed by peer: POLLHUP (after 69ms in state APIVERSION_QUERY)&#xD;
+%6|1792443895.808|FAIL|rdkafka#producer-3| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Disconnected: connection closed by peer: POLLHUP (after 53ms in state APIVERSION_QUERY)&#xD;
+%3|1792443897.864|FAIL|rdkafka#producer-4| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2051ms in state CONNECT)&#xD;
+%3|1792443897.864|ERROR|rdkafka#producer-4| [thrd:127.0.0.1:64758/bootstrap]: 1/1 brokers are down&#xD;
+%3|1792443897.864|ERROR|rdkafka#producer-4| [thrd:app]: rdkafka#producer-4: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2051ms in state CONNECT)&#xD;
+%3|1792443897.910|FAIL|rdkafka#producer-3| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2049ms in state CONNECT)&#xD;
+%3|1792443897.911|ERROR|rdkafka#producer-3| [thrd:app]: rdkafka#producer-3: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2049ms in state CONNECT)&#xD;
+%3|1792443898.097|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2049ms in state CONNECT)&#xD;
+%3|1792443898.097|ERROR|rdkafka#producer-1| [thrd:app]: rdkafka#producer-1: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2049ms in state CONNECT)&#xD;
+%3|1792443898.128|FAIL|rdkafka#consumer-2| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2049ms in state CONNECT)&#xD;
+%3|1792443900.176|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2048ms in state CONNECT)&#xD;
+%3|1792443900.176|ERROR|rdkafka#producer-1| [thrd:app]: rdkafka#producer-1: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2048ms in state CONNECT)&#xD;
+%3|1792443903.110|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2020ms in state CONNECT)&#xD;
+%3|1792443903.110|ERROR|rdkafka#producer-1| [thrd:app]: rdkafka#producer-1: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2020ms in state CONNECT)&#xD;
+%3|1792443905.215|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2043ms in state CONNECT)&#xD;
+%3|1792443905.215|ERROR|rdkafka#producer-1| [thrd:127.0.0.1:64758/bootstrap]: 1/1 brokers are down&#xD;
+%3|1792443905.215|ERROR|rdkafka#producer-1| [thrd:app]: rdkafka#producer-1: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2043ms in state CONNECT)&#xD;
+%3|1792443908.172|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2039ms in state CONNECT)&#xD;
+%3|1792443908.172|ERROR|rdkafka#producer-1| [thrd:app]: rdkafka#producer-1: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2039ms in state CONNECT)&#xD;
+%3|1792443910.223|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2020ms in state CONNECT)&#xD;
+%3|1792443910.223|ERROR|rdkafka#producer-1| [thrd:app]: rdkafka#producer-1: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2020ms in state CONNECT)&#xD;
+%3|1792443913.201|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2033ms in state CONNECT)&#xD;
+%3|1792443913.201|ERROR|rdkafka#producer-1| [thrd:app]: rdkafka#producer-1: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2033ms in state CONNECT)&#xD;
+%3|1792443915.291|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2044ms in state CONNECT)&#xD;
+%3|1792443915.291|ERROR|rdkafka#producer-1| [thrd:127.0.0.1:64758/bootstrap]: 1/1 brokers are down&#xD;
+%3|1792443915.291|ERROR|rdkafka#producer-1| [thrd:app]: rdkafka#producer-1: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2044ms in state CONNECT)&#xD;
+%3|1792443918.248|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2040ms in state CONNECT)&#xD;
+%3|1792443918.248|ERROR|rdkafka#producer-1| [thrd:app]: rdkafka#producer-1: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2040ms in state CONNECT)&#xD;
+%3|1792443920.317|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2038ms in state CONNECT)&#xD;
+%3|1792443920.317|ERROR|rdkafka#producer-1| [thrd:app]: rdkafka#producer-1: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2038ms in state CONNECT)&#xD;
+%3|1792443923.280|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2046ms in state CONNECT)&#xD;
+%3|1792443923.280|ERROR|rdkafka#producer-1| [thrd:app]: rdkafka#producer-1: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2046ms in state CONNECT)&#xD;
+%3|1792443925.349|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2038ms in state CONNECT)&#xD;
+%3|1792443925.349|ERROR|rdkafka#producer-1| [thrd:127.0.0.1:64758/bootstrap]: 1/1 brokers are down&#xD;
+%3|1792443925.349|ERROR|rdkafka#producer-1| [thrd:app]: rdkafka#producer-1: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2038ms in state CONNECT)&#xD;
+%3|1792443928.324|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2045ms in state CONNECT)&#xD;
+%3|1792443928.325|ERROR|rdkafka#producer-1| [thrd:app]: rdkafka#producer-1: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2045ms in state CONNECT)&#xD;
+%3|1792443930.396|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2041ms in state CONNECT)&#xD;
+%3|1792443930.396|ERROR|rdkafka#producer-1| [thrd:app]: rdkafka#producer-1: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2041ms in state CONNECT)&#xD;
+%3|1792443933.356|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2044ms in state CONNECT)&#xD;
+%3|1792443933.356|ERROR|rdkafka#producer-1| [thrd:app]: rdkafka#producer-1: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2044ms in state CONNECT)&#xD;
+%3|1792443935.415|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2026ms in state CONNECT)&#xD;
+%3|1792443935.415|ERROR|rdkafka#producer-1| [thrd:127.0.0.1:64758/bootstrap]: 1/1 brokers are down&#xD;
+%3|1792443935.415|ERROR|rdkafka#producer-1| [thrd:app]: rdkafka#producer-1: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2026ms in state CONNECT)&#xD;
+%3|1792443938.372|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2031ms in state CONNECT)&#xD;
+%3|1792443938.372|ERROR|rdkafka#producer-1| [thrd:app]: rdkafka#producer-1: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2031ms in state CONNECT)&#xD;
+%3|1792443940.462|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2043ms in state CONNECT)&#xD;
+%3|1792443940.462|ERROR|rdkafka#producer-1| [thrd:app]: rdkafka#producer-1: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2043ms in state CONNECT)&#xD;
+%3|1792443943.420|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:64758/bootstrap]: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2041ms in state CONNECT)&#xD;
+%3|1792443943.420|ERROR|rdkafka#producer-1| [thrd:app]: rdkafka#producer-1: 127.0.0.1:64758/bootstrap: Connect to ipv4#127.0.0.1:64758 failed: Unknown error (after 2041ms in state CONNECT)&#xD;
+%4|1792443944.001|COMMITFAIL|rdkafka#consumer-2| [thrd:main]: Offset commit (cgrp auto commit timer) failed for 1/1 partition(s) in join-state init: Local: Waiting for coordinator: t1((null))[0]@1(Local: Waiting for coordinator)&#xD;
+[testcontainers.org 00:01:12.84] Delete Docker container dcc518b65db2&#xD;
+[testcontainers.org 00:01:13.16] Docker container fe47e6a74cad created&#xD;
+[testcontainers.org 00:01:13.17] Docker container 585569ff6d9b created&#xD;
+[testcontainers.org 00:01:13.17] Start Docker container fe47e6a74cad&#xD;
+[testcontainers.org 00:01:13.18] Start Docker container 585569ff6d9b&#xD;
+[testcontainers.org 00:01:13.41] Wait for Docker container 585569ff6d9b to complete readiness checks&#xD;
+[testcontainers.org 00:01:13.42] Execute "pg_isready --host localhost --dbname postgres --username postgres" at Docker container 585569ff6d9b&#xD;
+[testcontainers.org 00:01:13.43] Wait for Docker container fe47e6a74cad to complete readiness checks&#xD;
+[testcontainers.org 00:01:13.45] Execute "redis-cli ping" at Docker container fe47e6a74cad&#xD;
+[testcontainers.org 00:01:13.51] Docker container fe47e6a74cad ready&#xD;
+[testcontainers.org 00:01:14.53] Execute "pg_isready --host localhost --dbname postgres --username postgres" at Docker container 585569ff6d9b&#xD;
+[testcontainers.org 00:01:14.59] Docker container 585569ff6d9b ready&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      CREATE TABLE IF NOT EXISTS probe(x int)&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Application started. Press Ctrl+C to shut down.&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Hosting environment: Testing&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Content root path: C:\Users\ACT\Documents\Personal\Identity-Service\Etapa2\spec-v2\evidencias\env70\src\IdentityService&#xD;
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]&#xD;
+      Request starting HTTP/1.1 GET http://localhost/.well-known/jwks.json - - -&#xD;
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]&#xD;
+      Executing endpoint 'HTTP: GET /.well-known/jwks.json'&#xD;
+info: Microsoft.AspNetCore.Http.Result.JsonResult[3]&#xD;
+      Writing value of type '&lt;&gt;f__AnonymousType0`3' as Json.&#xD;
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]&#xD;
+      Executed endpoint 'HTTP: GET /.well-known/jwks.json'&#xD;
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]&#xD;
+      Request finished HTTP/1.1 GET http://localhost/.well-known/jwks.json - 200 - application/json;+charset=utf-8 60.4786ms&#xD;
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]&#xD;
+      Request starting HTTP/1.1 GET http://localhost/probe/redis - - -&#xD;
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]&#xD;
+      Executing endpoint 'HTTP: GET /probe/redis'&#xD;
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]&#xD;
+      Setting HTTP status code 200.&#xD;
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]&#xD;
+      Executed endpoint 'HTTP: GET /probe/redis'&#xD;
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]&#xD;
+      Request finished HTTP/1.1 GET http://localhost/probe/redis - 200 - - 18.1189ms&#xD;
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]&#xD;
+      Request starting HTTP/1.1 GET http://localhost/probe/pg - - -&#xD;
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]&#xD;
+      Executing endpoint 'HTTP: GET /probe/pg'&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      select 1&#xD;
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]&#xD;
+      Setting HTTP status code 200.&#xD;
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]&#xD;
+      Executed endpoint 'HTTP: GET /probe/pg'&#xD;
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]&#xD;
+      Request finished HTTP/1.1 GET http://localhost/probe/pg - 200 - - 5.3174ms&#xD;
+[testcontainers.org 00:01:15.12] Stop Docker container fe47e6a74cad&#xD;
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]&#xD;
+      Request starting HTTP/1.1 GET http://localhost/probe/redis - - -&#xD;
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]&#xD;
+      Executing endpoint 'HTTP: GET /probe/redis'&#xD;
+info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[1]&#xD;
+      Setting HTTP status code 503.&#xD;
+info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[3]&#xD;
+      Writing value of type 'ProblemDetails' as Json.&#xD;
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]&#xD;
+      Executed endpoint 'HTTP: GET /probe/redis'&#xD;
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]&#xD;
+      Request finished HTTP/1.1 GET http://localhost/probe/redis - 503 - application/problem+json 5520.4236ms&#xD;
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]&#xD;
+      Request starting HTTP/1.1 GET http://localhost/probe/redis - - -&#xD;
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]&#xD;
+      Executing endpoint 'HTTP: GET /probe/redis'&#xD;
+info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[1]&#xD;
+      Setting HTTP status code 503.&#xD;
+info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[3]&#xD;
+      Writing value of type 'ProblemDetails' as Json.&#xD;
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]&#xD;
+      Executed endpoint 'HTTP: GET /probe/redis'&#xD;
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]&#xD;
+      Request finished HTTP/1.1 GET http://localhost/probe/redis - 503 - application/problem+json 5993.1609ms&#xD;
+[testcontainers.org 00:01:26.93] Stop Docker container 585569ff6d9b&#xD;
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]&#xD;
+      Request starting HTTP/1.1 GET http://localhost/probe/pg - - -&#xD;
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]&#xD;
+      Executing endpoint 'HTTP: GET /probe/pg'&#xD;
+fail: Microsoft.EntityFrameworkCore.Database.Command[20102]&#xD;
+      Failed executing DbCommand (27ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      select 1&#xD;
+info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[1]&#xD;
+      Setting HTTP status code 503.&#xD;
+info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[3]&#xD;
+      Writing value of type 'ProblemDetails' as Json.&#xD;
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]&#xD;
+      Executed endpoint 'HTTP: GET /probe/pg'&#xD;
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]&#xD;
+      Request finished HTTP/1.1 GET http://localhost/probe/pg - 503 - application/problem+json 126.9324ms&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Application is shutting down...&#xD;
+[testcontainers.org 00:01:27.30] Delete Docker container fe47e6a74cad&#xD;
+[testcontainers.org 00:01:27.33] Delete Docker container 585569ff6d9b&#xD;
+[testcontainers.org 00:01:27.63] Docker container 2bcd6d2b6cce created&#xD;
+[testcontainers.org 00:01:27.64] Start Docker container 2bcd6d2b6cce&#xD;
+[testcontainers.org 00:01:27.85] Wait for Docker container 2bcd6d2b6cce to complete readiness checks&#xD;
+[testcontainers.org 00:01:27.87] Execute "pg_isready --host localhost --dbname postgres --username postgres" at Docker container 2bcd6d2b6cce&#xD;
+[testcontainers.org 00:01:28.96] Execute "pg_isready --host localhost --dbname postgres --username postgres" at Docker container 2bcd6d2b6cce&#xD;
+[testcontainers.org 00:01:29.02] Docker container 2bcd6d2b6cce ready&#xD;
+[testcontainers.org 00:01:29.06] Delete Docker container 2bcd6d2b6cce&#xD;
+[testcontainers.org 00:01:29.55] Docker container 8de682df64f5 created&#xD;
+[testcontainers.org 00:01:29.56] Start Docker container 8de682df64f5&#xD;
+[testcontainers.org 00:01:29.57] Docker container 8ba977278634 created&#xD;
+[testcontainers.org 00:01:29.59] Start Docker container 8ba977278634&#xD;
+[testcontainers.org 00:01:29.82] Wait for Docker container 8de682df64f5 to complete readiness checks&#xD;
+[testcontainers.org 00:01:29.84] Execute "redis-cli ping" at Docker container 8de682df64f5&#xD;
+[testcontainers.org 00:01:29.85] Wait for Docker container 8ba977278634 to complete readiness checks&#xD;
+[testcontainers.org 00:01:29.86] Execute "pg_isready --host localhost --dbname postgres --username postgres" at Docker container 8ba977278634&#xD;
+[testcontainers.org 00:01:29.92] Docker container 8de682df64f5 ready&#xD;
+[testcontainers.org 00:01:30.98] Execute "pg_isready --host localhost --dbname postgres --username postgres" at Docker container 8ba977278634&#xD;
+[testcontainers.org 00:01:31.04] Docker container 8ba977278634 ready&#xD;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]&#xD;
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']&#xD;
+      CREATE TABLE IF NOT EXISTS probe(x int)&#xD;
+info: Microsoft.Hosting.Lifetime[14]&#xD;
+      Now listening on: http://localhost:5000&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Application started. Press Ctrl+C to shut down.&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Hosting environment: Testing&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Content root path: C:\Users\ACT\Documents\Personal\Identity-Service\Etapa2\spec-v2\evidencias\env70\src\IdentityService&#xD;
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]&#xD;
+      Request starting HTTP/1.1 GET http://localhost:5000/.well-known/jwks.json - - -&#xD;
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]&#xD;
+      Executing endpoint 'HTTP: GET /.well-known/jwks.json'&#xD;
+info: Microsoft.AspNetCore.Http.Result.JsonResult[3]&#xD;
+      Writing value of type '&lt;&gt;f__AnonymousType0`3' as Json.&#xD;
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]&#xD;
+      Executed endpoint 'HTTP: GET /.well-known/jwks.json'&#xD;
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]&#xD;
+      Request finished HTTP/1.1 GET http://localhost:5000/.well-known/jwks.json - 200 - application/json;+charset=utf-8 7.9634ms&#xD;
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]&#xD;
+      Request starting HTTP/1.1 GET http://localhost:5000/.well-known/jwks.json - - -&#xD;
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]&#xD;
+      Executing endpoint 'HTTP: GET /.well-known/jwks.json'&#xD;
+info: Microsoft.AspNetCore.Http.Result.JsonResult[3]&#xD;
+      Writing value of type '&lt;&gt;f__AnonymousType0`3' as Json.&#xD;
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]&#xD;
+      Executed endpoint 'HTTP: GET /.well-known/jwks.json'&#xD;
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]&#xD;
+      Request finished HTTP/1.1 GET http://localhost:5000/.well-known/jwks.json - 200 - application/json;+charset=utf-8 1.1060ms&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Application is shutting down...&#xD;
+[testcontainers.org 00:01:31.16] Delete Docker container 8de682df64f5&#xD;
+[testcontainers.org 00:01:31.38] Delete Docker container 8ba977278634&#xD;
+[xUnit.net 00:01:34.44]   Finished:    IdentityService.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

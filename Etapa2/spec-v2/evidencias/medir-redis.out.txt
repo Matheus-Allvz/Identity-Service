@@ -1,0 +1,22 @@
+redis_version:7.4.6
+# R0 sem autenticacao: PING sem palavra-passe
+> redis-cli PING
+PONG
+# R1 SET substitui TTL (espera 50)
+> redis-cli SET denylist:tenant:a 1 EX 900
+OK
+> redis-cli SET denylist:tenant:a 1 EX 50
+OK
+> redis-cli TTL denylist:tenant:a
+50
+# R2 MGET existente e inexistente
+> redis-cli MGET denylist:tenant:a denylist:tenant:b
+1
+
+# R3 EX 0 (espera erro)
+> redis-cli SET k v EX 0
+ERR invalid expire time in 'set' command
+
+# R4 DEL inexistente (espera 0)
+> redis-cli DEL denylist:tenant:zz
+0

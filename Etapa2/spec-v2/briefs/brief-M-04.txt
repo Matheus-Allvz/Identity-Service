@@ -1,0 +1,15 @@
+Papel: Analista de Requisitos do módulo M-04 (Criar tenant), UT-3-04.
+Lê SÓ: Etapa2/spec-v2/pacotes/pacote-M-04.md (o teu pacote de contexto; o que não está lá não existe),
+Etapa1/03_guia_preenchimento_template.md §2 e §G-50, e o modelo Etapa1/template/50-modulos/M-nn-modelo.md.
+NÃO lês a spec v1.0, outros módulos nem o 90 completo.
+Escreves SÓ: Etapa2/spec-v2/50-modulos/M-04-criar-tenant.md.
+IDs: só da tua faixa (cabeçalho do pacote / 00 §4): RN RN-60 a RN-69, PRS PRS-140 a PRS-149, Q Q-60 a Q-69; CA-07.m do teu RF (RF-07).
+Tarefa: especificar o módulo segundo a Fase 3 do processo (E1 §4): endpoints em detalhe (EP-06) com ordem de avaliação e todas as respostas,
+RF, RN em SE/ENTÃO/SENÃO, EX, tabela de concorrência/idempotência/retoma, CA em Gherkin com borda em cada CA e cobertura mínima,
+rastreabilidade e PRS. Cumpre as linhas "Entradas para a UT-3-04" e os PRS de módulo que estão no fim do teu pacote.
+Teto do ficheiro do módulo: 14 KiB.
+Se precisares de algo partilhado que não está no pacote: NÃO inventes nem alteres; regista em "Pedidos de alteração".
+Ambiguidade: regista em "Dúvidas" com a hipótese mais simples marcada.
+Lint 0 (termos proibidos do guia §2.3; nenhum placeholder por preencher).
+Entrega: (1) ficheiro e tamanho; (2) totais RF/RN/EP/EV/CA/@critico/Σw; (3) pedidos de alteração; (4) dúvidas com hipótese; (5) PRS e Q novos.
+Ao terminar: maestri ask "Carcará" "Entrega UT-3-04: M-04 concluído. Ficheiro: Etapa2/spec-v2/50-modulos/M-04-criar-tenant.md"

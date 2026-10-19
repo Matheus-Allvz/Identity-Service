@@ -1,0 +1,25 @@
+=== Prova de mutações do script medir-postgres.sh (Ciclo 5: P1 e P3) ===
+Data: 2026-10-19T15:35:00Z
+
+### Mutação P1: retirar app.write_tenants do USING de tenant_member em pg-ddl.sql
+Descrição: remove app.write_tenants do USING da política p_tenant_member_isolation.
+Comportamento esperado: falha no teste I29 (INSERT ... RETURNING em tenant_member num tenant que está só em write_tenants), com FALHA > 0 e exit != 0.
+Saída padrão:
+medicoes M: 22 OK, 0 FALHA
+matriz: 29 OK, 1 FALHA
+Saída de erro:
+ERRO: matriz com falha ou contagem inesperada (esperado 33 OK e 0 FALHA; obtido 29 OK e 1 FALHA)
+Exit code obtido na Mutação P1: 1
+Verificação (exit code != 0): SUCESSO
+
+### Mutação P3: remover ck_user_account_locked_until do pg-ddl.sql
+Descrição: remove a restrição ck_user_account_locked_until da tabela user_account em pg-ddl.sql.
+Comportamento esperado: medição M7d (user LOCKED sem locked_until) não falha na restrição e gera FALHA na verificação com exit != 0.
+Saída padrão:
+medicoes M: 21 OK, 1 FALHA
+Saída de erro:
+ERRO: medicoes M com falha ou contagem inesperada (esperado 22 OK e 0 FALHA; obtido 21 OK e 1 FALHA)
+Exit code obtido na Mutação P3: 1
+Verificação (exit code != 0): SUCESSO
+
+Conclusão: as mutações P1 (matriz) e P3 (medições M do SGBD) foram ambas detetadas com exit code != 0 (exit 1), comprovando o rigor das validações de A-102 e A-117.

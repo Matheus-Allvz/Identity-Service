@@ -1,0 +1,15 @@
+Papel: Analista de Requisitos do módulo M-00 (Rotas, bypass e tratamento global), UT-3-00.
+Lê SÓ: Etapa2/spec-v2/pacotes/pacote-M-00.md (o teu pacote de contexto; o que não está lá não existe),
+Etapa1/03_guia_preenchimento_template.md §2 e §G-50, e o modelo Etapa1/template/50-modulos/M-nn-modelo.md.
+NÃO lês a spec v1.0, outros módulos nem o 90 completo.
+Escreves SÓ: Etapa2/spec-v2/50-modulos/M-00-rotas-bypass.md.
+IDs: só da tua faixa (cabeçalho do pacote / 00 §4): RN RN-01 a RN-09, PRS PRS-100 a PRS-109, Q Q-01 a Q-09; CA-00.m (para os fluxos transversais).
+Tarefa: especificar o módulo segundo a Fase 3 do processo (E1 §4): tabela de rotas e bypass (40 §1.1), tratamento global de exceções e mapeamento RFC 9457 (40 §1.2), logging JSON estruturado com correlação,
+RF transversais, RN em SE/ENTÃO/SENÃO, EX, tabela de concorrência/idempotência/retoma, CA em Gherkin com borda em cada CA e cobertura mínima,
+rastreabilidade e PRS. Cumpre as linhas "Entradas para a UT-3-00" (classificação pela cadeia de InnerException com PRS-65 e PRS-70, chave lida antes da RG-06 com PRS-71, CA de 503 com falhas de chave/BD/Redis) e os PRS de módulo que estão no fim do teu pacote.
+Teto do ficheiro do módulo: 12 KiB (máximo rigoroso: não ultrapassar 13.0 KiB para respeitar o orçamento de 60 KiB da Onda 4).
+Se precisares de algo partilhado que não está no pacote: NÃO inventes nem alteres; regista em "Pedidos de alteração".
+Ambiguidade: regista em "Dúvidas" com a hipótese mais simples marcada.
+Lint 0 (termos proibidos do guia §2.3; nenhum placeholder por preencher).
+Entrega: (1) ficheiro e tamanho; (2) totais RF/RN/EP/EV/CA/@critico/Σw; (3) pedidos de alteração; (4) dúvidas com hipótese; (5) PRS e Q novos.
+Ao terminar: maestri ask "Carcará" "Entrega UT-3-00: M-00 concluído. Ficheiro: Etapa2/spec-v2/50-modulos/M-00-rotas-bypass.md"

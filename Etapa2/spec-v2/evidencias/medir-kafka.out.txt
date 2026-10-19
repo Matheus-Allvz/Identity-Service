@@ -1,0 +1,9 @@
+# K1 configuracao do broker
+  auto.create.topics.enable=true sensitive=false synonyms={DEFAULT_CONFIG:auto.create.topics.enable=true}
+  num.partitions=1 sensitive=false synonyms={STATIC_BROKER_CONFIG:num.partitions=1, DEFAULT_CONFIG:num.partitions=1}
+# K2 primeiro envio para topico inexistente (tempo em ms)
+[2026-10-19 05:23:43,657] WARN [Producer clientId=console-producer] The metadata response from the cluster reported a recoverable issue with correlation id 1 : {empresa_cadastrada=UNKNOWN_TOPIC_OR_PARTITION} (org.apache.kafka.clients.NetworkClient)
+duracao_ms=1688
+Topic: empresa_cadastrada	TopicId: qCeBftBPTUK6s0FaPir5Gw	PartitionCount: 1	ReplicationFactor: 1	Configs: segment.bytes=1073741824
+# K3 segundo envio para o mesmo topico (tempo em ms)
+duracao_ms=1570

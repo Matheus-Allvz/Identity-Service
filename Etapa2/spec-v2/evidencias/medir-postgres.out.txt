@@ -1,0 +1,176 @@
+### pg-rls.sql
+                                                      version                                                       
+--------------------------------------------------------------------------------------------------------------------
+ PostgreSQL 17.6 (Debian 17.6-2.pgdg13+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit
+(1 row)
+
+OK | M1_superutilizador_sem_variaveis | esperado 2 | obtido 2
+ test_m 
+--------
+ 
+(1 row)
+
+ test_m 
+--------
+ 
+(1 row)
+
+OK | M2a_identity_app_sem_variaveis | esperado 0 | obtido 0
+              set_config              | set_config 
+--------------------------------------+------------
+ 00000000-0000-0000-0000-00000000000a | false
+(1 row)
+
+OK | M2b_allowed_um_tenant | esperado 1 | obtido 1
+ test_m 
+--------
+ 
+(1 row)
+
+ set_config 
+------------
+ 
+(1 row)
+
+ test_m 
+--------
+ 
+(1 row)
+
+OK | M2c_allowed_vazio | esperado 0 | obtido 0
+ set_config 
+------------
+ true
+(1 row)
+
+OK | M2d_auth_flow_true | esperado 2 | obtido 2
+ test_m 
+--------
+ 
+(1 row)
+
+ set_config |              set_config              
+------------+--------------------------------------
+ false      | 00000000-0000-0000-0000-00000000000a
+(1 row)
+
+ test_m 
+--------
+ 
+(1 row)
+
+OK | M3_insert_fora_da_lista | esperado 42501 | obtido 42501
+ test_m 
+--------
+ 
+(1 row)
+
+OK | M3b_delete_sem_grant | esperado 42501 | obtido 42501
+WARNING:  SET LOCAL can only be used in transaction blocks
+ test_m 
+--------
+ 
+(1 row)
+
+OK | M4_set_local_fora_de_transacao | esperado  | obtido 
+ set_config 
+------------
+ true
+(1 row)
+
+ test_m 
+--------
+ 
+(1 row)
+
+OK | M5_discard_all | esperado postgres: | obtido postgres:
+### pg-ddl.sql
+M7_DDL_SEED_E_DADOS_OK
+ test_m 
+--------
+ 
+(1 row)
+
+OK | M7a_permissao_fora_do_formato | esperado ck_role_permissions | obtido ck_role_permissions
+ test_m 
+--------
+ 
+(1 row)
+
+OK | M7b_permissao_com_virgula | esperado ck_role_permissions | obtido ck_role_permissions
+OK | M7c_permissao_null | esperado ck_role_permissions | obtido ck_role_permissions
+ test_m 
+--------
+ 
+(1 row)
+
+ test_m 
+--------
+ 
+(1 row)
+
+OK | M7d_locked_sem_locked_until | esperado ck_user_account_locked_until | obtido ck_user_account_locked_until
+ test_m 
+--------
+ 
+(1 row)
+
+OK | M7e_single_incoerente | esperado ck_refresh_token_context | obtido ck_refresh_token_context
+OK | M6_segundo_active_na_familia | esperado uq_refresh_token_family_active | obtido uq_refresh_token_family_active
+ test_m 
+--------
+ 
+(1 row)
+
+OK | M7f_member_role_tenant_trocado | esperado fk_member_role_tenant_member | obtido fk_member_role_tenant_member
+ test_m 
+--------
+ 
+(1 row)
+
+ test_m 
+--------
+ 
+(1 row)
+
+OK | M7g_hash_nao_argon2id | esperado ck_user_account_password_hash | obtido ck_user_account_password_hash
+ test_m 
+--------
+ 
+(1 row)
+
+OK | M7h_outbox_failed_com_retry_4 | esperado ck_outbox_message_failed_retry | obtido ck_outbox_message_failed_retry
+ set_config |              set_config              |                                set_config                                 
+------------+--------------------------------------+---------------------------------------------------------------------------
+ false      | 00000000-0000-0000-0000-0000000000a1 | 00000000-0000-0000-0000-0000000000a1,00000000-0000-0000-0000-0000000000a2
+(1 row)
+
+OK | M9a_insert_em_tenant_de_write_tenants | esperado ok:1 | obtido ok:1
+ test_m 
+--------
+ 
+(1 row)
+
+              set_config              
+--------------------------------------
+ 00000000-0000-0000-0000-0000000000a1
+(1 row)
+
+ test_m 
+--------
+ 
+(1 row)
+
+OK | M9b_insert_fora_do_conjunto_de_escrita | esperado 42501 | obtido 42501
+ test_m 
+--------
+ 
+(1 row)
+
+OK | M8a_update_auditoria_como_identity_app | esperado 42501 | obtido 42501
+ test_m 
+--------
+ 
+(1 row)
+
+OK | M8b_delete_como_identity_app | esperado 42501 | obtido 42501

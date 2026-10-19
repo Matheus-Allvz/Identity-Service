@@ -1,0 +1,334 @@
+=== TESTE DE MUTAÇÃO (A-117) ===
+Diretório temporário da cópia: /tmp/tmp.JDtxGrgNfR
+Mutação aplicada em MedicoesA61.cs: Assert.Equal("99999", pgEx.SqlState);
+
+=== Executando medições de env70 (A-66 e A-61) ===
+  Determinando os projetos a serem restaurados...
+  C:\Users\ACT\AppData\Local\Temp\tmp.JDtxGrgNfR\env70\tests\IdentityService.Tests\IdentityService.Tests.csproj restaurado (em 691 ms).
+  C:\Users\ACT\AppData\Local\Temp\tmp.JDtxGrgNfR\env70\src\IdentityService\IdentityService.csproj restaurado (em 692 ms).
+  IdentityService -> C:\Users\ACT\AppData\Local\Temp\tmp.JDtxGrgNfR\env70\src\IdentityService\bin\Debug\net10.0\IdentityService.dll
+  IdentityService.Tests -> C:\Users\ACT\AppData\Local\Temp\tmp.JDtxGrgNfR\env70\tests\IdentityService.Tests\bin\Debug\net10.0\IdentityService.Tests.dll
+Execução de teste para C:\Users\ACT\AppData\Local\Temp\tmp.JDtxGrgNfR\env70\tests\IdentityService.Tests\bin\Debug\net10.0\IdentityService.Tests.dll (.NETCoreApp,Version=v10.0)
+1 arquivos de teste no total corresponderam ao padrão especificado.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.13)
+[xUnit.net 00:00:01.54]   Discovering: IdentityService.Tests
+[xUnit.net 00:00:01.62]   Discovered:  IdentityService.Tests
+[xUnit.net 00:00:01.68]   Starting:    IdentityService.Tests
+[testcontainers.org 00:00:00.27] Connected to Docker:
+  Host: npipe://./pipe/docker_engine
+  Server Version: 29.7.2
+  Kernel Version: 6.18.33.2-microsoft-standard-WSL2
+  API Version: 1.55
+  Operating System: Docker Desktop
+  Total Memory: 15.49 GB
+  Labels: 
+    com.docker.desktop.address=npipe://\\.\pipe\docker_cli
+[testcontainers.org 00:00:00.66] Docker container 5cf37341788b created
+[testcontainers.org 00:00:00.83] Start Docker container 5cf37341788b
+[testcontainers.org 00:00:01.13] Wait for Docker container 5cf37341788b to complete readiness checks
+[testcontainers.org 00:00:02.25] Docker container 5cf37341788b ready
+[testcontainers.org 00:00:02.63] Docker container 1768d50ed140 created
+[testcontainers.org 00:00:02.69] Start Docker container 1768d50ed140
+[testcontainers.org 00:00:02.70] Docker container f9fd23b785b4 created
+[testcontainers.org 00:00:02.73] Start Docker container f9fd23b785b4
+[testcontainers.org 00:00:03.18] Wait for Docker container 1768d50ed140 to complete readiness checks
+[testcontainers.org 00:00:03.23] Execute "redis-cli ping" at Docker container 1768d50ed140
+[testcontainers.org 00:00:03.24] Wait for Docker container f9fd23b785b4 to complete readiness checks
+[testcontainers.org 00:00:03.26] Execute "pg_isready --host localhost --dbname postgres --username postgres" at Docker container f9fd23b785b4
+[testcontainers.org 00:00:03.43] Docker container 1768d50ed140 ready
+[testcontainers.org 00:00:04.50] Execute "pg_isready --host localhost --dbname postgres --username postgres" at Docker container f9fd23b785b4
+[testcontainers.org 00:00:05.67] Execute "pg_isready --host localhost --dbname postgres --username postgres" at Docker container f9fd23b785b4
+[testcontainers.org 00:00:05.76] Docker container f9fd23b785b4 ready
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (39ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE IF NOT EXISTS probe(x int)
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5000
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Testing
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: C:\Users\ACT\AppData\Local\Temp\tmp.JDtxGrgNfR\env70\src\IdentityService
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5000/.well-known/jwks.json - - -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /.well-known/jwks.json'
+info: Microsoft.AspNetCore.Http.Result.JsonResult[3]
+      Writing value of type '<>f__AnonymousType0`3' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /.well-known/jwks.json'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5000/.well-known/jwks.json - 200 - application/json;+charset=utf-8 94.7987ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5000/.well-known/jwks.json - - -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /.well-known/jwks.json'
+info: Microsoft.AspNetCore.Http.Result.JsonResult[3]
+      Writing value of type '<>f__AnonymousType0`3' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /.well-known/jwks.json'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5000/.well-known/jwks.json - 200 - application/json;+charset=utf-8 2.9489ms
+info: Microsoft.Hosting.Lifetime[0]
+      Application is shutting down...
+[testcontainers.org 00:00:07.41] Delete Docker container 1768d50ed140
+[testcontainers.org 00:00:07.83] Delete Docker container f9fd23b785b4
+  Aprovado IdentityService.Tests.KestrelTeste.WafComKestrel [9 s]
+[testcontainers.org 00:00:08.66] Docker container 85e6799413e2 created
+[testcontainers.org 00:00:08.68] Start Docker container 85e6799413e2
+[testcontainers.org 00:00:09.26] Add file to tar archive: Content length: 126 byte(s), Target file: "/testcontainers.sh", UID: 0, GID: 0, Mode: 0755
+[testcontainers.org 00:00:09.28] Copy tar archive to container: Content length: 126 byte(s), Docker container: 85e6799413e2
+[testcontainers.org 00:00:09.29] Wait for Docker container 85e6799413e2 to complete readiness checks
+[testcontainers.org 00:00:15.59] Docker container 85e6799413e2 ready
+[testcontainers.org 00:00:16.82] Pause Docker container 85e6799413e2
+[testcontainers.org 00:00:19.91] Unpause Docker container 85e6799413e2
+[testcontainers.org 00:00:19.96] Stop Docker container 85e6799413e2
+%6|1792423963.074|FAIL|rdkafka#producer-3| [thrd:127.0.0.1:53025/1]: 127.0.0.1:53025/1: Disconnected: connection closed by peer: POLLHUP (after 126ms in state UP)
+%3|1792423963.074|ERROR|rdkafka#producer-3| [thrd:127.0.0.1:53025/1]: 1/1 brokers are down
+%6|1792423963.075|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:53025/1]: 127.0.0.1:53025/1: Disconnected: connection closed by peer: POLLHUP (after 4014ms in state UP)
+%3|1792423963.075|ERROR|rdkafka#producer-1| [thrd:127.0.0.1:53025/1]: 1/1 brokers are down
+%6|1792423963.075|FAIL|rdkafka#consumer-2| [thrd:127.0.0.1:53025/1]: 127.0.0.1:53025/1: Disconnected: connection closed by peer: POLLHUP (after 3833ms in state UP)
+%3|1792423963.075|ERROR|rdkafka#consumer-2| [thrd:127.0.0.1:53025/1]: 1/1 brokers are down
+%6|1792423963.075|FAIL|rdkafka#consumer-2| [thrd:GroupCoordinator]: GroupCoordinator: 127.0.0.1:53025: Disconnected: connection closed by peer: POLLHUP (after 3819ms in state UP)
+%6|1792423963.144|FAIL|rdkafka#consumer-2| [thrd:127.0.0.1:53025/bootstrap]: 127.0.0.1:53025/bootstrap: Disconnected: connection closed by peer: POLLHUP (after 2ms in state APIVERSION_QUERY)
+%6|1792423963.309|FAIL|rdkafka#consumer-2| [thrd:127.0.0.1:53025/bootstrap]: 127.0.0.1:53025/bootstrap: Disconnected: connection closed by peer: POLLHUP (after 1ms in state APIVERSION_QUERY, 1 identical error(s) suppressed)
+%6|1792423963.932|FAIL|rdkafka#producer-3| [thrd:127.0.0.1:53025/bootstrap]: 127.0.0.1:53025/bootstrap: Disconnected: connection closed by peer: POLLHUP (after 48ms in state APIVERSION_QUERY)
+%3|1792423965.965|FAIL|rdkafka#producer-3| [thrd:127.0.0.1:53025/bootstrap]: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2020ms in state CONNECT)
+%3|1792423965.965|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:53025/bootstrap]: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2005ms in state CONNECT)
+%3|1792423965.965|FAIL|rdkafka#producer-4| [thrd:127.0.0.1:53025/bootstrap]: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2024ms in state CONNECT)
+%3|1792423965.965|ERROR|rdkafka#producer-3| [thrd:app]: rdkafka#producer-3: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2020ms in state CONNECT)
+%3|1792423965.965|ERROR|rdkafka#producer-1| [thrd:app]: rdkafka#producer-1: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2005ms in state CONNECT)
+%3|1792423965.965|ERROR|rdkafka#producer-4| [thrd:127.0.0.1:53025/bootstrap]: 1/1 brokers are down
+%3|1792423965.965|ERROR|rdkafka#producer-4| [thrd:app]: rdkafka#producer-4: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2024ms in state CONNECT)
+%3|1792423966.396|FAIL|rdkafka#consumer-2| [thrd:127.0.0.1:53025/bootstrap]: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2023ms in state CONNECT)
+%3|1792423968.044|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:53025/bootstrap]: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2019ms in state CONNECT)
+%3|1792423968.044|ERROR|rdkafka#producer-1| [thrd:app]: rdkafka#producer-1: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2019ms in state CONNECT)
+%3|1792423971.025|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:53025/bootstrap]: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2033ms in state CONNECT)
+%3|1792423971.026|ERROR|rdkafka#producer-1| [thrd:app]: rdkafka#producer-1: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2033ms in state CONNECT)
+%3|1792423973.104|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:53025/bootstrap]: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2022ms in state CONNECT)
+%3|1792423973.104|ERROR|rdkafka#producer-1| [thrd:127.0.0.1:53025/bootstrap]: 1/1 brokers are down
+%3|1792423973.104|ERROR|rdkafka#producer-1| [thrd:app]: rdkafka#producer-1: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2022ms in state CONNECT)
+%3|1792423976.067|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:53025/bootstrap]: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2028ms in state CONNECT)
+%3|1792423976.067|ERROR|rdkafka#producer-1| [thrd:app]: rdkafka#producer-1: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2028ms in state CONNECT)
+%3|1792423978.136|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:53025/bootstrap]: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2023ms in state CONNECT)
+%3|1792423978.136|ERROR|rdkafka#producer-1| [thrd:app]: rdkafka#producer-1: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2023ms in state CONNECT)
+%3|1792423981.086|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:53025/bootstrap]: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2009ms in state CONNECT)
+%3|1792423981.087|ERROR|rdkafka#producer-1| [thrd:app]: rdkafka#producer-1: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2009ms in state CONNECT)
+%3|1792423983.163|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:53025/bootstrap]: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2016ms in state CONNECT)
+%3|1792423983.163|ERROR|rdkafka#producer-1| [thrd:127.0.0.1:53025/bootstrap]: 1/1 brokers are down
+%3|1792423983.163|ERROR|rdkafka#producer-1| [thrd:app]: rdkafka#producer-1: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2016ms in state CONNECT)
+%3|1792423986.130|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:53025/bootstrap]: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2024ms in state CONNECT)
+%3|1792423986.132|ERROR|rdkafka#producer-1| [thrd:app]: rdkafka#producer-1: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2024ms in state CONNECT)
+%3|1792423988.219|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:53025/bootstrap]: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2023ms in state CONNECT)
+%3|1792423988.219|ERROR|rdkafka#producer-1| [thrd:app]: rdkafka#producer-1: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2023ms in state CONNECT)
+%3|1792423991.176|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:53025/bootstrap]: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2012ms in state CONNECT)
+%3|1792423991.176|ERROR|rdkafka#producer-1| [thrd:app]: rdkafka#producer-1: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2012ms in state CONNECT)
+%3|1792423993.247|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:53025/bootstrap]: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2011ms in state CONNECT)
+%3|1792423993.247|ERROR|rdkafka#producer-1| [thrd:app]: rdkafka#producer-1: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2011ms in state CONNECT)
+%3|1792423993.247|ERROR|rdkafka#producer-1| [thrd:127.0.0.1:53025/bootstrap]: 1/1 brokers are down
+%3|1792423996.204|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:53025/bootstrap]: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2009ms in state CONNECT)
+%3|1792423996.204|ERROR|rdkafka#producer-1| [thrd:app]: rdkafka#producer-1: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2009ms in state CONNECT)
+%3|1792423998.282|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:53025/bootstrap]: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2018ms in state CONNECT)
+%3|1792423998.282|ERROR|rdkafka#producer-1| [thrd:app]: rdkafka#producer-1: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2018ms in state CONNECT)
+%3|1792424001.236|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:53025/bootstrap]: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2012ms in state CONNECT)
+%3|1792424001.236|ERROR|rdkafka#producer-1| [thrd:app]: rdkafka#producer-1: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2012ms in state CONNECT)
+%3|1792424003.311|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:53025/bootstrap]: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2013ms in state CONNECT)
+%3|1792424003.311|ERROR|rdkafka#producer-1| [thrd:127.0.0.1:53025/bootstrap]: 1/1 brokers are down
+%3|1792424003.311|ERROR|rdkafka#producer-1| [thrd:app]: rdkafka#producer-1: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2013ms in state CONNECT)
+%3|1792424006.273|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:53025/bootstrap]: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2014ms in state CONNECT)
+%3|1792424006.273|ERROR|rdkafka#producer-1| [thrd:app]: rdkafka#producer-1: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2014ms in state CONNECT)
+%3|1792424008.350|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:53025/bootstrap]: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2017ms in state CONNECT)
+%3|1792424008.350|ERROR|rdkafka#producer-1| [thrd:app]: rdkafka#producer-1: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2017ms in state CONNECT)
+%3|1792424011.317|FAIL|rdkafka#producer-1| [thrd:127.0.0.1:53025/bootstrap]: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2019ms in state CONNECT)
+%3|1792424011.317|ERROR|rdkafka#producer-1| [thrd:app]: rdkafka#producer-1: 127.0.0.1:53025/bootstrap: Connect to ipv4#127.0.0.1:53025 failed: Unknown error (after 2019ms in state CONNECT)
+%4|1792424012.145|COMMITFAIL|rdkafka#consumer-2| [thrd:main]: Offset commit (cgrp auto commit timer) failed for 1/1 partition(s) in join-state init: Local: Waiting for coordinator: t1((null))[0]@1(Local: Waiting for coordinator)
+[testcontainers.org 00:01:09.22] Delete Docker container 85e6799413e2
+  Aprovado IdentityService.Tests.Medicoes.L03_Kafka [1 m 1 s]
+[testcontainers.org 00:01:09.63] Docker container 8acbad045abd created
+[testcontainers.org 00:01:09.65] Start Docker container 8acbad045abd
+[testcontainers.org 00:01:09.73] Docker container 9660cef57342 created
+[testcontainers.org 00:01:09.76] Start Docker container 9660cef57342
+[testcontainers.org 00:01:10.22] Wait for Docker container 8acbad045abd to complete readiness checks
+[testcontainers.org 00:01:10.25] Execute "redis-cli ping" at Docker container 8acbad045abd
+[testcontainers.org 00:01:10.29] Wait for Docker container 9660cef57342 to complete readiness checks
+[testcontainers.org 00:01:10.32] Execute "pg_isready --host localhost --dbname postgres --username postgres" at Docker container 9660cef57342
+[testcontainers.org 00:01:10.37] Docker container 8acbad045abd ready
+[testcontainers.org 00:01:11.51] Execute "pg_isready --host localhost --dbname postgres --username postgres" at Docker container 9660cef57342
+[testcontainers.org 00:01:12.62] Execute "pg_isready --host localhost --dbname postgres --username postgres" at Docker container 9660cef57342
+[testcontainers.org 00:01:12.71] Docker container 9660cef57342 ready
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE IF NOT EXISTS probe(x int)
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Testing
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: C:\Users\ACT\AppData\Local\Temp\tmp.JDtxGrgNfR\env70\src\IdentityService
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost/.well-known/jwks.json - - -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /.well-known/jwks.json'
+info: Microsoft.AspNetCore.Http.Result.JsonResult[3]
+      Writing value of type '<>f__AnonymousType0`3' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /.well-known/jwks.json'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost/.well-known/jwks.json - 200 - application/json;+charset=utf-8 14.4557ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost/probe/redis - - -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /probe/redis'
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /probe/redis'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost/probe/redis - 200 - - 21.3225ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost/probe/pg - - -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /probe/pg'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (7ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      select 1
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /probe/pg'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost/probe/pg - 200 - - 108.0533ms
+[testcontainers.org 00:01:12.98] Stop Docker container 8acbad045abd
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost/probe/redis - - -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /probe/redis'
+info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[1]
+      Setting HTTP status code 503.
+info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[3]
+      Writing value of type 'ProblemDetails' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /probe/redis'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost/probe/redis - 503 - application/problem+json 5447.5235ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost/probe/redis - - -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /probe/redis'
+info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[1]
+      Setting HTTP status code 503.
+info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[3]
+      Writing value of type 'ProblemDetails' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /probe/redis'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost/probe/redis - 503 - application/problem+json 5959.5836ms
+[testcontainers.org 00:01:24.74] Stop Docker container 9660cef57342
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost/probe/pg - - -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /probe/pg'
+fail: Microsoft.EntityFrameworkCore.Database.Command[20102]
+      Failed executing DbCommand (48ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      select 1
+info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[1]
+      Setting HTTP status code 503.
+info: Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult[3]
+      Writing value of type 'ProblemDetails' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /probe/pg'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost/probe/pg - 503 - application/problem+json 63.7334ms
+info: Microsoft.Hosting.Lifetime[0]
+      Application is shutting down...
+[testcontainers.org 00:01:25.08] Delete Docker container 8acbad045abd
+[testcontainers.org 00:01:25.14] Delete Docker container 9660cef57342
+  Aprovado IdentityService.Tests.Medicoes.L05_FalhasViaWaf [15 s]
+[testcontainers.org 00:01:25.63] Docker container 16b5e1b6b658 created
+[testcontainers.org 00:01:25.64] Start Docker container 16b5e1b6b658
+[testcontainers.org 00:01:25.99] Wait for Docker container 16b5e1b6b658 to complete readiness checks
+[testcontainers.org 00:01:26.01] Execute "pg_isready --host localhost --dbname postgres --username postgres" at Docker container 16b5e1b6b658
+  Aprovado IdentityService.Tests.Medicoes.ArranqueSemVariavelFalha [25 ms]
+  Aprovado IdentityService.Tests.Medicoes.TimeoutXunit [47 ms]
+[testcontainers.org 00:01:27.15] Execute "pg_isready --host localhost --dbname postgres --username postgres" at Docker container 16b5e1b6b658
+[testcontainers.org 00:01:27.22] Docker container 16b5e1b6b658 ready
+[testcontainers.org 00:01:27.31] Delete Docker container 16b5e1b6b658
+[testcontainers.org 00:01:27.84] Docker container 9104f4290999 created
+[testcontainers.org 00:01:27.86] Start Docker container 9104f4290999
+[testcontainers.org 00:01:28.15] Wait for Docker container 9104f4290999 to complete readiness checks
+[testcontainers.org 00:01:28.16] Execute "pg_isready --host localhost --dbname postgres --username postgres" at Docker container 9104f4290999
+  Aprovado IdentityService.Tests.Medicoes.L04_PoolReset [2 s]
+[testcontainers.org 00:01:29.29] Execute "pg_isready --host localhost --dbname postgres --username postgres" at Docker container 9104f4290999
+[testcontainers.org 00:01:30.40] Execute "pg_isready --host localhost --dbname postgres --username postgres" at Docker container 9104f4290999
+[testcontainers.org 00:01:30.48] Docker container 9104f4290999 ready
+[testcontainers.org 00:01:31.05] Delete Docker container 9104f4290999
+[xUnit.net 00:01:34.51]     IdentityService.Tests.MedicoesA61.Medicao_A_EfCore_Rls_E_Unicidade [FAIL]
+[xUnit.net 00:01:34.51]       Assert.Equal() Failure: Strings differ
+[xUnit.net 00:01:34.51]                  ↓ (pos 0)
+[xUnit.net 00:01:34.51]       Expected: "99999"
+[xUnit.net 00:01:34.51]       Actual:   "42501"
+[xUnit.net 00:01:34.51]                  ↑ (pos 0)
+[xUnit.net 00:01:34.52]       Stack Trace:
+[xUnit.net 00:01:34.52]         C:\Users\ACT\AppData\Local\Temp\tmp.JDtxGrgNfR\env70\tests\IdentityService.Tests\MedicoesA61.cs(201,0): at IdentityService.Tests.MedicoesA61.Medicao_A_EfCore_Rls_E_Unicidade()
+[xUnit.net 00:01:34.52]         C:\Users\ACT\AppData\Local\Temp\tmp.JDtxGrgNfR\env70\tests\IdentityService.Tests\MedicoesA61.cs(211,0): at IdentityService.Tests.MedicoesA61.Medicao_A_EfCore_Rls_E_Unicidade()
+[xUnit.net 00:01:34.52]         C:\Users\ACT\AppData\Local\Temp\tmp.JDtxGrgNfR\env70\tests\IdentityService.Tests\MedicoesA61.cs(243,0): at IdentityService.Tests.MedicoesA61.Medicao_A_EfCore_Rls_E_Unicidade()
+[xUnit.net 00:01:34.52]         --- End of stack trace from previous location ---
+[xUnit.net 00:01:34.52]       Output:
+[xUnit.net 00:01:34.52]         RLS Exception: Microsoft.EntityFrameworkCore.DbUpdateException
+[xUnit.net 00:01:34.52]         RLS InnerException: Npgsql.PostgresException
+[xUnit.net 00:01:34.52]         RLS SqlState: 42501
+  Com falha IdentityService.Tests.MedicoesA61.Medicao_A_EfCore_Rls_E_Unicidade [3 s]
+  Mensagem de erro:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "99999"
+Actual:   "42501"
+           ↑ (pos 0)
+  Rastreamento de pilha:
+     at IdentityService.Tests.MedicoesA61.Medicao_A_EfCore_Rls_E_Unicidade() in C:\Users\ACT\AppData\Local\Temp\tmp.JDtxGrgNfR\env70\tests\IdentityService.Tests\MedicoesA61.cs:line 201
+   at IdentityService.Tests.MedicoesA61.Medicao_A_EfCore_Rls_E_Unicidade() in C:\Users\ACT\AppData\Local\Temp\tmp.JDtxGrgNfR\env70\tests\IdentityService.Tests\MedicoesA61.cs:line 211
+   at IdentityService.Tests.MedicoesA61.Medicao_A_EfCore_Rls_E_Unicidade() in C:\Users\ACT\AppData\Local\Temp\tmp.JDtxGrgNfR\env70\tests\IdentityService.Tests\MedicoesA61.cs:line 243
+--- End of stack trace from previous location ---
+  Mensagens de saída padrão:
+ RLS Exception: Microsoft.EntityFrameworkCore.DbUpdateException
+ RLS InnerException: Npgsql.PostgresException
+ RLS SqlState: 42501
+
+
+[testcontainers.org 00:01:31.65] Docker container 662415a4abc7 created
+[testcontainers.org 00:01:31.67] Start Docker container 662415a4abc7
+[testcontainers.org 00:01:31.96] Wait for Docker container 662415a4abc7 to complete readiness checks
+[testcontainers.org 00:01:31.98] Execute "pg_isready --host localhost --dbname postgres --username postgres" at Docker container 662415a4abc7
+[testcontainers.org 00:01:33.09] Execute "pg_isready --host localhost --dbname postgres --username postgres" at Docker container 662415a4abc7
+[testcontainers.org 00:01:33.16] Docker container 662415a4abc7 ready
+[testcontainers.org 00:01:33.40] Stop Docker container 662415a4abc7
+[testcontainers.org 00:01:42.15] Delete Docker container 662415a4abc7
+  Aprovado IdentityService.Tests.MedicoesA61.Medicao_B_EfCore_PostgresParado [10 s]
+[xUnit.net 00:01:45.80]   Finished:    IdentityService.Tests
+  Aprovado IdentityService.Tests.MedicoesA61.Medicao_D_Jwt_IssuerSigningKeyResolver [344 ms]
+  Aprovado IdentityService.Tests.MedicoesA61.Medicao_C_Redis_HierarquiaExcecoes [2 ms]
+  Aprovado IdentityService.Tests.Cunhagem.CunharComPayloadLiteral [127 ms]
+Arquivo de resultados: C:\Users\ACT\AppData\Local\Temp\tmp.JDtxGrgNfR\medir-env70.trx
+
+Falha na Execução de Teste.
+Total de testes: 11
+     Aprovados: 10
+     Com falha: 1
+Tempo total: 1,7905 Minutos
+FALHA: Testes falharam ou código de saída ≠ 0 (1)
+
+Código de saída da mutação: 1 (esperado != 0)
+=== TABELA DE EXCEÇÕES MEDIDAS (A-61 / A-66) ===
+Para uso do autor dos contratos (10-nucleo.md §7 / 40-interfaces.md §1 / 70-ambiente-teste.md §1 C6):
+
+| Situação | Tipo Exterior | Cadeia de Exceções (InnerException) | SQLSTATE | Comportamento Requerido |
+|---|---|---|---|---|
+| Violação de RLS (EF Core SaveChangesAsync) | não medido (teste falhou) | não medido | não medido | não medido |
+| Violação de Unicidade (EF Core SaveChangesAsync) | não medido (teste falhou) | não medido | não medido | não medido |
+| PostgreSQL Parado (EF Core: estratégia por omissão) | System.InvalidOperationException ("transient failure") | InvalidOperationException → Npgsql.NpgsqlException → SocketException | - | 503 ERR-SYS-002 (deve percorrer InnerException!) |
+| PostgreSQL Parado (EF Core: estratégia desligada) | Npgsql.NpgsqlException | NpgsqlException → System.Net.Sockets.SocketException | - | 503 ERR-SYS-002 |
+| PostgreSQL Parado (EF Core: EnableRetryOnFailure) | Microsoft.EntityFrameworkCore.Storage.RetryLimitExceededException | RetryLimitExceededException → Npgsql.NpgsqlException → SocketException | - | 503 ERR-SYS-002 (deve percorrer InnerException!) |
+| Redis: Timeout de Operação | StackExchange.Redis.RedisTimeoutException | RedisTimeoutException → TimeoutException → SystemException → Exception | - | 503 ERR-SYS-002 (NÃO herda de RedisException!) |
+| Redis: Conexão Indisponível / Parado | StackExchange.Redis.RedisConnectionException | RedisConnectionException → StackExchange.Redis.RedisException → Exception | - | 503 ERR-SYS-002 |
+| Chave Indisponível no IssuerSigningKeyResolver | Nenhuma (ValidateTokenAsync retorna sem lançar) | TokenValidationResult.IsValid = false, result.Exception = CryptographicException | - | 503 ERR-SYS-002 (ler ISigningKey antes de validar ou inspecionar result.Exception!) |

@@ -1,0 +1,48 @@
+OK | M7a_permissao_fora_do_formato | esperado ck_role_permissions | obtido ck_role_permissions
+OK | M7b_permissao_com_virgula | esperado ck_role_permissions | obtido ck_role_permissions
+OK | M7c_permissao_null | esperado ck_role_permissions | obtido ck_role_permissions
+OK | M7d_locked_sem_locked_until | esperado ck_user_account_locked_until | obtido ck_user_account_locked_until
+OK | M7e_single_incoerente | esperado ck_refresh_token_context | obtido ck_refresh_token_context
+OK | M6_segundo_active_na_familia | esperado uq_refresh_token_family_active | obtido uq_refresh_token_family_active
+OK | M7f_member_role_tenant_trocado | esperado fk_member_role_tenant_member | obtido fk_member_role_tenant_member
+OK | M7g_hash_nao_argon2id | esperado ck_user_account_password_hash | obtido ck_user_account_password_hash
+OK | M7h_outbox_failed_com_retry_4 | esperado ck_outbox_message_failed_retry | obtido ck_outbox_message_failed_retry
+OK | M9a_insert_em_tenant_de_write_tenants | esperado ok:1 | obtido ok:1
+OK | M9b_insert_fora_do_conjunto_de_escrita | esperado 42501 | obtido 42501
+OK | M8a_update_auditoria_como_identity_app | esperado 42501 | obtido 42501
+OK | M8b_delete_como_identity_app | esperado 42501 | obtido 42501
+OK | I01 bypass: leitura cruzada de tenant_member (todos os grupos) | esperado 3 | obtido 3
+OK | I02 bypass PLATFORM_ADMIN EP-06: tenant_scope em N com RETURNING | esperado ok:1 | obtido ok:1
+OK | I03 bypass PLATFORM_ADMIN EP-07: tenant_member em B1 com RETURNING | esperado ok:1 | obtido ok:1
+OK | I04 SINGLE A1: lê só tenant_member de A1 | esperado 1 | obtido 1
+OK | I05 SINGLE A1: tenant_scope de B1 invisível | esperado 0 | obtido 0
+OK | I06 SINGLE A1 EP-07: tenant_member em A1 com RETURNING | esperado ok:1 | obtido ok:1
+OK | I07 SINGLE A1 EP-07: member_role em A1 sem RETURNING | esperado ok:1 | obtido ok:1
+OK | I08 SINGLE A1: INSERT em B1 rejeitado (RG-09) | esperado 42501 | obtido 42501
+OK | I09 SINGLE A1: UPDATE em B1 não afeta linhas | esperado ok:0 | obtido ok:0
+OK | I10 SINGLE A1: UPDATE que move linha para B1 rejeitado | esperado 42501 | obtido 42501
+OK | I11 EP-06 TENANT_ADMIN: tenant_scope em N com RETURNING | esperado ok:1 | obtido ok:1
+OK | I12 EP-06 TENANT_ADMIN: tenant_scope em N sem RETURNING | esperado ok:1 | obtido ok:1
+OK | I13 EP-06 TENANT_ADMIN: tenant_scope em B1 rejeitado | esperado 42501 | obtido 42501
+OK | I14 MACRO A1+A2: lê tenant_member de A1 e A2 | esperado 3 | obtido 3
+OK | I15 MACRO A1+A2: INSERT em A2 com RETURNING | esperado ok:1 | obtido ok:1
+OK | I16 MACRO A1+A2: INSERT em B1 rejeitado | esperado 42501 | obtido 42501
+OK | I17 EP-08 C8: tenant_member(A2, chamador) visível | esperado 1 | obtido 1
+OK | I18 EP-09 C9 sem bypass: IF-09.7 devolve MEMBER (alvo dono em A2 invisivel) | esperado MEMBER | obtido MEMBER
+OK | I19 EP-09 C9 com IF-09.7 (bypass): alvo dono em A2 devolve OWNER | esperado OWNER | obtido OWNER
+OK | I20 política antiga: INSERT em N sem RETURNING | esperado ok:1 | obtido ok:1
+OK | I21 política antiga: INSERT em N com RETURNING falha (motivo da correção) | esperado 42501 | obtido 42501
+OK | I22 EP-09 C9 sem bypass: UPDATE tenant_member em A2 afeta 0 linhas | esperado ok:0 | obtido ok:0
+OK | I23 EP-09 C9 sob bypass: UPDATE tenant_member em A2 afeta 1 linha | esperado ok:1 | obtido ok:1
+OK | I24 EP-09 C9 apos reposicao false: UPDATE tenant_member em A2 afeta 0 linhas | esperado ok:0 | obtido ok:0
+OK | I25 EP-09 C9 apos reposicao false: leitura ve so tenant_member de A1 | esperado 0 | obtido 0
+ERROR:  division by zero
+ERROR:  current transaction is aborted, commands ignored until end of transaction block
+OK | I26 ExecuteWithBypassAsync rollback apos erro: auth_flow e false | esperado false | obtido false
+OK | I27a ExecuteWithBypassAsync reposicao antes do commit: auth_flow e false | esperado false | obtido false
+OK | I27b ExecuteWithBypassAsync transacao abortada: reposicao falha com 25P02 | esperado 25P02 | obtido 25P02
+OK | I28 sessao nova sem set_config: UPDATE cruzado em A2 afeta 0 linhas | esperado ok:0 | obtido ok:0
+OK | I29 EP-06 TENANT_ADMIN: tenant_member em N com RETURNING | esperado ok:1 | obtido ok:1
+OK | I30 EP-06 TENANT_ADMIN: member_role em N com RETURNING | esperado ok:1 | obtido ok:1
+OK | I31 EP-06 TENANT_ADMIN: tenant_member em B1 fora de write_tenants rejeitado | esperado 42501 | obtido 42501
+OK | I32 EP-06 TENANT_ADMIN: member_role em B1 fora de write_tenants rejeitado | esperado 42501 | obtido 42501
