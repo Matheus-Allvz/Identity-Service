@@ -1,5 +1,6 @@
 using System.Text;
 using IdentityService.Modules.M00Transversal;
+using IdentityService.Modules.M00Transversal.Errors;
 using IdentityService.Modules.M07Chaves;
 using IdentityService.Modules.M08Acessos;
 using IdentityService.Modules.M11Esquema;
@@ -67,13 +68,19 @@ app.UseM00Transversal();
 app.MapM07Chaves();
 
 // Placeholder endpoints das rotas de negócio para validação transversal (40 §1.1)
-app.MapPost("/api/v1/auth/login", () => Results.Ok(new { message = "login placeholder" }));
-app.MapPost("/api/v1/auth/refresh", () => Results.Ok(new { message = "refresh placeholder" }));
+app.MapPost("/api/v1/auth/login", () =>
+{
+    throw new ApiErrorException("ERR-VAL-001", "Pedido inválido ou malformado");
+});
+app.MapPost("/api/v1/auth/refresh", () =>
+{
+    throw new ApiErrorException("ERR-VAL-001", "Pedido inválido ou malformado");
+});
 app.MapPost("/api/v1/auth/switch-context", () => Results.Ok(new { message = "switch-context placeholder" }));
 app.MapPost("/api/v1/auth/logout", () => Results.Ok(new { message = "logout placeholder" }));
 app.MapPost("/api/v1/auth/impersonate", () => Results.Ok(new { message = "impersonate placeholder" }));
 app.MapPost("/api/v1/tenants", () => Results.Created("/api/v1/tenants/00000000-0000-0000-0000-000000000000", new { message = "tenant created placeholder" }));
-app.MapGet("/api/v1/tenants/{tenant_id}/members", (string tenant_id) => Results.Ok(new { message = "members placeholder" }));
+app.MapPost("/api/v1/tenants/{tenant_id}/members", (string tenant_id) => Results.Ok(new { message = "members placeholder" }));
 app.MapPatch("/api/v1/tenants/{tenant_id}/status", (string tenant_id) => Results.Ok(new { message = "tenant status placeholder" }));
 app.MapPatch("/api/v1/users/{user_id}/status", (string user_id) => Results.Ok(new { message = "user status placeholder" }));
 

@@ -95,6 +95,10 @@ public class M00TransversalTests
 
         await using var app = builder.Build();
         app.UseM00Transversal();
+        app.MapPost("/api/v1/auth/login", () =>
+        {
+            throw new ApiErrorException("ERR-VAL-001", "Pedido inválido ou malformado");
+        });
         app.MapGet("/test-corr-ip", (IAuthContext auth) => Results.Ok(new
         {
             correlationId = auth.CorrelationId,
@@ -103,6 +107,15 @@ public class M00TransversalTests
         await app.StartAsync();
 
         var client = app.GetTestClient();
+
+        // 0. CA-15.2: POST /api/v1/auth/login sem Authorization e com corpo "{}"
+        var loginReq = new HttpRequestMessage(HttpMethod.Post, "/api/v1/auth/login");
+        loginReq.Content = new StringContent("{}", Encoding.UTF8, "application/json");
+        var loginRes = await client.SendAsync(loginReq);
+        Assert.Equal(HttpStatusCode.BadRequest, loginRes.StatusCode);
+        var loginJson = await loginRes.Content.ReadAsStringAsync();
+        using var loginDoc = JsonDocument.Parse(loginJson);
+        Assert.Equal("ERR-VAL-001", loginDoc.RootElement.GetProperty("code").GetString());
 
         // 1. Sem X-Correlation-ID -> gera novo UUID v7
         var req1 = new HttpRequestMessage(HttpMethod.Get, "/test-corr-ip");
@@ -136,6 +149,10 @@ public class M00TransversalTests
 
         await using var app = builder.Build();
         app.UseM00Transversal();
+        app.MapPost("/api/v1/auth/login", () =>
+        {
+            throw new ApiErrorException("ERR-VAL-001", "Pedido inválido ou malformado");
+        });
         app.MapPost("/test-method", () => Results.Ok());
         app.MapGet("/test-crypto-error", () =>
         {
@@ -154,6 +171,26 @@ public class M00TransversalTests
         await app.StartAsync();
 
         var client = app.GetTestClient();
+
+        // 0. CA-15.3: Validação de correlação no POST /api/v1/auth/login
+        var corrValid = "01900000-0000-7000-8000-000000000001";
+        var reqCorrValid = new HttpRequestMessage(HttpMethod.Post, "/api/v1/auth/login");
+        reqCorrValid.Headers.Add("X-Correlation-Id", corrValid);
+        reqCorrValid.Content = new StringContent("{}", Encoding.UTF8, "application/json");
+        var resCorrValid = await client.SendAsync(reqCorrValid);
+        Assert.Equal(HttpStatusCode.BadRequest, resCorrValid.StatusCode);
+        Assert.True(resCorrValid.Headers.Contains("X-Correlation-Id"));
+        Assert.Equal(corrValid, resCorrValid.Headers.GetValues("X-Correlation-Id").First());
+
+        var reqCorrInvalid = new HttpRequestMessage(HttpMethod.Post, "/api/v1/auth/login");
+        reqCorrInvalid.Headers.Add("X-Correlation-Id", "invalido-formato");
+        reqCorrInvalid.Content = new StringContent("{}", Encoding.UTF8, "application/json");
+        var resCorrInvalid = await client.SendAsync(reqCorrInvalid);
+        Assert.Equal(HttpStatusCode.BadRequest, resCorrInvalid.StatusCode);
+        Assert.True(resCorrInvalid.Headers.Contains("X-Correlation-Id"));
+        var returnedCorr = resCorrInvalid.Headers.GetValues("X-Correlation-Id").First();
+        Assert.True(Guid.TryParse(returnedCorr, out _));
+        Assert.Equal(returnedCorr.ToLowerInvariant(), returnedCorr);
 
         // 1. Rota inexistente -> 404 ERR-REQ-001
         var res404 = await client.GetAsync("/api/v1/rota-totalmente-inexistente");
