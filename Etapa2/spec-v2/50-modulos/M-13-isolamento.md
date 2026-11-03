@@ -1,19 +1,19 @@
 # M-13 · Isolamento
 
-> **Conjunto:** [00 Índice](../00-indice.md) · **Dono:** AR (UT-3-13) · **Estado:** Rascunho (ciclo 5) · **Atualizado em:** 2026-10-19
-> **Pacote de contexto deste módulo:** este ficheiro + `10` (base §1–§2, §3 comum, §4, §6–§10 + extras §3.10, §5) + `30` (comum §1–§3, ENT-03, ENT-05, ENT-07, §5, §5.1) + `40` (§1, IF-08.1, IF-11, tipos partilhados) + `70` (comum §1) + `20` (EXT-01). Tamanho total: 39.6 KiB (orçamento: 60 KiB).
+> **Conjunto:** [00 Índice](../00-indice.md) · **Dono:** AR (UT-3-13) · **Estado:** Congelado (Gate 4) · **Atualizado em:** 2026-11-02
+> **Pacote de contexto deste módulo:** este ficheiro + `10` (§1–§4, §6–§10, extras §3.10, §5) + `30` (§1–§3, ENT-03, ENT-05, ENT-07, §5, §5.1) + `40` (§1, IF-08.1, IF-11) + `70` (§1) + `20` (EXT-01).
 
 ## 1. Âmbito do módulo
 
 | Dentro | Fora (outro módulo ou fora do sistema) |
 |---|---|
-| Filtragem transparente de consultas LINQ (camada 2) em `ITenantScoped` (`tenant_scope`, `tenant_member`, `member_role`) via Global Query Filters do EF Core. | Autenticação e extração de claims no pipeline HTTP (M-00). |
-| Interceção e bloqueio de persistência (camada 3) em `TenantSaveChangesInterceptor` para entidades `ITenantScoped` com `TenantId ∉ WriteTenants` ou `TenantId = Guid.Empty`. | Definição física de tabelas, índices e migrações no PostgreSQL (M-11). |
-| Configuração de sessão e aplicação forçada de Row-Level Security no PostgreSQL 17.6 (camada 4) via `RlsConnectionInterceptor` com papel `identity_app`. | Gestão de membros, papéis e escopos operacionais (M-04, M-05). |
-| Execução controlada de operações administrativas com bypass temporário via `IF-11.3` (`ExecuteWithBypassAsync`) e reposição estrita em bloco `finally`. | Consulta e cálculo de permissões de membros (M-08). |
+| Filtragem de consultas LINQ (camada 2) em `ITenantScoped` via Global Query Filters do EF Core. | Autenticação e extração de claims (M-00). |
+| Interceção de persistência (camada 3) em `TenantSaveChangesInterceptor` para `TenantId ∉ WriteTenants` ou `TenantId = Guid.Empty`. | Definição física de tabelas e migrações (M-11). |
+| Aplicação de Row-Level Security no PostgreSQL 17.6 (camada 4) via `RlsConnectionInterceptor` com papel `identity_app`. | Gestão de membros, papéis e escopos operacionais (M-04, M-05). |
+| Execução com bypass temporário via `IF-11.3` (`ExecuteWithBypassAsync`) e reposição em `finally`. | Consulta e cálculo de permissões (M-08). |
 | Aplicação da regra global RG-09: rejeição com 403 `ERR-CTX-007` e reversão transacional imediata. | Publicação de eventos de auditoria e integração (M-00, M-14). |
 
-**Escreve:** Nenhuma tabela direta (atua via interceptores de persistência e comandos de sessão PostgreSQL) · **Lê:** `tenant_scope`, `tenant_member`, `member_role` (filtra leituras) · **Usa interfaces de:** M-00 (`IF-08.1` `IAuthContext`)
+**Escreve:** Nenhuma tabela direta (atua via interceptores e comandos de sessão PostgreSQL) · **Lê:** `tenant_scope`, `tenant_member`, `member_role` (filtra leituras) · **Usa:** M-00 (`IF-08.1` `IAuthContext`)
 
 ## 2. Endpoints e eventos (detalhe)
 
@@ -21,7 +21,7 @@
 
 | Campo | Valor |
 |---|---|
-| Endpoints HTTP | Nenhum. O módulo M-13 não expõe rotas HTTP diretamente. As suas garantias de isolamento multi-tenant são consumidas internamente pelo `IdentityDbContext` e módulos de domínio através da interface `IF-11` (`ITenantIsolation`) e dos interceptores do EF Core |
+| Endpoints HTTP | Nenhum. O módulo M-13 não expõe rotas HTTP diretamente. As suas garantias de isolamento multi-tenant são consumidas internamente pelo `IdentityDbContext` através da interface `IF-11` (`ITenantIsolation`) e interceptores do EF Core |
 
 ### IF-11 `ITenantIsolation` (`M13Isolamento/Interface/`)
 
@@ -31,7 +31,7 @@ Registo no DI: `ITenantIsolation` como *singleton*; interceptores como *scoped* 
 |---|---|---|---|
 | IF-11.1 | `void ApplyQueryFilters(ModelBuilder modelBuilder, IdentityDbContext context)` | Camada 2: aplica a cada entidade `ITenantScoped` o filtro `e => context.AuthContext.BypassTenantFilter \|\| context.TenantIsolationBypass \|\| context.AuthContext.AllowedTenants.Contains(e.TenantId)`. Chamado em `OnModelCreating` | M-11 |
 | IF-11.2 | `IReadOnlyList<IInterceptor> CreateInterceptors(IServiceProvider requestServices)` | Devolve `TenantSaveChangesInterceptor` (camada 3) e `RlsConnectionInterceptor` (camada 4) do escopo do pedido. Injetado na configuração do `IdentityDbContext` | M-11 |
-| IF-11.3 | `Task<T> ExecuteWithBypassAsync<T>(IdentityDbContext context, Func<IdentityDbContext, Task<T> > operation)` | Bypass temporário para EP-09 (PRS-72). (1) `TenantIsolationBypass = true` à entrada → `InvalidOperationException`; (2) se ligação fechada, abre via `OpenConnectionAsync`; (3) ativa `TenantIsolationBypass = true` e `SELECT set_config('app.auth_flow', 'true', false)`; (4) executa `await operation(context)`; (5) em `finally`: repõe `TenantIsolationBypass = false`, executa `SELECT set_config('app.auth_flow', @b, false)` (@b da camada 4 do pedido) e fecha a ligação se a abriu em (2). Se `operation` lançar, falha na reposição (ex.: 25P02 em transação abortada) é descartada e relança exceção original; senão, erro de reposição propaga. Leitura só com `AsNoTracking`, escrita só com `ExecuteUpdateAsync` | M-05, M-08 |
+| IF-11.3 | `Task<T> ExecuteWithBypassAsync<T>(IdentityDbContext context, Func<IdentityDbContext, Task<T>> operation)` | Bypass para EP-09 (PRS-72). (1) Se `TenantIsolationBypass` já ativo → `InvalidOperationException`; (2) se conexão fechada, abre via `OpenConnectionAsync`; (3) ativa `TenantIsolationBypass = true` e `SELECT set_config('app.auth_flow', 'true', false)`; (4) executa `await operation(context)`; (5) em `finally`: repõe `TenantIsolationBypass = false`, executa `SELECT set_config('app.auth_flow', @b, false)` (@b da camada 4) e fecha conexão se aberta em (2). Se `operation` lançar, falha na reposição (25P02 em transação abortada) é descartada e relança exceção original; senão, erro de reposição propaga. Leitura só com `AsNoTracking`, escrita só com `ExecuteUpdateAsync` | M-05, M-08 |
 
 ### EV (Eventos)
 
@@ -51,11 +51,11 @@ Registo no DI: `ITenantIsolation` como *singleton*; interceptores como *scoped* 
 | RN | RN-150, RN-151, RN-152, RN-153, RN-154, RN-155, RN-156, RN-157 |
 
 **Fluxo principal:**
-1. Abertura de conexão: em cada ligação de base de dados, `RlsConnectionInterceptor` define `SET ROLE identity_app` e preenche `app.allowed_tenants`, `app.write_tenants` e `app.auth_flow` via `set_config` (camada 4, RN-152).
-2. Consulta de leitura: EF Core interpola o Global Query Filter da entidade `ITenantScoped`, restringindo resultados a `AllowedTenants`, salvo se `BypassTenantFilter` ou `TenantIsolationBypass` for verdadeiro (camada 2, RN-150).
-3. Persistência de escrita: antes de persistir, `TenantSaveChangesInterceptor` valida entradas `ITenantScoped` em `Added`, `Modified` ou `Deleted`. Se `TenantId ∉ WriteTenants` ou `TenantId = Guid.Empty` (com bypass inativo), lança `ApiErrorException("ERR-CTX-007")` (camada 3, RN-151).
-4. Execução SQL: PostgreSQL aplica as políticas RLS `USING` (leitura) e `WITH CHECK` (escrita). Se violadas, PostgreSQL emite `SQLSTATE 42501`, mapeado para 403 `ERR-CTX-007` com reversão transacional (camada 4, RN-153).
-5. Bypass pontual: quando `ExecuteWithBypassAsync` é invocado, ativa `TenantIsolationBypass = true` e `app.auth_flow = 'true'`, executa a operação administrativa e restaura os parâmetros anteriores no bloco `finally` (RN-154, RN-155, RN-156).
+1. Abertura de conexão: em cada ligação de base de dados, `RlsConnectionInterceptor` define `SET ROLE identity_app` e preenche `app.allowed_tenants`, `app.write_tenants` e `app.auth_flow` via `set_config` (camada 4, RN-152). Em operações de escrita (`EP-06`, `EP-07`), `IF-08.2 AuthorizeTenantWrite(tenantId)` deve ser invocado antes da abertura da conexão ou transação no `IdentityDbContext`, pois `RlsConnectionInterceptor` lê `WriteTenants` em `ConnectionOpenedAsync`.
+2. Consulta de leitura: EF Core aplica o Global Query Filter em `ITenantScoped`, restringindo resultados a `AllowedTenants`, salvo se `BypassTenantFilter` ou `TenantIsolationBypass` for verdadeiro (camada 2, RN-150).
+3. Persistência de escrita: antes de persistir, `TenantSaveChangesInterceptor` valida entradas `ITenantScoped` em `Added`, `Modified` ou `Deleted`. Se `TenantId ∉ WriteTenants` ou `TenantId = Guid.Empty` (com bypass inativo), lança 403 `ERR-CTX-007` (camada 3, RN-151).
+4. Execução SQL: PostgreSQL aplica as políticas RLS `USING` (leitura) e `WITH CHECK` (escrita). Se violadas, emite `SQLSTATE 42501` mapeado para 403 `ERR-CTX-007` com reversão transacional (camada 4, RN-153).
+5. Bypass pontual: `ExecuteWithBypassAsync` ativa `TenantIsolationBypass = true` e `app.auth_flow = 'true'`, executa a operação administrativa e restaura os parâmetros anteriores no bloco `finally` (RN-154, RN-155, RN-156).
 
 **Fluxos de exceção**
 
@@ -71,10 +71,10 @@ Registo no DI: `ITenantIsolation` como *singleton*; interceptores como *scoped* 
 
 | Situação | Comportamento obrigatório | CA |
 |---|---|---|
-| Conexões simultâneas no pool sob diferentes inquilinos | Cada ligação executa `RlsConnectionInterceptor` com valores de `IAuthContext` próprios. Sem partilha de variáveis de sessão | CA-16.8 |
-| Operação abortada durante `ExecuteWithBypassAsync` | Bloco `finally` repõe variáveis e fecha ligação se aberta localmente. Rollback descarta `set_config` transacional | CA-16.7 |
-| Invocação de bypass concorrente com consulta padrão | Contextos EF Core distintos mantêm isolamento de instâncias; `TenantIsolationBypass` afeta unicamente o contexto do chamador | CA-16.6 |
-| Reutilização de conexão física do pool após bypass | Conexão seguinte executa `RlsConnectionInterceptor` redefinindo `app.auth_flow = 'false'` e variáveis de contexto do novo pedido | CA-16.8 |
+| Conexões simultâneas no pool sob inquilinos distintos | Cada ligação executa `RlsConnectionInterceptor` com valores próprios de `IAuthContext`. Sem partilha de variáveis de sessão | CA-16.8 |
+| Operação abortada durante `ExecuteWithBypassAsync` | Bloco `finally` repõe variáveis e fecha ligação se aberta localmente. Rollback descarta `set_config` | CA-16.7 |
+| Invocação de bypass concorrente com consulta padrão | Contextos EF Core distintos mantêm isolamento; `TenantIsolationBypass` afeta unicamente o contexto do chamador | CA-16.6 |
+| Reutilização de conexão física do pool após bypass | Conexão seguinte executa `RlsConnectionInterceptor` redefinindo `app.auth_flow = 'false'` e variáveis do novo pedido | CA-16.8 |
 
 **Pós-condições:**
 1. Linhas fora de `AllowedTenants` são invisíveis para consultas LINQ.
@@ -88,7 +88,7 @@ Registo no DI: `ITenantIsolation` como *singleton*; interceptores como *scoped* 
 |---|---|---|---|---|---|---|
 | RN-150 | Autorização | **SE** consulta LINQ acede a entidade `ITenantScoped` **ENTÃO** aplica o filtro `BypassTenantFilter \|\| TenantIsolationBypass \|\| AllowedTenants.Contains(e.TenantId)` **SENÃO** exclui a linha do resultado | Nenhum | Nenhum | RF-16 | `[DOC] ADR-05, 10 §3.10, 40 IF-11.1` |
 | RN-151 | Integridade | **SE** entidade `ITenantScoped` em `Added`/`Modified`/`Deleted` tem `TenantId ∉ WriteTenants` ou `TenantId = Guid.Empty` (com bypass inativo) **ENTÃO** bloqueia persistência e lança 403 `ERR-CTX-007` com rollback (RG-09) **SENÃO** permite gravação | `Guid.Empty proibido` | `ERR-CTX-007` | RF-16 | `[DOC] ADR-05, 10 §3.10, PRS-47, PRS-51` |
-| RN-152 | Autorização | **SE** conexão de base de dados for aberta **ENTÃO** executa `SET ROLE identity_app` e define `app.allowed_tenants`, `app.write_tenants` e `app.auth_flow` via `set_config` **SENÃO** rejeita abertura com 503 `ERR-SYS-002` | Nenhum | `ERR-SYS-002` | RF-16 | `[DOC] 10 §3.10, 30 §5, PRS-17` |
+| RN-152 | Autorização | **SE** conexão de base de dados for aberta **ENTÃO** executa `SET ROLE identity_app` e define `app.allowed_tenants`, `app.write_tenants` e `app.auth_flow` via `set_config` (`IF-08.2 AuthorizeTenantWrite` invocado antes da abertura da conexão/transação em `EP-06` e `EP-07` para abastecer `WriteTenants` em `ConnectionOpenedAsync`) **SENÃO** rejeita abertura com 503 `ERR-SYS-002` | Nenhum | `ERR-SYS-002` | RF-16 | `[DOC] 10 §3.10, 30 §5, PRS-17` |
 | RN-153 | Autorização | **SE** instrução SQL violar política RLS `USING` ou `WITH CHECK` **ENTÃO** PostgreSQL emite `SQLSTATE 42501` convertido em 403 `ERR-CTX-007` com reversão transacional (RG-09) **SENÃO** executa comando SQL | Nenhum | `ERR-CTX-007` | RF-16 | `[MEDIDO] 30 §5.1, ADR-05` |
 | RN-154 | Autorização | **SE** `ExecuteWithBypassAsync` for acionado com `TenantIsolationBypass = false` **ENTÃO** ativa bypass temporário em camadas 2 a 4 e restaura estado no `finally` **SENÃO** lança `InvalidOperationException` se bypass já ativo | Nenhum | `ERR-SYS-001` | RF-16 | `[DOC] 10 §3.10, 40 IF-11.3, PRS-72` |
 | RN-155 | Integridade | **SE** operação sob bypass lançar exceção e reposição falhar com `SQLSTATE 25P02` em transação abortada **ENTÃO** descarta falha de reposição e propaga exceção original da operação **SENÃO** propaga erro de reposição | Nenhum | Nenhum | RF-16 | `[MEDIDO] 30 §5.1 (I26, I27), 40 IF-11.3` |
@@ -189,15 +189,4 @@ Funcionalidade: RF-16 — Assegurar isolamento multi-tenant em múltiplas camada
 
 | ID | Pressuposto | Justificação | Aprovado por (data) |
 |---|---|---|---|
-| PRS-310 | `ITenantIsolation` é registado como *singleton* e seus interceptores (`TenantSaveChangesInterceptor`, `RlsConnectionInterceptor`) são registados como *scoped*, associando-se à instância de `IAuthContext` da requisição HTTP corrente | Garante isolamento estrito por requisição e compatibilidade com AddDbContext sem pooling (ADR-05, IF-11) | Pendente (PO) |
-
-### 7.2 Dúvidas (Q)
-
-| ID | Dúvida | Hipótese adotada | Bloqueia |
-|---|---|---|---|
-| Q-150 | Qual é a fase de entrega de RF-16 no plano de fases (`60`)? | Hipótese: RF-16 pertence à fase `F-00` por integrar o núcleo transversal de isolamento e persistência das tabelas `ITenantScoped` (`10` §3.10) | Não |
-| Q-151 | Qual é a convenção de cálculo para o somatório $\Sigma w$? | Hipótese: Cada CA `@MUST` possui peso $w = 3$, totalizando $\Sigma w = 8 \times 3 = 24$ | Não |
-
-### 7.3 Pedidos de alteração (CR)
-
-Nenhum. Contratos partilhados (`IF-11`, `ITenantScoped`), variáveis RLS (`30` §5, §5.1), códigos de erro e regras de dependência constam integralmente em `pacote-M-13.md`.
+| PRS-310 | `ITenantIsolation` é registado como *singleton* e seus interceptores (`TenantSaveChangesInterceptor`, `RlsConnectionInterceptor`) são registados como *scoped*, associando-se à instância de `IAuthContext` da requisição HTTP corrente | Garante isolamento estrito por requisição e compatibilidade com AddDbContext sem pooling (ADR-05, IF-11) | PO, 2026-11-02 (D-23) |

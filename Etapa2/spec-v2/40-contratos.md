@@ -1,6 +1,6 @@
 # 40 · Contratos partilhados — Identity-Service
 
-> **Conjunto:** [00 Índice](00-indice.md) · **Dono:** ARQ (UT-2-02; reconciliado em UT-2-90) · **Estado:** Rascunho (ciclo 5, UT-2-91; decisões do PO até D-23 aplicadas) · **Atualizado em:** 2026-10-19
+> **Conjunto:** [00 Índice](00-indice.md) · **Dono:** ARQ (UT-2-02; reconciliado em UT-2-90) · **Estado:** Congelado (Gate 4) · **Atualizado em:** 2026-11-02
 > Contrato partilhado, congelado no Gate 2. O **detalhe** de cada endpoint e evento fica no módulo dono (`50`); aqui fica a interface que os outros módulos usam. Nomes, enums e códigos vêm de `10` e `30`.
 > **Pacotes (`00` §2.2):** §1 a §3 entram sempre (tamanho medido em `00` §2.3). De §4 e §5 entram só as linhas dos itens do módulo e das interfaces de que depende; em §4.3, regra própria de pacote. §6 entra só no pacote de M-14 (`00` §2.2). §7 é só para o ORQ e o PO.
 

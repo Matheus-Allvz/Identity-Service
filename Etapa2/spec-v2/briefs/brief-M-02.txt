@@ -3,7 +3,7 @@ Lê SÓ: Etapa2/spec-v2/pacotes/pacote-M-02.md (o teu pacote de contexto; o que 
 Etapa1/03_guia_preenchimento_template.md §2 e §G-50, e o modelo Etapa1/template/50-modulos/M-nn-modelo.md.
 NÃO lês a spec v1.0, outros módulos nem o 90 completo.
 Escreves SÓ: Etapa2/spec-v2/50-modulos/M-02-sessao-refresh.md.
-IDs: só da tua faixa (cabeçalho do pacote / 00 §4): RN RN-30 a RN-49, PRS PRS-120 a PRS-129, Q Q-30 a Q-49; CA-04.m (RF-04).
+IDs: só da tua faixa (cabeçalho do pacote / 00 §4): RN RN-11, RN-12 e RN-40 a RN-49, PRS PRS-120 a PRS-129, Q Q-40 a Q-49; CA-04.m (RF-04).
 Tarefa: especificar o módulo segundo a Fase 3 do processo (E1 §4): endpoints em detalhe (EP-03), interface IF-01 (ISessionStore),
 RF (RF-04), RN em SE/ENTÃO/SENÃO, EX, tabela de concorrência/idempotência/retoma, CA em Gherkin com borda em cada CA e cobertura mínima,
 rastreabilidade e PRS. Cumpre as linhas "Entradas para a UT-3-02" (ordem estrita de EP-03, deteção de reuso e revogação de família com EV-04 e 401 ERR-AUTH-006, revalidação de contexto com D-19 e PRS-84, rotação atómica com UPDATE condicional e tratamento de concorrência) e os PRS de módulo que estão no fim do teu pacote.

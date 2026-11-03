@@ -3,7 +3,7 @@ Lê SÓ: Etapa2/spec-v2/pacotes/pacote-M-06.md (o teu pacote de contexto; o que 
 Etapa1/03_guia_preenchimento_template.md §2 e §G-50, e o modelo Etapa1/template/50-modulos/M-nn-modelo.md.
 NÃO lês a spec v1.0, outros módulos nem o 90 completo.
 Escreves SÓ: Etapa2/spec-v2/50-modulos/M-06-impersonation.md.
-IDs: só da tua faixa (cabeçalho do pacote / 00 §4): RN RN-80 a RN-89, PRS PRS-160 a PRS-169, Q Q-80 a Q-89; CA-10.m do teu RF (RF-06).
+IDs: só da tua faixa (cabeçalho do pacote / 00 §4): RN RN-13, RN-14 e RN-80 a RN-89, PRS PRS-160 a PRS-169, Q Q-80 a Q-89; CA-06.m (RF-06).
 Tarefa: especificar o módulo segundo a Fase 3 do processo (E1 §4): endpoints em detalhe (EP-05) com ordem de avaliação da camada 6 e todas as respostas,
 RF (RF-06), RN em SE/ENTÃO/SENÃO, EX, tabela de concorrência/idempotência/retoma, CA em Gherkin com borda em cada CA e cobertura mínima,
 rastreabilidade e PRS. Cumpre as linhas "Entradas para a UT-3-06" (ordem estrita de validação de EP-05, verificação de target_scope, claims emitidas e estrutura de impersonation_context, auditoria IMPERSONATION_STARTED confirmada antes do 200, não idempotência) e os PRS de módulo que estão no fim do teu pacote.

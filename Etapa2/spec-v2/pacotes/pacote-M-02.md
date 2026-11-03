@@ -3,18 +3,18 @@
 | Ficheiro de origem | Secções incluídas | Tamanho (KiB) |
 |---|---|---|
 | `10-nucleo.md` | Núcleo base (§1-§2, §3 comum, §4, §6-§10) | 14.7 |
-| `30-dados.md` | Comum (§1, §2, §3) + ENT-08, ENUM-05, ENUM-05 (transições), AUD.M02 | 6.2 |
+| `30-dados.md` | Comum (§1, §2, §3) + ENT-08, ENUM-05, ENUM-05 (transições), AUD.M02 | 6.1 |
 | `40-contratos.md` | §1, §2, §3 + operações/itens de §4 (EP-03, EV-04, IF-01, IF-01.1, IF-01.2, IF-01.3, IF-01.4, IF-01.5, IF-01.6, IF-03.1, IF-04.2, IF-06.1, IF-07.5, IF-08.1, IF-09.1, IF-09.2, IF-09.3, IF-09.4, IF-09.5) + tipos partilhados | 21.2 |
 | `70-ambiente-teste.md` | Comum §1 | 3.6 |
 | `20-sistema-existente.md` | Nenhuma | 0.0 |
 | `90-registo.md` | UT-3-02 (§1) + PRS-33, PRS-34, PRS-45 (§2.2) | 1.6 |
-| **Total contexto** | **Todas as origens** | **47.4** |
+| **Total contexto** | **Todas as origens** | **47.3** |
 
 <!-- FIM DO CABECALHO -->
 
 # 10 · Núcleo — Identity-Service
 
-> **Conjunto:** [00 Índice](00-indice.md) · **Dono:** ARQ (UT-1-01) · **Estado:** Rascunho (ciclo 5, UT-2-91) · **Atualizado em:** 2026-10-19
+> **Conjunto:** [00 Índice](00-indice.md) · **Dono:** ARQ (UT-1-01) · **Estado:** Congelado (Gate 4) · **Atualizado em:** 2026-11-02
 > **Núcleo base** (todos os pacotes): tudo antes da secção final "Extras". Cada extra diz no título em que pacotes entra. Estado dos PRS: `90` §2.
 
 ## 1. Instruções obrigatórias para a LLM
@@ -198,7 +198,7 @@ Um módulo **NÃO DEVE** criar códigos: um código em falta é um `CR-nn`.
 
 # 30 · Dados — Identity-Service
 
-> **Conjunto:** [00 Índice](00-indice.md) · **Dono:** ARQ (UT-2-01) · **Estado:** Rascunho (ciclo 5; decisões do PO de 2026-10-19 aplicadas) · **Atualizado em:** 2026-10-19
+> **Conjunto:** [00 Índice](00-indice.md) · **Dono:** ARQ (UT-2-01) · **Estado:** Congelado (Gate 4) · **Atualizado em:** 2026-11-02
 > Contrato partilhado: é congelado no Gate 2. Cada tabela tem **um** módulo dono, o único com código que a escreve. Os outros módulos escrevem só através da interface `IF-nn` do dono (`40`). O esquema inteiro (§3, §5, §6) é criado pela migração do M-11.
 > **Nomes de restrições:** `pk_<tabela>`, `fk_<tabela>_<coluna>`, `uq_<tabela>_<colunas>`, `ck_<tabela>_<coluna>` para o CHECK de uma coluna e o nome indicado nos CHECK de tabela. Forma executável e medida de §3, §5 e §6: `evidencias/pg-ddl.sql` (resultado em `evidencias/medir-postgres.out.txt`); uma diferença entre os dois é um defeito e vale este ficheiro.
 
@@ -423,7 +423,7 @@ Camada 4 (§2). Em cada EP autenticado, as rejeições `[A]` da camada 2 vêm an
 | `SessionCompromisedPayload` | `M14Eventos/Interface/` | `record (Guid UserId, Guid FamilyId, Guid ReusedRefreshTokenId, string IpAddress, DateTimeOffset DetectedAt)` |
 # 70 · Contrato do ambiente de teste — Identity-Service
 
-> **Conjunto:** [00 Índice](00-indice.md) · **Dono:** AUD (UT-2-03; reconciliado em UT-2-90) · **Estado:** Rascunho (ciclo 5, UT-2-91) · **Atualizado em:** 2026-10-19
+> **Conjunto:** [00 Índice](00-indice.md) · **Dono:** AUD (UT-2-03; reconciliado em UT-2-90) · **Estado:** Congelado (Gate 4) · **Atualizado em:** 2026-11-02
 > **Medições:** cada `[MEDIDO]` deste ficheiro cita um teste do esqueleto `evidencias/env70/` (`Medicoes.cs`, `Cunhagem.cs`, `Kestrel.cs`), executado por `evidencias/medir-env70.sh` com resultado em `evidencias/medir-env70.out.txt` (UT-2-93; Docker 29.7.2).
 > **Parte comum = cabeçalho + §1: entra em todos os pacotes.** Tudo o que obriga o código está na §1; as secções extra só entram nos pacotes da tabela abaixo.
 

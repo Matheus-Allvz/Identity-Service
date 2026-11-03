@@ -3,7 +3,7 @@ Lê SÓ: Etapa2/spec-v2/pacotes/pacote-M-01.md (o teu pacote de contexto; o que 
 Etapa1/03_guia_preenchimento_template.md §2 e §G-50, e o modelo Etapa1/template/50-modulos/M-nn-modelo.md.
 NÃO lês a spec v1.0, outros módulos nem o 90 completo.
 Escreves SÓ: Etapa2/spec-v2/50-modulos/M-01-login.md.
-IDs: só da tua faixa (cabeçalho do pacote / 00 §4): RN RN-10 a RN-29, PRS PRS-110 a PRS-119, Q Q-10 a Q-29; CA-01.m, CA-02.m, CA-03.m (RF-01, RF-02, RF-03).
+IDs: só da tua faixa (cabeçalho do pacote / 00 §4): RN RN-01 a RN-03 e RN-30 a RN-39, PRS PRS-110 a PRS-119, Q Q-30 a Q-39; CA-01.m.
 Tarefa: especificar o módulo segundo a Fase 3 do processo (E1 §4): endpoints em detalhe (EP-01) com ordem de avaliação e todas as respostas,
 RF (RF-01, RF-02, RF-03), RN em SE/ENTÃO/SENÃO, EX, tabela de concorrência/idempotência/retoma, CA em Gherkin com borda em cada CA e cobertura mínima,
 rastreabilidade e PRS. Cumpre as linhas "Entradas para a UT-3-01" (normalização email, Argon2id com RNF-01, bloqueio após 5 falhas PRS-31, transições D-08, D-09, PRS-83) e os PRS de módulo que estão no fim do teu pacote.

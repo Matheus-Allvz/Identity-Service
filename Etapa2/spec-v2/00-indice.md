@@ -6,16 +6,16 @@
 
 | Doc | Para quê | Leia quando | Dono | Estado | Atualizado em | Hash |
 |---|---|---|---|---|---|---|
-| [10 · Núcleo](10-nucleo.md) | Contexto, âmbito, glossário, ADR, convenções, transversais, claims, catálogo de RG, stack, erros; extras por módulo | **Sempre** (núcleo base; extras segundo o §2.2) | ARQ (UT-1-01) | Rascunho (ciclo 3) | 2026-10-19 | Não se aplica (Rascunho) |
-| [20 · Sistema existente](20-sistema-existente.md) | PostgreSQL, Redis e Kafka medidos; Gateway e consumidores como contratos; lacunas | O pacote inclui um `EXT-nn` (§2.2) | AR (UT-1-02) | Rascunho (ciclo 3) | 2026-10-19 | Não se aplica (Rascunho) |
-| [30 · Dados](30-dados.md) | Posse das tabelas, ERD, enums, dicionário físico, Redis, RLS, seed | A UT lê ou escreve dados (secções do §2.2) | ARQ (UT-2-01) | Rascunho (ciclo 3) | 2026-10-19 | Não se aplica (Rascunho) |
-| [40 · Contratos](40-contratos.md) | Convenções da API, interfaces EP/EV/IF, matriz de autorização, validação em camadas, entrada malformada | Especificação de módulo e implementação (secções do §2.2) | ARQ (UT-2-02; reconciliado em UT-2-90) | Rascunho (ciclo 3) | 2026-10-19 | Não se aplica (Rascunho) |
-| [50 · Módulos](50-modulos/) | Um ficheiro por módulo (§2) | A UT é deste módulo | AR por módulo (UT-3-00 a UT-3-14) | Por escrever | Não se aplica | Não se aplica |
-| [60 · Plano de fases](60-plano-de-fases.md) | Fases, grafo, "Não tocar ainda" | Planear, construir ou validar uma fase | ARQ (UT-5-00) | Modelo por preencher | Não se aplica | Não se aplica |
-| [70 · Ambiente de teste](70-ambiente-teste.md) | Arranque, dados, tokens, relógio, falhas, nomes de testes | Parte comum em todos os pacotes; restantes secções segundo o cabeçalho de `70` | AUD (UT-2-03; reconciliado em UT-2-90) | Rascunho (ciclo 3) | 2026-10-19 | Não se aplica (Rascunho) |
-| [80 · Orquestração](80-orquestracao.md) | Briefs, ciclo, score, entrega | Orquestrar ou receber um brief | ORQ | Modelo por preencher | Não se aplica | Não se aplica |
-| [90 · Registo](90-registo.md) | Grafo de UT, PRS, decisões, perguntas, lacunas, alterações, mapeamento v1.0 → v2 | Saber onde está; retomar numa sessão nova | ORQ | Vivo | 2026-10-19 | Não se aplica |
-| [evidencias/](evidencias/) | Scripts de medição e resultados (`[MEDIDO]`), esqueleto de pins, medição dos pacotes | Verificar uma evidência ou repetir uma medição | ARQ (UT-1-01) | Rascunho (ciclo 3) | 2026-10-19 | Não se aplica |
+| [10 · Núcleo](10-nucleo.md) | Contexto, âmbito, glossário, ADR, convenções, transversais, claims, catálogo de RG, stack, erros; extras por módulo | **Sempre** (núcleo base; extras segundo o §2.2) | ARQ (UT-1-01) | Congelado (Gate 4) | 2026-11-02 | `spec.sha256` |
+| [20 · Sistema existente](20-sistema-existente.md) | PostgreSQL, Redis e Kafka medidos; Gateway e consumidores como contratos; lacunas | O pacote inclui um `EXT-nn` (§2.2) | AR (UT-1-02) | Congelado (Gate 4) | 2026-11-02 | `spec.sha256` |
+| [30 · Dados](30-dados.md) | Posse das tabelas, ERD, enums, dicionário físico, Redis, RLS, seed | A UT lê ou escreve dados (secções do §2.2) | ARQ (UT-2-01) | Congelado (Gate 4) | 2026-11-02 | `spec.sha256` |
+| [40 · Contratos](40-contratos.md) | Convenções da API, interfaces EP/EV/IF, matriz de autorização, validação em camadas, entrada malformada | Especificação de módulo e implementação (secções do §2.2) | ARQ (UT-2-02; reconciliado em UT-2-90) | Congelado (Gate 4) | 2026-11-02 | `spec.sha256` |
+| [50 · Módulos](50-modulos/) | Um ficheiro por módulo (§2) | A UT é deste módulo | AR por módulo (UT-3-00 a UT-3-14) | Congelado (Gate 4) | 2026-11-02 | `spec.sha256` |
+| [60 · Plano de fases](60-plano-de-fases.md) | Fases, grafo, "Não tocar ainda" | Planear, construir ou validar uma fase | ARQ (UT-5-00) | Congelado (Gate 4) | 2026-11-02 | `spec.sha256` |
+| [70 · Ambiente de teste](70-ambiente-teste.md) | Arranque, dados, tokens, relógio, falhas, nomes de testes | Parte comum em todos os pacotes; restantes secções segundo o cabeçalho de `70` | AUD (UT-2-03; reconciliado em UT-2-90) | Congelado (Gate 4) | 2026-11-02 | `spec.sha256` |
+| [80 · Orquestração](80-orquestracao.md) | Briefs, ciclo, score, entrega | Orquestrar ou receber um brief | ORQ | Congelado (Gate 4) | 2026-11-02 | `spec.sha256` |
+| [90 · Registo](90-registo.md) | Grafo de UT, PRS, decisões, perguntas, lacunas, alterações, mapeamento v1.0 → v2 | Saber onde está; retomar numa sessão nova | ORQ | Vivo | 2026-11-02 | Não se aplica |
+| [evidencias/](evidencias/) | Scripts de medição e resultados (`[MEDIDO]`), esqueleto de pins, medição dos pacotes | Verificar uma evidência ou repetir uma medição | ARQ (UT-1-01) | Congelado (Gate 4) | 2026-11-02 | `spec.sha256` |
 
 ## 2. Mapa de módulos
 
@@ -81,20 +81,20 @@ O detalhe de cada EP e EV fica no módulo dono; `40` §4 tem uma linha por EP, E
 
 | Módulo | Extras de `10` | Secções de `30` | Linhas de `40` §4 (itens e operações) | `40` | `70` §2 | `20` | `90` §2.2 | Teto do ficheiro (KiB) |
 |---|---|---|---|---|---|---|---|---|
-| M-00 | §3.7, §3.9 | ENT-09, ENUM-08, §4 | IF-03, IF-03.1, IF-04, IF-04.1, IF-04.2, IF-04.3, IF-04.4, IF-04.5, IF-04.6, IF-05, IF-05.1, IF-08, IF-08.1, IF-08.2 | §1, §2, §3, §1.1 | Não | EXT-02 | Nenhum | 12 |
+| M-00 | §3.7, §3.9 | ENT-09, ENUM-08, §4 | IF-03, IF-03.1, IF-04, IF-04.1, IF-04.2, IF-04.3, IF-04.4, IF-04.5, IF-04.6, IF-05, IF-05.1, IF-08, IF-08.1, IF-08.2 | §1, §2, §3, §1.1 | Não | EXT-02 | Nenhum | 13 |
 | M-01 | Nenhum | ENT-04, ENUM-04, ENUM-04 (transições), AUD.M01 | EP-01, EV-03, IF-01.1, IF-01.4, IF-02, IF-02.1, IF-03.1, IF-04.2, IF-06.1, IF-07.3, IF-09.1, IF-09.6 | §1, §2, §3 | Não | Nenhuma | PRS-30, PRS-31, PRS-32 | 12 |
 | M-02 | Nenhum | ENT-08, ENUM-05, ENUM-05 (transições), AUD.M02 | EP-03, EV-04, IF-01, IF-01.1, IF-01.2, IF-01.3, IF-01.4, IF-01.5, IF-01.6, IF-03.1, IF-04.2, IF-06.1, IF-07.5, IF-08.1, IF-09.1, IF-09.2, IF-09.3, IF-09.4, IF-09.5 | §1, §2, §3 | Não | Nenhuma | PRS-33, PRS-34, PRS-45 | 10 |
 | M-03 | Nenhum | ENUM-03, ENUM-06, ENUM-06 (transições), AUD.M03 | EP-02, IF-01.2, IF-03.1, IF-04.1, IF-06.1, IF-08.1, IF-09.1, IF-09.2, IF-09.3, IF-09.4, IF-09.5, IF-09.8 | §1, §2, §3 | Não | Nenhuma | PRS-05 | 15 |
 | M-04 | Nenhum | ENT-01, ENT-02, ENT-03, ENUM-01, ENUM-02, ENUM-03, AUD.M04 | EP-06, EV-01, IF-03.1, IF-07.1, IF-08.1, IF-08.2, IF-10, IF-10.1, IF-12.1 | §1, §2, §3 | Não | Nenhuma | PRS-36, PRS-37 | 14 |
 | M-05 | Nenhum | ENT-02, ENT-03, ENT-04, ENT-05, ENT-06, ENT-07, ENUM-01, AUD.M05 | EP-07, IF-03.1, IF-08.1, IF-08.2, IF-11.3, IF-12, IF-12.1, IF-12.2 | §1, §2, §3 | Não | Nenhuma | PRS-38 | 10 |
-| M-06 | Nenhum | ENT-04, ENUM-03, ENUM-04, ENUM-07, AUD.M06 | EP-05, IF-03.1, IF-06.1, IF-08.1, IF-09.1, IF-09.2, IF-09.3, IF-09.4, IF-09.8 | §1, §2, §3 | Não | Nenhuma | PRS-08, PRS-40, PRS-41 | 15 |
-| M-07 | §3.7 | Nenhuma | EP-10, IF-05.1, IF-06, IF-06.1 | §1, §2, §3 | Não | Nenhuma | PRS-44 | 20 |
+| M-06 | Nenhum | ENT-04, ENUM-03, ENUM-04, ENUM-07, AUD.M06, §6 | EP-05, IF-03.1, IF-06.1, IF-08.1, IF-09.1, IF-09.2, IF-09.3, IF-09.4, IF-09.8 | §1, §2, §3 | Não | Nenhuma | PRS-08, PRS-40, PRS-41 | 14 |
+| M-07 | §3.7 | Nenhuma | EP-10, IF-05.1, IF-06, IF-06.1 | §1, §2, §3 | Não | Nenhuma | PRS-44 | 21 |
 | M-08 | §3.8 | ENT-01, ENT-02, ENT-03, ENT-04, ENT-05, ENT-06, ENT-07, ENUM-01, ENUM-03, ENUM-04, §4, §6 | IF-04.5, IF-04.6, IF-09, IF-09.1, IF-09.2, IF-09.3, IF-09.4, IF-09.5, IF-09.6, IF-09.7, IF-09.8, IF-11.3 | §1 | Não | EXT-02 | PRS-05 | 11 |
 | M-09 | Nenhum | ENUM-06, AUD.M09 | EP-04, IF-01.3, IF-03.1, IF-04.1, IF-08.1 | §1, §2, §3 | Não | Nenhuma | Nenhum | 21 |
 | M-10 | Nenhum | ENT-02, ENT-04, ENT-05, ENUM-04, ENUM-04 (transições), AUD.M10 | EP-09, EV-03, IF-01.4, IF-01.6, IF-02.1, IF-03.1, IF-04.2, IF-07.4, IF-08.1, IF-09.7, IF-12.2 | §1, §2, §3 | Não | Nenhuma | PRS-37, PRS-39 | 10 |
 | M-11 | §3.7, §3.11 | ENT-01, ENT-02, ENT-03, ENT-04, ENT-05, ENT-06, ENT-07, ENT-08, ENT-09, ENT-10, §5, §6 | IF-08.1, IF-11.1, IF-11.2 | Nenhuma | Sim | EXT-01 | Nenhum | 7 |
 | M-12 | Nenhum | ENT-02, ENT-05, ENUM-01, ENUM-01 (transições), AUD.M12 | EP-08, EV-02, IF-01.5, IF-03.1, IF-04.3, IF-04.4, IF-07.2, IF-08.1, IF-10.1 | §1, §2, §3 | Não | Nenhuma | PRS-36, PRS-37 | 14 |
-| M-13 | §3.10, §5 | ENT-03, ENT-05, ENT-07, §5, §5.1 | IF-08.1, IF-11, IF-11.1, IF-11.2, IF-11.3 | §1 | Não | EXT-01 | Nenhum | 18 |
+| M-13 | §3.10, §5 | ENT-03, ENT-05, ENT-07, §5, §5.1 | IF-08.1, IF-08.2, IF-11, IF-11.1, IF-11.2, IF-11.3 | §1 | Não | EXT-01 | Nenhum | 18 |
 | M-14 | §3.7, §5 | ENT-10, ENUM-03, ENUM-06, ENUM-09, ENUM-09 (transições), ENUM-10 | EV-01, EV-02, EV-03, EV-04, IF-05.1, IF-07, IF-07.1, IF-07.2, IF-07.3, IF-07.4, IF-07.5, IF-08.1 | §1, §6 | Não | EXT-03 | PRS-09, PRS-42, PRS-43 | 19 |
 
 ### 2.3 Cálculo do orçamento

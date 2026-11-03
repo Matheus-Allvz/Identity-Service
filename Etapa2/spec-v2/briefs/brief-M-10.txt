@@ -3,10 +3,10 @@ Lê SÓ: Etapa2/spec-v2/pacotes/pacote-M-10.md (o teu pacote de contexto; o que 
 Etapa1/03_guia_preenchimento_template.md §2 e §G-50, e o modelo Etapa1/template/50-modulos/M-nn-modelo.md.
 NÃO lês a spec v1.0, outros módulos nem o 90 completo.
 Escreves SÓ: Etapa2/spec-v2/50-modulos/M-10-estado-usuario.md.
-IDs: só da tua faixa (cabeçalho do pacote / 00 §4): RN RN-120 a RN-129, PRS PRS-200 a PRS-209, Q Q-120 a Q-129; CA-13.m (RF-10, RF-13).
+IDs: só da tua faixa (cabeçalho do pacote / 00 §4): RN RN-120 a RN-129, PRS PRS-200 a PRS-209, Q Q-120 a Q-129; CA-10.m, CA-13.m (RF-10, RF-13).
 Tarefa: especificar o módulo segundo a Fase 3 do processo (E1 §4): endpoints em detalhe (EP-09) com ordem de avaliação da camada 6 e todas as respostas,
 RF (RF-10, RF-13), RN em SE/ENTÃO/SENÃO, EX, tabela de concorrência/idempotência/retoma, CA em Gherkin com borda em cada CA e cobertura mínima,
-rastreabilidade e PRS. Cumpre as linhas "Entradas para a UT-3-10" (D-07 com suspensão global para PLATFORM_ADMIN vs suspensão de vínculos não-dono no grupo para TENANT_ADMIN via IF-12.2 com PRS-86, condição C9 com D-22 e PRS-81, auditoria USER_STATUS_CHANGED, repetição de estado com efeitos apropriados, timestamp único truncado ao segundo) e os PRS de módulo que estão no fim do teu pacote.
+rastreabilidade e PRS. Cumpre as linhas "Entradas para a UT-3-10" (D-07 com suspensão global para PLATFORM_ADMIN vs suspensão de vínculos não-dono no grupo para TENANT_ADMIN via IF-12.2 com PRS-86, condição C9 com D-22 e PRS-81, auditoria USER_STATUS_CHANGED, repetição de estado com efeitos especificados, timestamp único truncado ao segundo) e os PRS de módulo que estão no fim do teu pacote.
 Teto do ficheiro do módulo: 10 KiB (máximo rigoroso: não ultrapassar 10.7 KiB para respeitar o orçamento de 60 KiB da Onda 4).
 Se precisares de algo partilhado que não está no pacote: NÃO inventes nem alteres; regista em "Pedidos de alteração".
 Ambiguidade: regista em "Dúvidas" com a hipótese mais simples marcada.

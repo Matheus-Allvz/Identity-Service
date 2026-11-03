@@ -1,6 +1,6 @@
 # 10 · Núcleo — Identity-Service
 
-> **Conjunto:** [00 Índice](00-indice.md) · **Dono:** ARQ (UT-1-01) · **Estado:** Rascunho (ciclo 5, UT-2-91) · **Atualizado em:** 2026-10-19
+> **Conjunto:** [00 Índice](00-indice.md) · **Dono:** ARQ (UT-1-01) · **Estado:** Congelado (Gate 4) · **Atualizado em:** 2026-11-02
 > **Núcleo base** (todos os pacotes): tudo antes da secção final "Extras". Cada extra diz no título em que pacotes entra. Estado dos PRS: `90` §2.
 
 ## 1. Instruções obrigatórias para a LLM
@@ -309,10 +309,10 @@ Decisões do PO em `90` §3 (D-03 a D-23). PRS-70 a PRS-73 foram criados pela UT
 | PRS-71 | O middleware lê a chave antes da RG-06: chave indisponível → 503 também em pedidos sem token | Aprovado (D-23) |
 | PRS-72 | Bypass limitado da IF-11.3, só em IF-09.7 e IF-12.2, com reposição em `finally` | Aprovado (D-23) |
 | PRS-73 | EP-02 com família sem linha `ACTIVE` (IF-01.2 = `false`) → 401 `ERR-AUTH-002`, sem efeitos | Aprovado (D-23) |
-| PRS-80 | Formato de e-mail (RFC 5322) verificado por `MailAddress.TryCreate` com `Address` igual ao texto após `trim()` | Pendente |
-| PRS-81 | D-22 aplica-se também à reativação: `TENANT_ADMIN` não muda vínculos próprios nem de quem é dono no grupo, em `SUSPENDED` e em `ACTIVE` | Pendente |
-| PRS-82 | EP-09 com `scope = GROUP` devolve `updated_at` = instante da operação, também sem vínculos alterados | Pendente |
-| PRS-83 | Conta `SUSPENDED` com palavra-passe errada: 401 e auditoria `LOGIN_FAILED`, sem somar a `failed_login_attempts` | Pendente |
-| PRS-84 | EP-03: qualquer falha de revalidação (RG-02 a RG-05, RG-11, RG-13) revoga a família; rotação concorrente (0 linhas ou 23505) tratada como reuso, 401 `ERR-AUTH-006` | Pendente |
-| PRS-86 | EP-09 por `TENANT_ADMIN`: revogação de famílias só nos tenants cujos vínculos mudaram; a repetição de `SUSPENDED` não revoga | Pendente |
+| PRS-80 | Formato de e-mail (RFC 5322) verificado por `MailAddress.TryCreate` com `Address` igual ao texto após `trim()` | Aprovado (D-26) |
+| PRS-81 | D-22 aplica-se também à reativação: `TENANT_ADMIN` não muda vínculos próprios nem de quem é dono no grupo, em `SUSPENDED` e em `ACTIVE` | Aprovado (D-26) |
+| PRS-82 | EP-09 com `scope = GROUP` devolve `updated_at` = instante da operação, também sem vínculos alterados | Aprovado (D-26) |
+| PRS-83 | Conta `SUSPENDED` com palavra-passe errada: 401 e auditoria `LOGIN_FAILED`, sem somar a `failed_login_attempts` | Aprovado (D-26) |
+| PRS-84 | EP-03: qualquer falha de revalidação (RG-02 a RG-05, RG-11, RG-13) revoga a família; rotação concorrente (0 linhas ou 23505) tratada como reuso, 401 `ERR-AUTH-006` | Aprovado (D-26) |
+| PRS-86 | EP-09 por `TENANT_ADMIN`: revogação de famílias só nos tenants cujos vínculos mudaram; a repetição de `SUSPENDED` não revoga | Aprovado (D-26) |
 | PRS-90 a PRS-97 | PRS de `70` (suite, chave, relógio, dados fictícios, falhas, timeouts, compose, concorrência) | Aprovados (D-10; PRS-97: D-16) |
