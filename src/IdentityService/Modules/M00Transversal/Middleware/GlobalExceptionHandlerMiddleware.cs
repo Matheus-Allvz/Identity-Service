@@ -63,7 +63,8 @@ public class GlobalExceptionHandlerMiddleware
                 }
             }
 
-            await WriteProblemResponseAsync(context, authContext, errorCode);
+            var detail = (ex as ApiErrorException)?.Message;
+            await WriteProblemResponseAsync(context, authContext, errorCode, detail);
         }
     }
 
@@ -117,11 +118,12 @@ public class GlobalExceptionHandlerMiddleware
     private static async Task WriteProblemResponseAsync(
         HttpContext context,
         IAuthContext authContext,
-        string errorCode)
+        string errorCode,
+        string? customDetail = null)
     {
         var (status, title) = ErrorCatalog.GetInfo(errorCode);
+        var detail = customDetail ?? title;
 
-        context.Response.Clear();
         context.Response.StatusCode = status;
         context.Response.ContentType = "application/problem+json; charset=utf-8";
         context.Response.Headers["X-Correlation-Id"] = authContext.CorrelationId.ToString("D");
@@ -131,7 +133,7 @@ public class GlobalExceptionHandlerMiddleware
             Title: title,
             Status: status,
             Code: errorCode,
-            Detail: title,
+            Detail: detail,
             CorrelationId: authContext.CorrelationId.ToString("D"));
 
         await JsonSerializer.SerializeAsync(context.Response.Body, problem, JsonOptions);

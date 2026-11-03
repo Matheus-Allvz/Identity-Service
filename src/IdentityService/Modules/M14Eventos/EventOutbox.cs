@@ -172,7 +172,8 @@ public class EventOutbox : IEventOutbox
 
         var actingScope = _authContext.ActiveScope?.ToString() ?? "NONE";
         var sortedAllowedTenants = _authContext.AllowedTenants.OrderBy(g => g).ToList();
-        var actorUserId = _authContext.ActorUserId ?? (_authContext.UserId != Guid.Empty ? _authContext.UserId : null);
+        var initiatorUserId = _authContext.UserId ?? userId;
+        var actorUserId = _authContext.ActorUserId;
 
         return CreateAndAddMessage(
             eventId: eventId,
@@ -181,7 +182,7 @@ public class EventOutbox : IEventOutbox
             payloadDict: payloadDict,
             headerTenantId: _authContext.ActiveTenantId,
             headerGroupId: _authContext.GroupId,
-            initiatorUserId: userId,
+            initiatorUserId: initiatorUserId,
             headerActorUserId: actorUserId,
             actingScope: actingScope,
             jwsTenantId: _authContext.ActiveTenantId,

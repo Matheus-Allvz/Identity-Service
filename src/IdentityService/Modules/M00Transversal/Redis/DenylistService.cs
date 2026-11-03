@@ -22,6 +22,11 @@ public class DenylistService : IDenylist
         await Database.StringSetAsync($"denylist:jti:{jti}", "1", TimeSpan.FromSeconds(ttlSeconds));
     }
 
+    public async Task<bool> IsJtiRevokedAsync(string jti, CancellationToken cancellationToken = default)
+    {
+        return await Database.KeyExistsAsync($"denylist:jti:{jti}");
+    }
+
     public async Task<long> BlockUserAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         var now = _timeProvider.GetUtcNow().ToUnixTimeSeconds();

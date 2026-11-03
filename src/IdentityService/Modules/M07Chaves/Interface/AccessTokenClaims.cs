@@ -13,4 +13,4 @@ public record AccessTokenClaims(
     OperationalScope? ActiveScope,
     IReadOnlyList<string> Roles,
     IReadOnlyList<string> Permissions,
-    ActorClaim? Act);
+    ActorClaim? Act = null);

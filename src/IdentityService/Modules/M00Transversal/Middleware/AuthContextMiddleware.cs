@@ -32,10 +32,14 @@ public partial class AuthContextMiddleware
         var path = context.Request.Path.Value ?? string.Empty;
 
         var isTokenRequired = IsTokenRequiredEndpoint(method, path);
+        var hasAuthHeader = context.Request.Headers.TryGetValue("Authorization", out var authHeaders) &&
+                            !string.IsNullOrWhiteSpace(authHeaders);
+        var authHeaderStr = hasAuthHeader ? authHeaders.ToString() : string.Empty;
+        var hasBearer = hasAuthHeader && authHeaderStr.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase);
 
-        if (isTokenRequired)
+        if (isTokenRequired || hasBearer)
         {
-            // PRS-71: Read signing key BEFORE checking Authorization header.
+            // PRS-71: Read signing key BEFORE checking Authorization header if token is required.
             // If the signing key is unavailable (CryptographicException), it must throw here.
             RsaSecurityKey key;
             try
@@ -48,14 +52,7 @@ public partial class AuthContextMiddleware
             }
 
             // RG-06: Authorization header verification
-            if (!context.Request.Headers.TryGetValue("Authorization", out var authHeaders) ||
-                string.IsNullOrWhiteSpace(authHeaders))
-            {
-                throw new ApiErrorException("ERR-AUTH-002", "Token de acesso ausente, inválido, expirado ou revogado");
-            }
-
-            var authHeaderStr = authHeaders.ToString();
-            if (!authHeaderStr.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+            if (!hasBearer)
             {
                 throw new ApiErrorException("ERR-AUTH-002", "Token de acesso ausente, inválido, expirado ou revogado");
             }
@@ -87,7 +84,8 @@ public partial class AuthContextMiddleware
             var validationResult = await handler.ValidateTokenAsync(jwtString, validationParameters);
             if (!validationResult.IsValid || validationResult.SecurityToken is not JsonWebToken jwt)
             {
-                throw new ApiErrorException("ERR-AUTH-002", "Token de acesso ausente, inválido, expirado ou revogado");
+                var detail = validationResult.Exception?.ToString() ?? "Token de acesso ausente, inválido, expirado ou revogado";
+                throw new ApiErrorException("ERR-AUTH-002", detail);
             }
 
             if (jwt.Alg != "RS256" || jwt.Kid != signingKey.KeyId || jwt.Typ != "JWT")
@@ -98,9 +96,7 @@ public partial class AuthContextMiddleware
             var parsedClaims = ParseAndValidateClaims(jwt);
 
             // RG-06 denylist:jti check
-            var jtiRevokedAt = await denylist.GetUserRevokedAtAsync(Guid.Empty); // dummy call check
-            var db = context.RequestServices.GetRequiredService<StackExchange.Redis.IConnectionMultiplexer>().GetDatabase();
-            if (await db.KeyExistsAsync($"denylist:jti:{parsedClaims.Jti}"))
+            if (await denylist.IsJtiRevokedAsync(parsedClaims.Jti))
             {
                 throw new ApiErrorException("ERR-AUTH-002", "Token de acesso ausente, inválido, expirado ou revogado");
             }
@@ -214,56 +210,52 @@ public partial class AuthContextMiddleware
     {
         try
         {
-            var jti = jwt.GetClaim("jti").Value;
-            var sub = Guid.Parse(jwt.GetClaim("sub").Value);
-            var iat = long.Parse(jwt.GetClaim("iat").Value);
-            var exp = long.Parse(jwt.GetClaim("exp").Value);
+            var payloadJson = Base64UrlEncoder.Decode(jwt.EncodedPayload);
+            using var doc = JsonDocument.Parse(payloadJson);
+            var root = doc.RootElement;
 
-            var platformRoleStr = jwt.GetClaim("platform_role").Value;
+            var jti = root.GetProperty("jti").GetString()!;
+            var sub = Guid.Parse(root.GetProperty("sub").GetString()!);
+            var iat = root.GetProperty("iat").GetInt64();
+            var exp = root.GetProperty("exp").GetInt64();
+
+            var platformRoleStr = root.GetProperty("platform_role").GetString()!;
             if (!Enum.TryParse<PlatformRole>(platformRoleStr, false, out var platformRole))
             {
                 throw new ApiErrorException("ERR-AUTH-002");
             }
 
-            var viewModeStr = jwt.GetClaim("view_mode").Value;
+            var viewModeStr = root.GetProperty("view_mode").GetString()!;
             if (!Enum.TryParse<ViewMode>(viewModeStr, false, out var viewMode))
             {
                 throw new ApiErrorException("ERR-AUTH-002");
             }
 
             Guid? groupId = null;
-            var groupClaim = jwt.GetClaim("group_id");
-            if (groupClaim != null && !string.IsNullOrEmpty(groupClaim.Value))
+            if (root.TryGetProperty("group_id", out var gElem) && gElem.ValueKind == JsonValueKind.String)
             {
-                groupId = Guid.Parse(groupClaim.Value);
+                groupId = Guid.Parse(gElem.GetString()!);
             }
 
             Guid? tenantId = null;
-            var tenantClaim = jwt.GetClaim("tenant_id");
-            if (tenantClaim != null && !string.IsNullOrEmpty(tenantClaim.Value))
+            if (root.TryGetProperty("tenant_id", out var tElem) && tElem.ValueKind == JsonValueKind.String)
             {
-                tenantId = Guid.Parse(tenantClaim.Value);
+                tenantId = Guid.Parse(tElem.GetString()!);
             }
 
             var allowedTenants = new List<Guid>();
-            var allowedClaim = jwt.GetClaim("allowed_tenants");
-            if (allowedClaim != null && !string.IsNullOrEmpty(allowedClaim.Value))
+            if (root.TryGetProperty("allowed_tenants", out var aElem) && aElem.ValueKind == JsonValueKind.Array)
             {
-                using var doc = JsonDocument.Parse(allowedClaim.Value);
-                if (doc.RootElement.ValueKind == JsonValueKind.Array)
+                foreach (var elem in aElem.EnumerateArray())
                 {
-                    foreach (var elem in doc.RootElement.EnumerateArray())
-                    {
-                        allowedTenants.Add(Guid.Parse(elem.GetString()!));
-                    }
+                    allowedTenants.Add(Guid.Parse(elem.GetString()!));
                 }
             }
 
             OperationalScope? activeScope = null;
-            var scopeClaim = jwt.GetClaim("active_scope");
-            if (scopeClaim != null && !string.IsNullOrEmpty(scopeClaim.Value))
+            if (root.TryGetProperty("active_scope", out var sElem) && sElem.ValueKind == JsonValueKind.String)
             {
-                if (Enum.TryParse<OperationalScope>(scopeClaim.Value, false, out var parsedScope))
+                if (Enum.TryParse<OperationalScope>(sElem.GetString(), false, out var parsedScope))
                 {
                     activeScope = parsedScope;
                 }
@@ -274,41 +266,30 @@ public partial class AuthContextMiddleware
             }
 
             var roles = new List<string>();
-            var rolesClaim = jwt.GetClaim("roles");
-            if (rolesClaim != null && !string.IsNullOrEmpty(rolesClaim.Value))
+            if (root.TryGetProperty("roles", out var rElem) && rElem.ValueKind == JsonValueKind.Array)
             {
-                using var doc = JsonDocument.Parse(rolesClaim.Value);
-                if (doc.RootElement.ValueKind == JsonValueKind.Array)
+                foreach (var elem in rElem.EnumerateArray())
                 {
-                    foreach (var elem in doc.RootElement.EnumerateArray())
-                    {
-                        roles.Add(elem.GetString()!);
-                    }
+                    roles.Add(elem.GetString()!);
                 }
             }
 
             var permissions = new List<string>();
-            var permissionsClaim = jwt.GetClaim("permissions");
-            if (permissionsClaim != null && !string.IsNullOrEmpty(permissionsClaim.Value))
+            if (root.TryGetProperty("permissions", out var pElem) && pElem.ValueKind == JsonValueKind.Array)
             {
-                using var doc = JsonDocument.Parse(permissionsClaim.Value);
-                if (doc.RootElement.ValueKind == JsonValueKind.Array)
+                foreach (var elem in pElem.EnumerateArray())
                 {
-                    foreach (var elem in doc.RootElement.EnumerateArray())
-                    {
-                        permissions.Add(elem.GetString()!);
-                    }
+                    permissions.Add(elem.GetString()!);
                 }
             }
 
             Guid? actorUserId = null;
             string? ticketId = null;
-            var actClaim = jwt.GetClaim("act");
-            if (actClaim != null && !string.IsNullOrEmpty(actClaim.Value))
+            bool hasAct = root.TryGetProperty("act", out var actElem) && actElem.ValueKind == JsonValueKind.Object;
+            if (hasAct)
             {
-                using var doc = JsonDocument.Parse(actClaim.Value);
-                if (doc.RootElement.TryGetProperty("sub", out var actSub) &&
-                    doc.RootElement.TryGetProperty("ticket_id", out var actTicket))
+                if (actElem.TryGetProperty("sub", out var actSub) &&
+                    actElem.TryGetProperty("ticket_id", out var actTicket))
                 {
                     actorUserId = Guid.Parse(actSub.GetString()!);
                     ticketId = actTicket.GetString();
@@ -316,18 +297,18 @@ public partial class AuthContextMiddleware
             }
 
             Guid? familyId = null;
-            var fidClaim = jwt.GetClaim("fid");
-            if (fidClaim != null && !string.IsNullOrEmpty(fidClaim.Value))
+            bool hasFid = root.TryGetProperty("fid", out var fElem) && fElem.ValueKind == JsonValueKind.String;
+            if (hasFid)
             {
-                familyId = Guid.Parse(fidClaim.Value);
+                familyId = Guid.Parse(fElem.GetString()!);
             }
 
             // Check invariantes
-            if (actClaim != null && familyId != null)
+            if (hasAct && hasFid)
             {
                 throw new ApiErrorException("ERR-AUTH-002");
             }
-            if (actClaim == null && familyId == null)
+            if (!hasAct && !hasFid)
             {
                 throw new ApiErrorException("ERR-AUTH-002");
             }
@@ -373,7 +354,7 @@ public partial class AuthContextMiddleware
         }
         catch (Exception ex) when (ex is not ApiErrorException)
         {
-            throw new ApiErrorException("ERR-AUTH-002");
+            throw new ApiErrorException("ERR-AUTH-002", "Token de acesso ausente, inválido, expirado ou revogado");
         }
     }
 
