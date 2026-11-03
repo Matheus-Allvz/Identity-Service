@@ -1,8 +1,13 @@
 using System.Text;
 using IdentityService.Modules.M00Transversal;
 using IdentityService.Modules.M00Transversal.Errors;
+using IdentityService.Modules.M01Login;
+using IdentityService.Modules.M02Refresh;
+using IdentityService.Modules.M03Contexto;
+using IdentityService.Modules.M06Impersonation;
 using IdentityService.Modules.M07Chaves;
 using IdentityService.Modules.M08Acessos;
+using IdentityService.Modules.M09Logout;
 using IdentityService.Modules.M11Esquema;
 using IdentityService.Modules.M13Isolamento;
 using IdentityService.Modules.M14Eventos;
@@ -35,8 +40,13 @@ if (!isTesting)
 
 // Registro dos módulos
 builder.Services.AddM00Transversal(builder.Configuration);
+builder.Services.AddM01Login();
+builder.Services.AddM02Refresh();
+builder.Services.AddM03Contexto();
+builder.Services.AddM06Impersonation();
 builder.Services.AddM07Chaves();
 builder.Services.AddM08Acessos();
+builder.Services.AddM09Logout();
 builder.Services.AddM11Esquema(builder.Configuration);
 builder.Services.AddM13Isolamento();
 builder.Services.AddM14Eventos(builder.Configuration);
@@ -64,21 +74,15 @@ if (!string.IsNullOrWhiteSpace(dbConnectionString))
 // Pipeline transversal
 app.UseM00Transversal();
 
-// Endpoints M07
+// Endpoints dos módulos
+app.MapM01Login();
+app.MapM02Refresh();
+app.MapM03Contexto();
+app.MapM06Impersonation();
 app.MapM07Chaves();
+app.MapM09Logout();
 
-// Placeholder endpoints das rotas de negócio para validação transversal (40 §1.1)
-app.MapPost("/api/v1/auth/login", () =>
-{
-    throw new ApiErrorException("ERR-VAL-001", "Pedido inválido ou malformado");
-});
-app.MapPost("/api/v1/auth/refresh", () =>
-{
-    throw new ApiErrorException("ERR-VAL-001", "Pedido inválido ou malformado");
-});
-app.MapPost("/api/v1/auth/switch-context", () => Results.Ok(new { message = "switch-context placeholder" }));
-app.MapPost("/api/v1/auth/logout", () => Results.Ok(new { message = "logout placeholder" }));
-app.MapPost("/api/v1/auth/impersonate", () => Results.Ok(new { message = "impersonate placeholder" }));
+// Placeholder endpoints das rotas de negócio restantes para validação transversal (40 §1.1)
 app.MapPost("/api/v1/tenants", () => Results.Created("/api/v1/tenants/00000000-0000-0000-0000-000000000000", new { message = "tenant created placeholder" }));
 app.MapPost("/api/v1/tenants/{tenant_id}/members", (string tenant_id) => Results.Ok(new { message = "members placeholder" }));
 app.MapPatch("/api/v1/tenants/{tenant_id}/status", (string tenant_id) => Results.Ok(new { message = "tenant status placeholder" }));
