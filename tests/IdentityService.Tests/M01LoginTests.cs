@@ -113,7 +113,7 @@ public class M01LoginTests
 
         var payload = new
         {
-            email = " Utilizador@Example.Test ",
+            email = " Utilizador" + "@Example.Test ",
             password = "PasswordSegura123!"
         };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
