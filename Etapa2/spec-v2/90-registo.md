@@ -35,7 +35,12 @@
 | UT-3-14 Eventos (`M-14`) | AR | Gate 2 | Aceite (Gate 4) | 2 | Jatobá / Rev. Onda 4 | 17 462 B (17.1 KiB ≤ 17.5 KiB), Lint 0 | RF-14, RN-160..169, CA-14.1..8 (8 CA), @critico=4, Σw=24, PRS-320..322 | 2026-11-02 |
 | UT-4-00 a UT-4-14, UT-4-90, UT-4-91 | RI + VAL | UT-3-00 a UT-3-14 | Aceite (Gate 4) | 1 | Subagentes Gemini 3.8 High/Medium | Gate 4 aceite (15/15 pacotes ≤ 59.7 KiB, fecho OK, Lint 0) | 109 CAs (100% @borda), Σw=327, 0 colisões de ID | 2026-11-02 |
 | UT-5-00 Plano de fases (`60`) | ARQ | Gate 4 | Aceite | 1 | Subagente Gemini 3.8 High | 4 fases (F-00 a F-03), 109 CAs, Σw=327, Lint 0 | Alinhamento ecossistema B2B (`Docs/Alinhamento-Ecossistema-B2B.md`) | 2026-11-02 |
-| UT-5-01, F-00 a F-03, UT-5-90 | AUD, CON | UT-5-00 | Pronto para execução | — | — | — | — | 2026-11-02 |
+| UT-5-01 Suite de aceitação (`tests/IdentityService.Acceptance`) | AUD | Gate 4 | Aceite | 1 | Subagentes Gemini 3.8 High (`AUD-A` + `AUD-B`) | 109 CAs + bordas (F-00..F-03), Build 0 avisos/0 erros | Suite isolada fora do worktree dos construtores (`scratch/ut-5-01-acceptance`) | 2026-11-02 |
+| F-00 Fundação técnica (`M-00, M-07, M-08, M-11, M-13, M-14`) | CON + VAL | UT-5-00 | Aceite | 1 | `CON-F00` (`bda7e68c`) + `VAL-F00` (`c1da7fe7`) | G1–G6 Aprovados; $C_w^{(1)} = 95.0\%$ (38/40); $C_w^{\text{final}} = 100.0\%$ (40/40); `@critico` 17/17 | A-131 resolvido em `2dfbc3e`; branch `feat/ma/f00-fundacao-tecnica` | 2026-11-02 |
+| F-01 Autenticação, sessão e contexto (`M-01, M-02, M-03, M-06, M-09`) | CON | F-00 | Pronto para execução | — | — | — | 38 CAs (Σw=114) | 2026-11-02 |
+| F-02 Tenants e membros (`M-04, M-05`) | CON | F-01 | Pronto para execução | — | — | — | 16 CAs (Σw=48) | 2026-11-02 |
+| F-03 Governança de estado (`M-10, M-12`) | CON | F-01, F-02 | Pronto para execução | — | — | — | 15 CAs (Σw=45) | 2026-11-02 |
+| UT-5-90 Integração e auditoria final | AUD | F-00 a F-03, UT-5-01 | Pronto para execução | — | — | — | — | 2026-11-02 |
 
 > **Nota sobre UT-2-9x / Gate 2 ciclo 5 (Ameaça à validade, D-24):** O validador do ciclo 5 passa de Claude para Gemini (subagente Antigravity novo) por esgotamento de quota do Claude Code, autorizado pelo PO na decisão D-24. Registado como ameaça à validade da fundação. Observação para o E4: o validador Gemini identificou apenas 1 achado editorial (A-130), contra 16–25 achados dos ciclos anteriores em Claude. Como não é possível distinguir se decorre da limpeza prévia do ciclo 5 ou de menor rigor do modelo, reforça-se a obrigatoriedade da revisão cega cruzada (Onda 4) por modelos Claude dos módulos elaborados por agentes Gemini.
 
@@ -222,6 +227,7 @@ IDs livres e faixas por UT e por módulo: `00` §4 (usados no núcleo e nos dado
 | D-25 | 2026-10-19 | Carcará não retorna mais ao agente Claude e atua de forma autônoma como único Orquestrador; autorização para prosseguir imediatamente com as próximas fases (Onda 3) | Mensagem literal do PO (Matheus), 2026-10-19 ("você não retorna mais ao agente claude, você é o novo orquestrador. prossiga para o próximo passo.") | `80`, `90`, Onda 3 (UT-3-00..14) | Vigente |
 | D-26 | 2026-11-02 | Diretriz de alinhamento do ecossistema B2B (preservar arquitetura e contratos do `Identity-Service` e solicitar adaptação às demais equipes onde aplicável, documentado em `Docs/Alinhamento-Ecossistema-B2B.md` e `20-sistema-existente.md`), aprovação dos pressupostos pendentes (`PRS-80..84`, `PRS-86`, `PRS-100..322`), confirmação das hipóteses de `Q-16`, `Q-17` e dúvidas de módulo (`Q-50..160`), fecho do Gate 4 (Onda 4) e aprovação do Plano de Fases `60-plano-de-fases.md` (`UT-5-00`) | Mensagem literal do PO (Matheus), 2026-11-02 ("Tomaremos as medidas que preservem o que mapeamos para o identityservice e solicitaremos a adaptação por parte dos outros projetos... orquestre subagentes gemini 3.8 high ou medium para prosseguir com cada parte dos passos de 1 a 3") | `00`, `10`, `20`, `30`, `40`, `50-modulos/*`, `60`, `70`, `80`, `90`, `Docs/Alinhamento-Ecossistema-B2B.md` | Vigente |
 | D-27 | 2026-11-02 | Convenção obrigatória de Git para o Orquestrador e todos os subagentes: padrão de branch `<tipo>/ma/<texto-da-branch>` (`feat`, `docs`, `fix`, `test`, `refactor`, `chore` + `ma` de Matheus Alves) e fluxo estrito `Branch -> PR -> Merge` | Mensagem literal do PO (Matheus), 2026-11-02 ("Sempre prossiga com o padrão (e instrua os subagentes também) branch (feat, docs, fix..)/user responsável (no caso, 'ma' de matheus alves)/texto da branch. Branch para pr para merge.") | `80` §3, §4.3; `90` §3 | Vigente |
+| D-28 | 2026-11-02 | Autorizado `{"sdk":{"version":"10.0.402","rollForward":"latestPatch"}}` no `global.json` devido à atualização automática do Windows de `.NET SDK 10.0.402` para `10.0.403` (runtime `10.0.14`) no anfitrião em 2026-10-27, mantendo compatibilidade simultânea com `10.0.403` no host e `10.0.402` no `Dockerfile` (`mcr.microsoft.com/dotnet/sdk:10.0.402`) | Resposta do PO à Paragem Obrigatória (Regra 6 do `80-orquestracao.md`), 2026-11-02 | `global.json`, Fase 5 (`F-00` a `F-03`, `UT-5-01`) | Vigente |
 
 ## 4. Perguntas
 | ID | Pergunta | Quem responde | Bloqueia | Estado | Resposta |
@@ -412,4 +418,17 @@ Esqueleto em `evidencias/pins/` (sem `bin/` nem `obj/`). Reproduzir: `bash evide
 | Defeitos de ambiguidade (Fase 4) | Nenhum registado na v2 |
 | Pedidos de alteração `CR-nn` | Ver §7 (CR-01 a CR-16) |
 | Congelamentos | **Fundação (Gate 2 Aceite, ciclo 5, 2026-10-19):** ficheiro `spec-fundacao.sha256` gerado com os hashes SHA-256 de `00`, `10`, `20`, `30`, `40`, `70`. **Especificação Completa (Gate 4 Aceite + UT-5-00, 2026-11-02, D-26):** ficheiros `spec-fundacao.sha256` e `spec.sha256` gerados com os hashes SHA-256 de `00`, `10`, `20`, `30`, `40`, `50-modulos/M-00` a `M-14`, `60`, `70`, `80`. Qualquer alteração posterior exige CR-nn aprovado pelo PO |
-| Auditoria final (UT-5-90) | Não se aplica |
+| Auditoria final (UT-5-90) | Em preparação (protocolo pré-registado abaixo) |
+
+## 10. Protocolo Pré-Registado da Fase 5 (E1 §6.7)
+| Item | Valor Pré-Registado |
+|---|---|
+| Modelo e versão | Subagentes Antigravity (`Gemini 3.8 High / Pro` para construção e auditoria; `D-24`, `D-25`) |
+| Ferramenta | Agentes com acesso a ficheiros, compilador `.NET SDK 10.0.403` (`global.json` com `rollForward: latestPatch`, `D-28`) e `Docker Engine 29.7.2` |
+| Limite de agentes simultâneos e orçamento | Até 4 subagentes simultâneos; pacotes de módulo $\le 60\text{ KiB}$ (`medir-pacotes.py`) |
+| Modelos de brief usados | `80-orquestracao.md` §4.3 (Construtor), §4.4 (Validador), §4.5 (Retrabalho) |
+| Isolamento da suite oculta no 1.º ciclo | Projeto `tests/IdentityService.Acceptance` desenvolvido pelo AUD (`UT-5-01`) fora do worktree dos construtores (`scratch/ut-5-01-acceptance`); copiado pelo ORQ apenas para validação após a entrega do ciclo 1 de cada fase |
+| Limite de ciclos por fase | 3 ciclos |
+| Comando exato de compilação | `dotnet build --warnaserror` |
+| Comando exato de arranque (G1, `70` §2) | `docker compose down -v --remove-orphans && docker compose up -d --build --wait --wait-timeout 300 && test "$(docker compose exec -T postgres psql -U identity -d identity -tAc 'SELECT count(*) FROM role')" = 4 && docker compose down -v` |
+| Fluxo Git obrigatório (`D-27`) | `<tipo>/ma/<texto-da-branch>` (`feat/ma/f00-fundacao-tecnica`, `feat/ma/f01-autenticacao-sessao-contexto`, `feat/ma/f02-tenants-e-membros`, `feat/ma/f03-governanca-estado`, `test/ma/ut-5-01-suite-aceitacao`) $\rightarrow$ PR $\rightarrow$ Merge |
