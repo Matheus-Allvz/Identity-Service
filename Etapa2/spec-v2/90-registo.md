@@ -37,8 +37,8 @@
 | UT-5-00 Plano de fases (`60`) | ARQ | Gate 4 | Aceite | 1 | Subagente Gemini 3.8 High | 4 fases (F-00 a F-03), 109 CAs, Σw=327, Lint 0 | Alinhamento ecossistema B2B (`Docs/Alinhamento-Ecossistema-B2B.md`) | 2026-11-02 |
 | UT-5-01 Suite de aceitação (`tests/IdentityService.Acceptance`) | AUD | Gate 4 | Aceite | 1 | Subagentes Gemini 3.8 High (`AUD-A` + `AUD-B`) | 109 CAs + bordas (F-00..F-03), Build 0 avisos/0 erros | Suite isolada fora do worktree dos construtores (`scratch/ut-5-01-acceptance`) | 2026-11-02 |
 | F-00 Fundação técnica (`M-00, M-07, M-08, M-11, M-13, M-14`) | CON + VAL | UT-5-00 | Aceite | 1 | `CON-F00` (`bda7e68c`) + `VAL-F00` (`c1da7fe7`) | G1–G6 Aprovados; $C_w^{(1)} = 95.0\%$ (38/40); $C_w^{\text{final}} = 100.0\%$ (40/40); `@critico` 17/17 | A-131 resolvido em `2dfbc3e`; branch `feat/ma/f00-fundacao-tecnica` | 2026-11-02 |
-| F-01 Autenticação, sessão e contexto (`M-01, M-02, M-03, M-06, M-09`) | CON | F-00 | Pronto para execução | — | — | — | 38 CAs (Σw=114) | 2026-11-02 |
-| F-02 Tenants e membros (`M-04, M-05`) | CON | F-01 | Pronto para execução | — | — | — | 16 CAs (Σw=48) | 2026-11-02 |
+| F-01 Autenticação, sessão e contexto (`M-01, M-02, M-03, M-06, M-09`) | CON + VAL + REV | F-00 | Aceite | 2 | `CON-F01` (`9db7030b`), `VAL-F01` (`7033d7ad`, `ecc62485`), `REV-F01` (`142ec3d1`) | G1–G6 Aprovados; $C_w^{(1)} = 97.37\%$ (37/38); $C_w^{\text{final}} = 100.0\%$ (38/38); `@critico` 19/19 | A-132 (`CA-03.4` TOCTOU `jti`) resolvido em `88b9d39`; branch `feat/ma/f01-autenticacao-sessao-contexto` | 2026-11-02 |
+| F-02 Tenants e membros (`M-04, M-05`) | CON | F-01 | Em execução | 1 | Subagente Gemini 3.8 High (`CON-F02`) | — | 16 CAs (Σw=48), branch `feat/ma/f02-tenants-e-membros` | 2026-11-02 |
 | F-03 Governança de estado (`M-10, M-12`) | CON | F-01, F-02 | Pronto para execução | — | — | — | 15 CAs (Σw=45) | 2026-11-02 |
 | UT-5-90 Integração e auditoria final | AUD | F-00 a F-03, UT-5-01 | Pronto para execução | — | — | — | — | 2026-11-02 |
 
@@ -398,6 +398,12 @@ Fonte: `Etapa2/spec_identity_service.md` v1.0-baseline (citada como `spec:linha`
 | A-54 | `Content-Type` sem distinção de maiúsculas, espaços em volta de `;` e `=` ignorados | — | `40` §1 |
 
 **Scripts de classe:** `python evidencias/medir-pacotes.py` (tamanho e fecho de referências dos 15 pacotes; resultado `evidencias/medir-pacotes.out.txt`) e `bash evidencias/medir-postgres.sh` (matriz de isolamento; resultado `evidencias/matriz-isolamento.out.txt`).
+
+### 7.4 Achados da Fase 5 (Implementação) e resolução
+| A | Fase / Ciclo | Conserto pontual | Classe tornada impossível (`REV`) | Onde |
+|---|---|---|---|---|
+| A-131 | F-00 (Ciclo 1) | Placeholders de `POST /api/v1/auth/login` e `refresh` em `Program.cs` lançam `ERR-VAL-001` (400) e método de `EP-07` alinhado a `POST` (`2dfbc3e`) | Substituídos pelos endpoints definitivos em `F-01` e `F-02` | `src/IdentityService/Program.cs` |
+| A-132 | F-01 (Ciclo 1 → 2, `@critico`) | `UpdateActiveContextAsync` adquire `SELECT ... FOR UPDATE` na linha `ACTIVE` de `refresh_token` da família `fid` e `SwitchContextEndpoint` verifica `IsJtiRevokedAsync` e grava `denylist:jti:{jti}` dentro da transação bloqueada (`88b9d39`) | Elimina TOCTOU distribuído (*Check-Then-Act* entre leitura inicial no middleware e gravação tardia no Redis/BD) serializando mutações de sessão pela linha ativa da família | `SessionStore.cs`, `SwitchContextEndpoint.cs`, `M03ContextoTests.cs` |
 
 ## 8. Verificação de pins (atividade 4.7 antecipada)
 Esqueleto em `evidencias/pins/` (sem `bin/` nem `obj/`). Reproduzir: `bash evidencias/medir-pins.sh`; resultado de 2026-10-19 em `evidencias/medir-pins.out.txt`.
