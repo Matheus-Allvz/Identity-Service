@@ -1,6 +1,6 @@
 # 80 · Orquestração — Identity-Service
 
-> **Conjunto:** [00 Índice](00-indice.md) · **Dono:** ORQ · **Estado:** Vivo · **Atualizado em:** 2026-10-19 (ORQ = Carcará, D-24)
+> **Conjunto:** [00 Índice](00-indice.md) · **Dono:** ORQ · **Estado:** Congelado (Gate 4) · **Atualizado em:** 2026-11-02 (ORQ = Carcará, D-24)
 > Os briefs abaixo são modelos. O orquestrador só preenche os campos `{ }`. **Não** cola histórico de conversa, relatos de outros agentes, segredos nem dados pessoais.
 
 ## 1. Papéis
@@ -40,6 +40,7 @@ Pré-registado na UT-5-00, antes da primeira fase: modelo e versão (`claude-opu
 5. Ações fora do repositório exigem uma mensagem literal do PO.
 6. **Paragem obrigatória:** perante uma situação que a especificação não prevê e que não admite hipótese segura, o agente para e pergunta ao PO: o que fazia · o que observou · o que a especificação previa · opções · recomendação.
 7. Pedidos de alteração: o ARQ propõe `CR-nn`; só o PO aprova. Nada é aplicado a ficheiros congelados sem aprovação.
+8. **Convenção obrigatória de Git, Branches e PRs (D-27):** Todo o trabalho do orquestrador e dos subagentes **DEVE** seguir o fluxo `Branch -> PR -> Merge` com o padrão de nomenclatura `<tipo>/ma/<texto-da-branch>` (onde `<tipo>` ∈ `{feat, docs, fix, test, refactor, chore}` e `ma` identifica o responsável Matheus Alves; ex.: `docs/ma/gate-4-congelamento`, `feat/ma/f00-fundacao-tecnica`).
 
 ## 4. Briefs
 
@@ -74,11 +75,11 @@ Entrega: um defeito por linha, com severidade (Alta/Média/Baixa) e ficheiro:lin
 
 ### 4.3 Construtor (F-nn) — usado na Fase 5
 ```text
-Papel: Construtor da fase {F-nn}, no worktree {caminho}, branch {branch}.
+Papel: Construtor da fase {F-nn}, no worktree {caminho}, branch feat/ma/{f-nn}-{slug} (padrão obrigatório <tipo>/ma/<texto-da-branch>, D-27).
 Lê só: {pacote da fase}. Ciclo 1: NÃO recebes a suite de aceitação; escreves os teus testes a partir dos CA, um por CA, com o ID no nome.
 Escreves só: {pastas}. Não tocar ainda: {lista}.
 Ambiguidade: não inventes; regista em "Dúvidas" e segue com a hipótese mais simples, marcada.
-Commits com os IDs (RF-nn, CA-nn.m). Não fazes merge.
+Commits com os IDs (RF-nn, CA-nn.m). Segue o fluxo Branch -> PR -> Merge (não fazes merge direto sem validação).
 Antes de entregar, corre a varredura de dados pessoais (`70` §5); saída 0 = limpo.
 Entrega: commits (SHA + mensagem) · comandos com resultado · tabela CA → teste → resultado · não feito ·
 decisões fora dos docs · dúvidas (com hipótese) · débitos.

@@ -1,7 +1,7 @@
 # Identity-Service
 ## Especificação Modular de Requisitos para LLMs & Arquitetura Multi-Tenant
 
-> **Status:** Onda 3 Concluída (15 de 15 módulos aceites · 106 CAs · Lint 0 · Contexto $\le 60\text{ KiB}$)  
+> **Status:** Gate 4 Congelado + Plano de Fases `UT-5-00` Concluído (15 de 15 módulos congelados · 109 CAs com 100% `@borda` · $\Sigma w = 327$ · Lint 0 · Pacotes $\le 59.6\text{ KiB}$)  
 > **Metodologia:** Processo de Especificação de Requisitos para LLMs v2.1  
 > **Autor / PO:** Matheus Allvz  
 > **Orquestrador:** Carcará (Antigravity Multi-Agent Orchestrator)
@@ -59,9 +59,11 @@ Identity-Service/
 │   │   ├── 20-sistema-existente.md                    # Análise do userservice legado e lacunas
 │   │   ├── 30-dados.md                                # Modelo PostgreSQL, DDL, ENUMs e RLS
 │   │   ├── 40-contratos.md                            # Endpoints, contratos de erro e interfaces
+│   │   ├── 60-plano-de-fases.md                       # Plano de 4 fases de implementação (F-00 a F-03)
 │   │   ├── 70-ambiente-teste.md                       # Testcontainers, Kestrel e suite de integração
 │   │   ├── 80-orquestracao.md                         # Papéis, protocolo e briefs de delegação
 │   │   ├── 90-registo.md                              # Fonte única de estado, log D-nn, PRS e CRs
+│   │   ├── spec.sha256                                # Hashes SHA-256 de congelamento do Gate 4
 │   │   │
 │   │   ├── 50-modulos/                                # OS 15 MÓDULOS DE ESPECIFICAÇÃO (Onda 3)
 │   │   │   ├── M-00-rotas-bypass.md                   # M-00: Encaminhamento, bypass e tratador global
@@ -92,7 +94,8 @@ Identity-Service/
 │   │
 │   └── validacoes/                                    # Relatórios de validação formal dos Gates 1 e 2
 │
-└── Docs/                                              # DOCUMENTAÇÃO DE ORIGEM E DESIGN
+└── Docs/                                              # DOCUMENTAÇÃO DE ORIGEM, DESIGN E ECOSSISTEMA
+    ├── Alinhamento-Ecossistema-B2B.md                 # Alinhamento e contratos com Equipe 9, Grupo 2 e Grupo 8
     ├── Apresentacao-Processo-e-Template.md            # Versão inicial da apresentação
     ├── Arquitetura Base do Projeto.pdf                # Arquitetura visual original
     └── Ideia Base.md                                  # Requisitos preliminares de negócio
@@ -100,26 +103,26 @@ Identity-Service/
 
 ---
 
-## 📊 Painel de Métricas da Especificação (Onda 3)
+## 📊 Painel de Métricas da Especificação (Gate 4 Congelado)
 
-| Módulo | Nome | Tamanho (Bytes) | Tamanho (KiB) | Teto (KiB) | Erros Lint | CAs | Estado |
-|---|---|---|---|---|---|---|---|
-| **M-00** | Rotas, bypass e tratador global | 11 733 | 11.46 | 13.0 | 0 | 5 | **Aceite** |
-| **M-01** | Login e bloqueio de conta | 12 848 | 12.55 | 12.6 | 0 | 7 | **Aceite** |
-| **M-02** | Sessão, refresh e detecção de reuso | 10 819 | 10.57 | 10.6 | 0 | 8 | **Aceite** |
-| **M-03** | Troca de contexto (SINGLE / MACRO) | 14 287 | 13.95 | 15.1 | 0 | 8 | **Aceite** |
-| **M-04** | Provisionamento de tenant | 14 480 | 14.14 | 14.5 | 0 | 8 | **Aceite** |
-| **M-05** | Membros e atribuição de papéis | 10 863 | 10.61 | 10.7 | 0 | 8 | **Aceite** |
-| **M-06** | Impersonation por suporte | 15 494 | 15.13 | 15.2 | 0 | 7 | **Aceite** |
-| **M-07** | Gestão de chaves RSA e JWKS | 21 382 | 20.88 | 21.0 | 0 | 8 | **Aceite** |
-| **M-08** | Consultas de acessos e elegibilidade | 11 098 | 10.84 | 11.8 | 0 | 5 | **Aceite** |
-| **M-09** | Logout e revogação em Redis | 20 599 | 20.12 | 21.1 | 0 | 8 | **Aceite** |
-| **M-10** | Estado do utilizador (ativo/suspenso) | 10 893 | 10.64 | 10.7 | 0 | 8 | **Aceite** |
-| **M-11** | Esquema, migrações e seed | 7 162 | 6.99 | 7.3 | 0 | 3 | **Aceite** |
-| **M-12** | Estado do tenant (ativo/suspenso) | 14 805 | 14.46 | 14.8 | 0 | 7 | **Aceite** |
-| **M-13** | Isolamento e interceptores RLS | 17 203 | 16.80 | 18.4 | 0 | 8 | **Aceite** |
-| **M-14** | Eventos e outbox Kafka | 17 385 | 16.98 | 19.0 | 0 | 8 | **Aceite** |
-| **Total** | **15 módulos homologados** | **211 347** | **~206.4 KiB** | — | **0** | **106 CAs** | **100% OK** |
+| Módulo | Nome | Tamanho (Bytes) | Tamanho (KiB) | Teto (KiB) | Pacote Total (KiB) | Erros Lint | CAs (`@borda`) | $\Sigma w$ | Estado |
+|---|---|---|---|---|---|---|---|---|---|
+| **M-00** | Rotas, bypass e tratador global | 12 261 | 11.97 | 12.0 | 59.0 | 0 | 5 (100%) | 15 | **Congelado (Gate 4)** |
+| **M-01** | Login e bloqueio de conta | 12 165 | 11.88 | 12.0 | 59.2 | 0 | 7 (100%) | 21 | **Congelado (Gate 4)** |
+| **M-02** | Sessão, refresh e detecção de reuso | 10 159 | 9.92 | 10.0 | 59.2 | 0 | 8 (100%) | 24 | **Congelado (Gate 4)** |
+| **M-03** | Troca de contexto (SINGLE / MACRO) | 14 010 | 13.68 | 14.0 | 58.6 | 0 | 8 (100%) | 24 | **Congelado (Gate 4)** |
+| **M-04** | Provisionamento de tenant | 14 280 | 13.95 | 14.0 | 59.4 | 0 | 8 (100%) | 24 | **Congelado (Gate 4)** |
+| **M-05** | Membros e atribuição de papéis | 10 233 | 9.99 | 10.0 | 59.3 | 0 | 8 (100%) | 24 | **Congelado (Gate 4)** |
+| **M-06** | Impersonation por suporte | 13 564 | 13.25 | 13.5 | 59.1 | 0 | 7 (100%) | 21 | **Congelado (Gate 4)** |
+| **M-07** | Gestão de chaves RSA e JWKS | 16 938 | 16.54 | 20.0 | 55.5 | 0 | 8 (100%) | 24 | **Congelado (Gate 4)** |
+| **M-08** | Consultas de acessos e elegibilidade | 11 692 | 11.42 | 11.5 | 59.6 | 0 | 5 (100%) | 15 | **Congelado (Gate 4)** |
+| **M-09** | Logout e revogação em Redis | 19 720 | 19.26 | 20.0 | 58.1 | 0 | 8 (100%) | 24 | **Congelado (Gate 4)** |
+| **M-10** | Estado do utilizador (ativo/suspenso) | 10 225 | 9.99 | 10.0 | 59.3 | 0 | 8 (100%) | 24 | **Congelado (Gate 4)** |
+| **M-11** | Esquema, migrações e seed | 6 730 | 6.57 | 7.0 | 59.2 | 0 | 6 (100%) | 18 | **Congelado (Gate 4)** |
+| **M-12** | Estado do tenant (ativo/suspenso) | 13 389 | 13.08 | 14.0 | 58.2 | 0 | 7 (100%) | 21 | **Congelado (Gate 4)** |
+| **M-13** | Isolamento e interceptores RLS | 16 373 | 15.99 | 16.0 | 57.8 | 0 | 8 (100%) | 24 | **Congelado (Gate 4)** |
+| **M-14** | Eventos e outbox Kafka | 17 462 | 17.05 | 17.5 | 58.0 | 0 | 8 (100%) | 24 | **Congelado (Gate 4)** |
+| **Total** | **15 módulos homologados** | **199 201** | **194.53 KiB** | — | **$\le 59.6\text{ KiB}$** | **0** | **109 CAs** | **327** | **100% OK** |
 
 ---
 

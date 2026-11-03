@@ -1,6 +1,6 @@
 # 20 · Sistema existente e integrações — Identity-Service
 
-> **Conjunto:** [00 Índice](00-indice.md) · **Dono:** AR (UT-1-02) · **Estado:** Rascunho (ciclo 5) · **Atualizado em:** 2026-10-19
+> **Conjunto:** [00 Índice](00-indice.md) · **Dono:** AR (UT-1-02) · **Estado:** Congelado (Gate 4) · **Atualizado em:** 2026-11-02
 > O serviço é novo: não há código anterior a integrar. Dependências com comportamento a fixar: EXT-01 a EXT-03 (infraestrutura, medida). Consumidores com contrato: EXT-04 e EXT-05 (não medidos: lacunas). Toda a linha leva etiqueta de evidência (`00` §5).
 > Cada `[MEDIDO]` cita o identificador da medição (`M1`, `R1`, `K1`) num script reprodutível de `evidencias/` e o ficheiro `.out.txt` com o resultado de 2026-10-19. Reproduzir: `bash evidencias/medir-postgres.sh`, `medir-redis.sh`, `medir-kafka.sh` (Docker 29.7.2).
 > `Actuar-Projects/userservice-api` e `accountservice-api` são só material de estudo (Ideia Base §3.2), não sistemas externos; as citações `[CÓDIGO]` estão nos PRS-03, PRS-04 e PRS-07 (`90` §2.1).
@@ -81,33 +81,41 @@
 
 | Campo | Valor |
 |---|---|
-| O que é | Ponto de entrada REST (Ideia Base §1) |
-| Usado pelos módulos | Consome EP-10 (M-07) e lê `denylist:*` (M-00) |
-| Ambiente onde foi medido | Não medido: o Gateway não existe nem tem documentação própria |
+| O que é | Ponto de entrada REST oficial do ecossistema B2B baseado em Nginx (`gateway/nginx.conf`, `gateway/common_routes.conf`) [DOC] `Printf-PedroCardoso/portal-b2b-kit-infra` |
+| Usado pelos módulos | Consome EP-10 (M-07) e roteia EP-01 a EP-09 (M-01 a M-06, M-09, M-10, M-12) |
+| Ambiente onde foi analisado | Repositório oficial do kit de infraestrutura [DOC] `Printf-PedroCardoso/portal-b2b-kit-infra` e documento normativo `Docs/Alinhamento-Ecossistema-B2B.md` |
 
 ### Contratos usados
 | ID | Operação | Resposta | Evidência |
 |---|---|---|---|
-| EXT-04.1 | Gateway obtém `GET /.well-known/jwks.json` | JWKS RFC 7517 (`40`) | [DOC] Ideia Base §6.2, §6.5 |
-| EXT-04.2 | Gateway lê `denylist:jti`, `denylist:user`, `denylist:tenant` em cada pedido autenticado | Chaves de `30` §4 | [DOC] Ideia Base §6.2.2 |
+| EXT-04.1 | Gateway roteia os prefixos `/api/v1/auth/*`, `/api/v1/tenants/*`, `/api/v1/users/*` e `/.well-known/jwks.json` para o backend `usuarios_backend` (`Identity-Service`) na porta 8080 | Respostas HTTP 200/204/4xx/5xx de cada endpoint | [DOC] `Printf-PedroCardoso/portal-b2b-kit-infra`; `Docs/Alinhamento-Ecossistema-B2B.md` (D-ECO-01) |
+| EXT-04.2 | Gateway repassa o cabeçalho `Authorization: Bearer <jwt>` para os serviços internos sem decodificar claims de negócio; os microsserviços validam RS256 via JWKS exposto em EP-10 | JWKS RFC 7517 (`40`) | [DOC] `Printf-PedroCardoso/portal-b2b-kit-infra`; `Docs/Alinhamento-Ecossistema-B2B.md` (D-ECO-03) |
+| EXT-04.3 | Gateway propaga ou gera o cabeçalho `X-Correlation-Id` com identificador único no formato UUID canônico de 36 caracteres (`Guid.TryParseExact(val, "D")`) | Rastreabilidade distribuída ponta a ponta | [DOC] `Printf-PedroCardoso/portal-b2b-kit-infra`; `Docs/Alinhamento-Ecossistema-B2B.md` (D-ECO-08) |
 
 ### Lacunas
 | ID | O que não se sabe | Porque não foi verificado | Risco | Quem pode responder |
 |---|---|---|---|---|
-| L-01 | Se o Gateway repassa o JWT, que cache de JWKS usa, como reage a `kid` desconhecido e se compara `denylist:user` com `iat` como a RG-07 | Gateway inexistente | Revogação diferente na borda e no serviço | PO |
+| L-01 | Fechada em 2026-11-02: Inspeção de `Printf-PedroCardoso/portal-b2b-kit-infra` confirmou que o Nginx repassa o cabeçalho `Authorization` sem validação inline nem consulta ao Redis. O alinhamento foi formalizado em `Docs/Alinhamento-Ecossistema-B2B.md` (D-ECO-01, D-ECO-03, D-ECO-08): preservou-se o contrato do `Identity-Service` (RS256 via JWKS, portas e rotas `/api/v1/auth`, `/api/v1/tenants`, `/api/v1/users`), solicitando a inclusão das rotas no Nginx e o container `redis:7.4.6` ao kit | — | — | — |
 
 ## EXT-05 · Microsserviços de domínio (consumidores)
 
 | Campo | Valor |
 |---|---|
-| O que é | `Produtos`, `Fornecimentos`, `Demanda`, `Mercado`, `Negociação/Leilão`, `Pedidos`, `Logística/Frete`, `Transportadoras` (Ideia Base §1) |
-| Usado pelos módulos | Consomem claims (`10` §3.5) e EV-01 a EV-04 (M-14) |
-| Ambiente onde foi medido | Não medido: serviços inexistentes |
+| O que é | Microsserviços do ecossistema: `produtos-service`, `fornecimentos-service` [DOC] `davicalvarenga/Sistema-MicServ-SD` (Grupo 2), `negociacao-service` [DOC] `AmandaBfa/AED---Processo-e-Artefato-SD-` (Grupo 8), além de `demanda`, `mercado`, `pedidos`, `logistica`, `transportadoras` [DOC] `Printf-PedroCardoso/portal-b2b-kit-infra` |
+| Usado pelos módulos | Consomem claims do token de acesso (`10` §3.5) e eventos EV-01 a EV-04 (M-14) |
+| Ambiente onde foi analisado | Repositórios [DOC] `Printf-PedroCardoso/portal-b2b-kit-infra`, [DOC] `davicalvarenga/Sistema-MicServ-SD`, [DOC] `AmandaBfa/AED---Processo-e-Artefato-SD-` e `Docs/Alinhamento-Ecossistema-B2B.md` |
+
+### Contratos usados
+| ID | Operação | Resposta | Evidência |
+|---|---|---|---|
+| EXT-05.1 | Consumidores validam o Access Token RS256 via JWKS (`/.well-known/jwks.json`), extraindo `sub`, `tenant_id`, `group_id`, `active_scope`, `view_mode`, `roles` e `permissions` | Autorização local stateless por escopo ativo (`BUYER`, `SUPPLIER`, `CARRIER`, `TENANT_ADMIN`) | [DOC] `davicalvarenga/Sistema-MicServ-SD` (ADR-012); `Docs/Alinhamento-Ecossistema-B2B.md` (D-ECO-03, D-ECO-04) |
+| EXT-05.2 | Consumidores de `empresa_cadastrada` (EV-01) consomem o payload canônico (`tenant_id`, `cnpj`, `legal_name`, `status`, `scopes`) para alimentar projeções locais | Projeção local atualizada; deduplicação por `event_id` | [DOC] `davicalvarenga/Sistema-MicServ-SD` (Pendência P-12); `Docs/Alinhamento-Ecossistema-B2B.md` (D-ECO-05) |
+| EXT-05.3 | Consumidores validam a assinatura de contexto `context_jws` no cabeçalho Kafka para atestar proveniência do evento | Autenticidade e integridade da mensagem verificadas | [DOC] `Docs/Alinhamento-Ecossistema-B2B.md` (D-ECO-05) |
 
 ### Lacunas
 | ID | O que não se sabe | Porque não foi verificado | Risco | Quem pode responder |
 |---|---|---|---|---|
-| L-02 | Validação de `context_jws` e deduplicação por `event_id` nos consumidores | Serviços inexistentes | Só a jusante; não afeta CA deste serviço | PO |
+| L-02 | Fechada em 2026-11-02: Análise dos repositórios [DOC] `davicalvarenga/Sistema-MicServ-SD` (Pendência P-12 sobre `empresa_cadastrada` e Pendência P-31 sobre empresas com múltiplos perfis simultâneos) e [DOC] `AmandaBfa/AED---Processo-e-Artefato-SD-`. As divergências foram solucionadas em `Docs/Alinhamento-Ecossistema-B2B.md` (D-ECO-04, D-ECO-05) pela preservação do contrato do `Identity-Service`: o payload rico de EV-01 atende ao `fornecimentos-service` e o fluxo de `switch-context` resolve o suporte multi-perfil | — | — | — |
 
 ## Lacunas de infraestrutura
 | ID | O que não se sabe | Porque não foi verificado | Risco | Quem pode responder |

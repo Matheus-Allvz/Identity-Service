@@ -100,20 +100,20 @@ P = {
  'M-03': ([], ['ENUM-03', 'ENUM-06', 'ENUM-06 T', 'AUD.M03'], ['EP-02', 'IF-01.2', 'IF-03.1', 'IF-04.1', 'IF-06.1', 'IF-08.1', 'IF-09.1', 'IF-09.2', 'IF-09.3', 'IF-09.4', 'IF-09.5', 'IF-09.8'], '13', False, False, [], ['PRS-05']),
  'M-04': ([], ['ENT-01', 'ENT-02', 'ENT-03', 'ENUM-01', 'ENUM-02', 'ENUM-03', 'AUD.M04'], ['EP-06', 'EV-01', 'IF-03.1', 'IF-07.1', 'IF-08.1', 'IF-08.2', 'IF-12.1'] + dono('IF-10'), '13', False, False, [], ['PRS-36', 'PRS-37']),
  'M-05': ([], ['ENT-02', 'ENT-03', 'ENT-04', 'ENT-05', 'ENT-06', 'ENT-07', 'ENUM-01', 'AUD.M05'], ['EP-07', 'IF-03.1', 'IF-08.1', 'IF-08.2', 'IF-11.3'] + dono('IF-12'), '13', False, False, [], ['PRS-38']),
- 'M-06': ([], ['ENT-04', 'ENUM-03', 'ENUM-04', 'ENUM-07', 'AUD.M06'], ['EP-05', 'IF-03.1', 'IF-06.1', 'IF-08.1', 'IF-09.1', 'IF-09.2', 'IF-09.3', 'IF-09.4', 'IF-09.8'], '13', False, False, [], ['PRS-08', 'PRS-40', 'PRS-41']),
+ 'M-06': ([], ['ENT-04', 'ENUM-03', 'ENUM-04', 'ENUM-07', 'AUD.M06', '## 6.'], ['EP-05', 'IF-03.1', 'IF-06.1', 'IF-08.1', 'IF-09.1', 'IF-09.2', 'IF-09.3', 'IF-09.4', 'IF-09.8'], '13', False, False, [], ['PRS-08', 'PRS-40', 'PRS-41']),
  'M-07': (['### 3.7'], [], ['EP-10', 'IF-05.1'] + dono('IF-06'), '13', False, False, [], ['PRS-44']),
  'M-08': (['### 3.8'], ['ENT-01', 'ENT-02', 'ENT-03', 'ENT-04', 'ENT-05', 'ENT-06', 'ENT-07', 'ENUM-01', 'ENUM-03', 'ENUM-04', '## 4.', '## 6.'], ['IF-04.5', 'IF-04.6', 'IF-11.3'] + dono('IF-09'), '1', False, False, ['EXT-02'], ['PRS-05']),
  'M-09': ([], ['ENUM-06', 'AUD.M09'], ['EP-04', 'IF-01.3', 'IF-03.1', 'IF-04.1', 'IF-08.1'], '13', False, False, [], []),
  'M-10': ([], ['ENT-02', 'ENT-04', 'ENT-05', 'ENUM-04', 'ENUM-04 T', 'AUD.M10'], ['EP-09', 'EV-03', 'IF-01.4', 'IF-01.6', 'IF-02.1', 'IF-03.1', 'IF-04.2', 'IF-07.4', 'IF-08.1', 'IF-09.7', 'IF-12.2'], '13', False, False, [], ['PRS-37', 'PRS-39']),
  'M-11': (['### 3.7', '### 3.11'], ['ENT-%02d' % i for i in range(1, 11)] + ['## 5.', '## 6.'], ['IF-08.1', 'IF-11.1', 'IF-11.2'], '0', False, True, ['EXT-01'], []),
  'M-12': ([], ['ENT-02', 'ENT-05', 'ENUM-01', 'ENUM-01 T', 'AUD.M12'], ['EP-08', 'EV-02', 'IF-01.5', 'IF-03.1', 'IF-04.3', 'IF-04.4', 'IF-07.2', 'IF-08.1', 'IF-10.1'], '13', False, False, [], ['PRS-36', 'PRS-37']),
- 'M-13': (['### 3.10', '### 5.'], ['ENT-03', 'ENT-05', 'ENT-07', '## 5.', '### 5.1'], ['IF-08.1'] + dono('IF-11'), '1', False, False, ['EXT-01'], []),
+ 'M-13': (['### 3.10', '### 5.'], ['ENT-03', 'ENT-05', 'ENT-07', '## 5.', '### 5.1'], ['IF-08.1', 'IF-08.2'] + dono('IF-11'), '1', False, False, ['EXT-01'], []),
  'M-14': (['### 3.7', '### 5.'], ['ENT-10', 'ENUM-03', 'ENUM-06', 'ENUM-09', 'ENUM-09 T', 'ENUM-10'], ['EV-01', 'EV-02', 'EV-03', 'EV-04', 'IF-05.1', 'IF-08.1'] + dono('IF-07'), '1', True, False, ['EXT-03'], ['PRS-09', 'PRS-42', 'PRS-43']),
 }
 
-# Tetos estimados dos módulos (ajustados para manter total <= 59.7 KiB, A-110)
-ESTIMADO = {'M-00': 12, 'M-01': 12, 'M-02': 10, 'M-03': 14, 'M-04': 14, 'M-05': 10, 'M-06': 14, 'M-07': 20, 'M-08': 11,
-            'M-09': 20, 'M-10': 10, 'M-11': 7, 'M-12': 14, 'M-13': 18, 'M-14': 18}
+# Tetos dos módulos (ajustados para manter total <= 59.7 KiB, A-110)
+ESTIMADO = {'M-00': 12, 'M-01': 12, 'M-02': 10, 'M-03': 14, 'M-04': 14, 'M-05': 10, 'M-06': 13.5, 'M-07': 20, 'M-08': 11.5,
+            'M-09': 20, 'M-10': 10, 'M-11': 7, 'M-12': 14, 'M-13': 16, 'M-14': 17.5}
 
 def texto30(nome):
     if nome.startswith('ENUM-') and nome.endswith(' T'):
@@ -330,19 +330,30 @@ if '--extrair' in sys.argv:
         
     sys.exit(1 if erro_extrair else 0)
 
+import glob
+
 erro = False
 print('nucleo_base %.1f KiB | 40 §1-§3 %.1f | 70 comum %.1f | brief 2.0' % (b(base10) / KB, b(c13) / KB, b(comum70) / KB))
-print('modulo | 10 | 30 | 40 | 70 | 20 | 90 | brief | fixo | teto | ficheiro estimado | pacote | fecho')
+print('modulo | 10 | 30 | 40 | 70 | 20 | 90 | brief | fixo | teto | ficheiro real | pacote real | fecho')
 for m in P:
     partes = montar(m)
     tam = {k: b(v) for k, v in partes.items()}
     fixo = sum(tam.values()) + BRIEF
-    pacote = fixo / KB + ESTIMADO[m]
-    falta = falhas_de(partes, m)
-    ok = round(pacote, 1) <= 59.7 and not falta
+    mfiles = glob.glob(f'50-modulos/{m}-*.md')
+    if mfiles:
+        mtxt = rd(mfiles[0])
+        tam_mod_kb = b(mtxt) / KB
+        partes_check = dict(partes)
+        partes_check['50'] = mtxt
+    else:
+        tam_mod_kb = float(ESTIMADO[m])
+        partes_check = partes
+    pacote = fixo / KB + tam_mod_kb
+    falta = falhas_de(partes_check, m)
+    ok = round(pacote, 1) <= 59.7 and tam_mod_kb <= ESTIMADO[m] and not falta
     erro |= not ok
-    print('%s | %.1f | %.1f | %.1f | %.1f | %.1f | %.1f | 2.0 | %.1f | %.1f | %d | %.1f | %s' % (
+    print('%s | %.1f | %.1f | %.1f | %.1f | %.1f | %.1f | 2.0 | %.1f | %.1f | %.2f (<=%.1f) | %.1f | %s' % (
         m, tam['10'] / KB, tam['30'] / KB, tam['40'] / KB, tam['70'] / KB, tam['20'] / KB, tam['90'] / KB, fixo / KB,
-        60 - fixo / KB, ESTIMADO[m], pacote, 'OK' if not falta else 'FALTA: ' + ', '.join(falta)))
+        60 - fixo / KB, tam_mod_kb, ESTIMADO[m], pacote, 'OK' if not falta else 'FALTA: ' + ', '.join(falta)))
 print('RESULTADO:', 'FALHA' if erro else 'OK')
 sys.exit(1 if erro else 0)

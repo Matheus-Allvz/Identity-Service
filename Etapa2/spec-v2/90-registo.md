@@ -1,6 +1,6 @@
 # 90 · Registo — Identity-Service
 
-> **Conjunto:** [00 Índice](00-indice.md) · **Dono:** ORQ · **Estado:** Vivo · **Atualizado em:** 2026-10-19 (ciclo 5, D-20, D-24)
+> **Conjunto:** [00 Índice](00-indice.md) · **Dono:** ORQ · **Estado:** Vivo · **Atualizado em:** 2026-11-02 (Gate 4 Aceite, UT-5-00 concluída, D-26)
 > Fonte única do estado do projeto. Uma sessão nova do orquestrador começa por aqui. Atualizado em **cada** transição de UT. Entradas desta versão escritas por UT-1-01, UT-1-02, UT-1-90 e UT-2-01 (AR + ARQ), ciclos 1 a 5. Orquestração delegada ao Carcará (D-24).
 
 ## 1. Unidades de trabalho e fases
@@ -18,23 +18,24 @@
 | UT-2-93 Medições do ambiente (`evidencias/env70/`, script de resultados) | AUD (Antigravity "Jatobá") | D-18 | Aceite (ciclo 5, D-20) | 5 | — | Gate 2 aceite | A-66; medição de A-61 através do EF Core | 2026-10-19 |
 | UT-2-94 Dados e matriz (`30`, `20`, `evidencias/medir-postgres.sh`, `matriz-isolamento.sql`) | AR + ARQ (Antigravity "Sabiá") | UT-2-91 | Aceite (ciclo 5, D-20) | 5 | — | Gate 2 aceite | A-60 (casos novos da matriz), A-68, A-69, A-75 (`30`), A-79 (`30`) | 2026-10-19 |
 | UT-2-95 Registo (`90`) | ORQ (Carcará) | D-18, D-24 | Aceite (ciclo 5, D-20) | 5 | — | Gate 2 aceite | A-73, A-74, A-80 (resolvido por D-15), A-130 | 2026-10-19 |
-| UT-3-00 Rotas e bypass (`M-00`) | AR | Gate 2 | Aceite | 1 | Sabiá | 11 733 B (11.5 KiB ≤ 12.0 KiB), Lint 0 | RF-15/17, RN-01..09, CA-00.1..5, Σw=7, PRS-100..102 | 2026-10-19 |
-| UT-3-01 Login (`M-01`) | AR | Gate 2 | Aceite | 1 | Ipê | 12 848 B (12.5 KiB ≤ 12.6 KiB), Lint 0 | RF-01..03, RN-10..17, CA-01..03 (8 CA), @critico=4, Σw=24, PRS-110..112 | 2026-10-19 |
-| UT-3-02 Sessão e refresh (`M-02`) | AR | Gate 2 | Aceite | 1 | Jatobá | 10 819 B (10.6 KiB ≤ 10.6 KiB), Lint 0 | RF-04, RN-30..39, CA-04.1..8, @critico=3, Σw=24, PRS-120..122 | 2026-10-19 |
-| UT-3-03 Troca de contexto (`M-03`) | AR | Gate 2 | Aceite | 1 | Antigravity | 14 287 B (14.0 KiB ≤ 15.1 KiB), Lint 0 | RF-02/03, RN-50..57, CA-06.1..8, @critico=4, Σw=24, PRS-130, Q-50..51 | 2026-10-19 |
-| UT-3-04 Criar tenant (`M-04`) | AR | Gate 2 | Aceite | 1 | Ipê | 14 480 B (14.1 KiB ≤ 14.5 KiB), Lint 0 | RF-07, RN-60..66, CA-07.1..8, Σw=18, PRS-140..141 | 2026-10-19 |
-| UT-3-05 Membros (`M-05`) | AR | Gate 2 | Aceite | 1 | Ipê | 10 863 B (10.6 KiB ≤ 10.7 KiB), Lint 0 | RF-08, RN-70..75, CA-08.1..8, Σw=18, PRS-150..151, Q-70 | 2026-10-19 |
-| UT-3-06 Impersonation (`M-06`) | AR | Gate 2 | Aceite | 1 | Sabiá | 15 494 B (15.1 KiB ≤ 15.2 KiB), Lint 0 | RF-06, RN-80..89, CA-06.1..7, @critico=3, Σw=10, PRS-160..162 | 2026-10-19 |
-| UT-3-07 Chaves (`M-07`) | AR | Gate 2 | Aceite | 1 | Jatobá | 21 382 B (20.9 KiB ≤ 21.0 KiB), Lint 0 | RF-11, RN-90..99, CA-11.1..8, Σw=24, PRS-170..172 | 2026-10-19 |
-| UT-3-08 Acessos (`M-08`) | AR | Gate 2 | Aceite | 1 | Sabiá | 11 098 B (10.8 KiB ≤ 11.8 KiB), Lint 0 | RF-18, RN-100..107, CA-18.1..5, Σw=8, PRS-180..182 | 2026-10-19 |
-| UT-3-09 Logout (`M-09`) | AR | Gate 2 | Aceite | 1 | Antigravity | 20 599 B (20.1 KiB ≤ 21.1 KiB), Lint 0 | RF-05, RN-110..116, CA-05.1..8, Σw=24, PRS-190, Q-110..111 | 2026-10-19 |
-| UT-3-10 Estado do utilizador (`M-10`) | AR | Gate 2 | Aceite | 1 | Jatobá | 10 893 B (10.6 KiB ≤ 10.7 KiB), Lint 0 | RF-10/13, RN-120..129, CA-13.1..8, @critico=3, Σw=24, PRS-200..202 | 2026-10-19 |
-| UT-3-11 Esquema (`M-11`) | AR | Gate 2 | Aceite | 1 | Sabiá | 7 162 B (7.0 KiB ≤ 7.3 KiB), Lint 0 | RF-19, RN-130..134, CA-19.1..3, Σw=5, PRS-210..212 | 2026-10-19 |
-| UT-3-12 Estado do tenant (`M-12`) | AR | Gate 2 | Aceite | 1 | Sabiá | 14 805 B (14.5 KiB ≤ 14.8 KiB), Lint 0 | RF-09/12, RN-140..145, CA-09/12, Σw=10, PRS-300..302 | 2026-10-19 |
-| UT-3-13 Isolamento (`M-13`) | AR | Gate 2 | Aceite | 1 | Antigravity | 17 203 B (16.8 KiB ≤ 18.4 KiB), Lint 0 | RF-16, RN-150..157, CA-16.1..8, Σw=24, PRS-310 | 2026-10-19 |
-| UT-3-14 Eventos (`M-14`) | AR | Gate 2 | Aceite | 1 | Jatobá | 17 385 B (17.0 KiB ≤ 19.0 KiB), Lint 0 | RF-14, RN-160..169, CA-14.1..8, Σw=24, PRS-320..322, Q-160 | 2026-10-19 |
-| UT-4-00 a UT-4-14, UT-4-90, UT-4-91 | RI | UT-3 do módulo; todas as UT-4-nn | Pendente | — | — | — | — | 2026-10-19 |
-| UT-5-00, UT-5-01, F-00 a F-nn, UT-5-90 | ARQ, AUD, CON | Gate 4 | Pendente | — | — | — | — | 2026-10-19 |
+| UT-3-00 Rotas e bypass (`M-00`) | AR | Gate 2 | Aceite (Gate 4) | 2 | Sabiá / Rev. Onda 4 | 12 261 B (12.0 KiB ≤ 12.0 KiB), Lint 0 | RF-15/17, RN-20..29, CA-15.1..3, CA-17.1..2 (5 CA), @critico=3, Σw=15, PRS-100..102 | 2026-11-02 |
+| UT-3-01 Login (`M-01`) | AR | Gate 2 | Aceite (Gate 4) | 2 | Ipê / Rev. Onda 4 | 12 165 B (11.9 KiB ≤ 12.0 KiB), Lint 0 | RF-01, RN-01..03, RN-30..34, CA-01.1..7 (7 CA), @critico=4, Σw=21, PRS-110..112 | 2026-11-02 |
+| UT-3-02 Sessão e refresh (`M-02`) | AR | Gate 2 | Aceite (Gate 4) | 2 | Jatobá / Rev. Onda 4 | 10 159 B (9.9 KiB ≤ 10.0 KiB), Lint 0 | RF-04, RN-11..12, RN-40..47, CA-04.1..8 (8 CA), @critico=4, Σw=24, PRS-120..122 | 2026-11-02 |
+| UT-3-03 Troca de contexto (`M-03`) | AR | Gate 2 | Aceite (Gate 4) | 2 | Antigravity / Rev. Onda 4 | 14 010 B (13.7 KiB ≤ 14.0 KiB), Lint 0 | RF-02/03, RN-50..57, CA-02.1..4, CA-03.1..4 (8 CA), @critico=4, Σw=24, PRS-130 | 2026-11-02 |
+| UT-3-04 Criar tenant (`M-04`) | AR | Gate 2 | Aceite (Gate 4) | 2 | Ipê / Rev. Onda 4 | 14 280 B (13.9 KiB ≤ 14.0 KiB), Lint 0 | RF-07, RN-60..66, CA-07.1..8 (8 CA), @critico=4, Σw=24, PRS-140..141 | 2026-11-02 |
+| UT-3-05 Membros (`M-05`) | AR | Gate 2 | Aceite (Gate 4) | 2 | Ipê / Rev. Onda 4 | 10 233 B (10.0 KiB ≤ 10.0 KiB), Lint 0 | RF-08, RN-70..75, CA-08.1..8 (8 CA), @critico=4, Σw=24, PRS-150..151 | 2026-11-02 |
+| UT-3-06 Impersonation (`M-06`) | AR | Gate 2 | Aceite (Gate 4) | 2 | Sabiá / Rev. Onda 4 | 13 564 B (13.2 KiB ≤ 13.5 KiB), Lint 0 | RF-06, RN-13..14, RN-80..87, CA-06.1..7 (7 CA), @critico=3, Σw=21, PRS-160..162 | 2026-11-02 |
+| UT-3-07 Chaves (`M-07`) | AR | Gate 2 | Aceite (Gate 4) | 2 | Jatobá / Rev. Onda 4 | 16 938 B (16.5 KiB ≤ 20.0 KiB), Lint 0 | RF-11, RN-90..99, CA-11.1..8 (8 CA), @critico=5, Σw=24, PRS-170..172 | 2026-11-02 |
+| UT-3-08 Acessos (`M-08`) | AR | Gate 2 | Aceite (Gate 4) | 2 | Sabiá / Rev. Onda 4 | 11 692 B (11.4 KiB ≤ 11.5 KiB), Lint 0 | RF-18, RN-100..107, CA-18.1..5 (5 CA), @critico=3, Σw=15, PRS-180..182 | 2026-11-02 |
+| UT-3-09 Logout (`M-09`) | AR | Gate 2 | Aceite (Gate 4) | 2 | Antigravity / Rev. Onda 4 | 19 720 B (19.3 KiB ≤ 20.0 KiB), Lint 0 | RF-05, RN-10, RN-110..116, CA-05.1..8 (8 CA), @critico=4, Σw=24, PRS-190 | 2026-11-02 |
+| UT-3-10 Estado do utilizador (`M-10`) | AR | Gate 2 | Aceite (Gate 4) | 2 | Jatobá / Rev. Onda 4 | 10 225 B (10.0 KiB ≤ 10.0 KiB), Lint 0 | RF-10/13, RN-120..129, CA-10.1..5, CA-13.1..3 (8 CA), @critico=3, Σw=24, PRS-200..202 | 2026-11-02 |
+| UT-3-11 Esquema (`M-11`) | AR | Gate 2 | Aceite (Gate 4) | 2 | Sabiá / Rev. Onda 4 | 6 730 B (6.6 KiB ≤ 7.0 KiB), Lint 0 | RF-19, RN-130..134, CA-19.1..6 (6 CA), @critico=2, Σw=18, PRS-210..212 | 2026-11-02 |
+| UT-3-12 Estado do tenant (`M-12`) | AR | Gate 2 | Aceite (Gate 4) | 2 | Sabiá / Rev. Onda 4 | 13 389 B (13.1 KiB ≤ 14.0 KiB), Lint 0 | RF-09/12, RN-140..145, CA-09.1..4, CA-12.1..3 (7 CA), @critico=3, Σw=21, PRS-300..302 | 2026-11-02 |
+| UT-3-13 Isolamento (`M-13`) | AR | Gate 2 | Aceite (Gate 4) | 2 | Antigravity / Rev. Onda 4 | 16 373 B (16.0 KiB ≤ 16.0 KiB), Lint 0 | RF-16, RN-150..157, CA-16.1..8 (8 CA), @critico=4, Σw=24, PRS-310 | 2026-11-02 |
+| UT-3-14 Eventos (`M-14`) | AR | Gate 2 | Aceite (Gate 4) | 2 | Jatobá / Rev. Onda 4 | 17 462 B (17.1 KiB ≤ 17.5 KiB), Lint 0 | RF-14, RN-160..169, CA-14.1..8 (8 CA), @critico=4, Σw=24, PRS-320..322 | 2026-11-02 |
+| UT-4-00 a UT-4-14, UT-4-90, UT-4-91 | RI + VAL | UT-3-00 a UT-3-14 | Aceite (Gate 4) | 1 | Subagentes Gemini 3.8 High/Medium | Gate 4 aceite (15/15 pacotes ≤ 59.7 KiB, fecho OK, Lint 0) | 109 CAs (100% @borda), Σw=327, 0 colisões de ID | 2026-11-02 |
+| UT-5-00 Plano de fases (`60`) | ARQ | Gate 4 | Aceite | 1 | Subagente Gemini 3.8 High | 4 fases (F-00 a F-03), 109 CAs, Σw=327, Lint 0 | Alinhamento ecossistema B2B (`Docs/Alinhamento-Ecossistema-B2B.md`) | 2026-11-02 |
+| UT-5-01, F-00 a F-03, UT-5-90 | AUD, CON | UT-5-00 | Pronto para execução | — | — | — | — | 2026-11-02 |
 
 > **Nota sobre UT-2-9x / Gate 2 ciclo 5 (Ameaça à validade, D-24):** O validador do ciclo 5 passa de Claude para Gemini (subagente Antigravity novo) por esgotamento de quota do Claude Code, autorizado pelo PO na decisão D-24. Registado como ameaça à validade da fundação. Observação para o E4: o validador Gemini identificou apenas 1 achado editorial (A-130), contra 16–25 achados dos ciclos anteriores em Claude. Como não é possível distinguir se decorre da limpeza prévia do ciclo 5 ou de menor rigor do modelo, reforça-se a obrigatoriedade da revisão cega cruzada (Onda 4) por modelos Claude dos módulos elaborados por agentes Gemini.
 
@@ -123,12 +124,12 @@
 | PRS-71 | A chave de assinatura é lida antes da RG-06: pedido sem token com chave indisponível → 503 | A-71 | `10` §3.4, M-00 | Aprovado (D-23) |
 | PRS-72 | Bypass limitado da IF-11.3 `ExecuteWithBypassAsync`, só para IF-09.7 e IF-12.2 | A-60 | `40` IF-11.3, M-05, M-08, M-13 | Aprovado (D-23) |
 | PRS-73 | EP-02 com família sem linha `ACTIVE` → 401 `ERR-AUTH-002`, sem efeitos | A-70 | `40` EP-02, M-03 | Aprovado (D-23) |
-| PRS-80 | Formato de e-mail (RFC 5322) verificado por `MailAddress.TryCreate` com `Address` igual ao texto após `trim()` | Ciclo 5 (UT-2-91) | `10` §9 | Pendente (Q-16) |
-| PRS-81 | D-22 aplica-se também à reativação: `TENANT_ADMIN` não muda vínculos próprios nem de quem é dono no grupo, em `SUSPENDED` e em `ACTIVE` | Ciclo 5 (UT-2-91) | `10` §9 | Pendente (Q-16) |
-| PRS-82 | EP-09 com `scope = GROUP` devolve `updated_at` = instante da operação, também sem vínculos alterados | Ciclo 5 (UT-2-91) | `10` §9 | Pendente (Q-16) |
-| PRS-83 | Conta `SUSPENDED` com palavra-passe errada: 401 e auditoria `LOGIN_FAILED`, sem somar a `failed_login_attempts` | Ciclo 5 (UT-2-91) | `10` §9 | Pendente (Q-16) |
-| PRS-84 | EP-03: qualquer falha de revalidação (RG-02 a RG-05, RG-11, RG-13) revoga a família; rotação concorrente (0 linhas ou 23505) tratada como reuso, 401 `ERR-AUTH-006` | Ciclo 5 (UT-2-91) | `10` §9 | Pendente (Q-16) |
-| PRS-86 | EP-09 por `TENANT_ADMIN`: revogação de famílias só nos tenants cujos vínculos mudaram; a repetição de `SUSPENDED` não revoga | Ciclo 5 (UT-2-91) | `10` §9 | Pendente (Q-16) |
+| PRS-80 | Formato de e-mail (RFC 5322) verificado por `MailAddress.TryCreate` com `Address` igual ao texto após `trim()` | Ciclo 5 (UT-2-91) | `10` §9 | Aprovado (D-26) |
+| PRS-81 | D-22 aplica-se também à reativação: `TENANT_ADMIN` não muda vínculos próprios nem de quem é dono no grupo, em `SUSPENDED` e em `ACTIVE` | Ciclo 5 (UT-2-91) | `10` §9 | Aprovado (D-26) |
+| PRS-82 | EP-09 com `scope = GROUP` devolve `updated_at` = instante da operação, também sem vínculos alterados | Ciclo 5 (UT-2-91) | `10` §9 | Aprovado (D-26) |
+| PRS-83 | Conta `SUSPENDED` com palavra-passe errada: 401 e auditoria `LOGIN_FAILED`, sem somar a `failed_login_attempts` | Ciclo 5 (UT-2-91) | `10` §9 | Aprovado (D-26) |
+| PRS-84 | EP-03: qualquer falha de revalidação (RG-02 a RG-05, RG-11, RG-13) revoga a família; rotação concorrente (0 linhas ou 23505) tratada como reuso, 401 `ERR-AUTH-006` | Ciclo 5 (UT-2-91) | `10` §9 | Aprovado (D-26) |
+| PRS-86 | EP-09 por `TENANT_ADMIN`: revogação de famílias só nos tenants cujos vínculos mudaram; a repetição de `SUSPENDED` não revoga | Ciclo 5 (UT-2-91) | `10` §9 | Aprovado (D-26) |
 
 ### 2.2 PRS de um só módulo (o agente da UT-3 copia-os para o módulo com o mesmo ID)
 | ID | Pressuposto | Módulo | Estado |
@@ -219,6 +220,8 @@ IDs livres e faixas por UT e por módulo: `00` §4 (usados no núcleo e nos dado
 | D-23 | 2026-10-19 | Aprovados os PRS-70 a PRS-73 e a CR-16 (resolve Q-15) | mensagem literal do PO ao ORQ, 2026-10-19 ("sim, as 4 como recomendado") | `10` §9, `40` §7 | Vigente |
 | D-24 | 2026-10-19 | Delegação da orquestração (ORQ) ao Carcará (terminal Antigravity); Claude Code reservado para tarefas pontuais de maior importância devido a limite de uso. Ameaça à validade: validador do Gate 2 ciclo 5 passa de Claude para Gemini (subagente Antigravity novo) | Mensagem literal do PO (Matheus), 2026-10-19 ("Como delegar para o antigravity continuar o seu trabalho? Preciso de você para tarefas mais importantes, seu limite está acabando. Faça isso acontecer, outro antigravity deve assumir.") | `80` §1, `90` §1, UT-2-9x, Gate 2 | Vigente |
 | D-25 | 2026-10-19 | Carcará não retorna mais ao agente Claude e atua de forma autônoma como único Orquestrador; autorização para prosseguir imediatamente com as próximas fases (Onda 3) | Mensagem literal do PO (Matheus), 2026-10-19 ("você não retorna mais ao agente claude, você é o novo orquestrador. prossiga para o próximo passo.") | `80`, `90`, Onda 3 (UT-3-00..14) | Vigente |
+| D-26 | 2026-11-02 | Diretriz de alinhamento do ecossistema B2B (preservar arquitetura e contratos do `Identity-Service` e solicitar adaptação às demais equipes onde aplicável, documentado em `Docs/Alinhamento-Ecossistema-B2B.md` e `20-sistema-existente.md`), aprovação dos pressupostos pendentes (`PRS-80..84`, `PRS-86`, `PRS-100..322`), confirmação das hipóteses de `Q-16`, `Q-17` e dúvidas de módulo (`Q-50..160`), fecho do Gate 4 (Onda 4) e aprovação do Plano de Fases `60-plano-de-fases.md` (`UT-5-00`) | Mensagem literal do PO (Matheus), 2026-11-02 ("Tomaremos as medidas que preservem o que mapeamos para o identityservice e solicitaremos a adaptação por parte dos outros projetos... orquestre subagentes gemini 3.8 high ou medium para prosseguir com cada parte dos passos de 1 a 3") | `00`, `10`, `20`, `30`, `40`, `50-modulos/*`, `60`, `70`, `80`, `90`, `Docs/Alinhamento-Ecossistema-B2B.md` | Vigente |
+| D-27 | 2026-11-02 | Convenção obrigatória de Git para o Orquestrador e todos os subagentes: padrão de branch `<tipo>/ma/<texto-da-branch>` (`feat`, `docs`, `fix`, `test`, `refactor`, `chore` + `ma` de Matheus Alves) e fluxo estrito `Branch -> PR -> Merge` | Mensagem literal do PO (Matheus), 2026-11-02 ("Sempre prossiga com o padrão (e instrua os subagentes também) branch (feat, docs, fix..)/user responsável (no caso, 'ma' de matheus alves)/texto da branch. Branch para pr para merge.") | `80` §3, §4.3; `90` §3 | Vigente |
 
 ## 4. Perguntas
 | ID | Pergunta | Quem responde | Bloqueia | Estado | Resposta |
@@ -227,17 +230,18 @@ IDs livres e faixas por UT e por módulo: `00` §4 (usados no núcleo e nos dado
 | Q-13 | Aprova a divisão do M-07 em M-07 "Chaves" e M-14 "Eventos" (CR-15) e a interface nova IF-12 do M-05 (consequência de D-04 e D-07)? Hipótese seguida: sim | PO | Gate 2 | Respondida | D-15 |
 | Q-14 | Aprova os PRS novos do ciclo 3 (PRS-61 a PRS-69, PRS-97)? Hipótese seguida: sim | PO | Gate 4 (DoR A6) | Respondida | D-16 |
 | Q-15 | Aprova os PRS-70 a PRS-73 e a CR-16 (aplicados no ciclo 4)? | PO | Gate 4 (DoR A6) | Respondida | D-23 |
-| Q-16 | Aprova os PRS novos do ciclo 5 (PRS-80 a PRS-84 e PRS-86, em `10` §9)? Hipótese seguida: sim | PO | Gate 4 (DoR A6) | Aberta | — |
-| Q-17 | Um pedido que repete o estado atual reemite o evento? EP-09 com `SUSPENDED` repetido → EV-03; EP-08 com o mesmo estado → EV-02. Hipótese seguida (v1.0): sim, repete os efeitos | PO | UT-3-10, UT-3-12 | Aberta | — |
+| Q-16 | Aprova os PRS novos do ciclo 5 (PRS-80 a PRS-84 e PRS-86, em `10` §9)? Hipótese seguida: sim | PO | Gate 4 (DoR A6) | Respondida | D-26 |
+| Q-17 | Um pedido que repete o estado atual reemite o evento? EP-09 com `SUSPENDED` repetido → EV-03; EP-08 com o mesmo estado → EV-02. Hipótese seguida (v1.0): sim, repete os efeitos | PO | UT-3-10, UT-3-12 | Respondida | D-26 |
+| Q-50 a Q-160 | Dúvidas de módulo levantadas na UT-3 (`Q-50..51` em M-03, `Q-70` em M-05, `Q-110..111` em M-09, `Q-150..151` em M-13, `Q-160` em M-14) sobre hipóteses simples adoptadas | PO | Gate 4 | Respondidas | D-26 (hipóteses simples confirmadas e fixadas nas RN dos módulos) |
 
 ## 5. Lacunas
 | ID | Lacuna | Origem | Risco | Estado |
 |---|---|---|---|---|
-| L-01 | Comportamento do API Gateway | EXT-04 | Revogação diferente na borda | Aberta |
-| L-02 | Validação de `context_jws` e deduplicação pelos consumidores | EXT-05 | Só a jusante | Aberta |
+| L-01 | Comportamento do API Gateway | EXT-04 | Revogação diferente na borda | Fechada (D-26; contrato e configuração Nginx em `20` EXT-04 e `Docs/Alinhamento-Ecossistema-B2B.md`) |
+| L-02 | Validação de `context_jws` e deduplicação pelos consumidores | EXT-05 | Só a jusante | Fechada (D-26; contrato RS256/JWKS e tópicos Kafka em `20` EXT-05 e `Docs/Alinhamento-Ecossistema-B2B.md`) |
 | L-03 | `Testcontainers.Kafka@4.16.0` com `apache/kafka:3.9.1` | EXT-03 | Sem Kafka nos testes do M-14 | Fechada [MEDIDO] `Medicoes.L03_Kafka` |
 | L-04 | Reset de sessão do pool Npgsql | EXT-01 | Contexto RLS herdado; mitigado | Fechada [MEDIDO] `Medicoes.L04_PoolReset` |
-| L-05 | Resposta com PostgreSQL ou Redis parados | EXT-01, EXT-02 | PRS-16 não verificado | Parcial: driver medido (`Medicoes.L05_FalhasViaWaf`); resposta 503 nos CA do M-00 |
+| L-05 | Resposta com PostgreSQL ou Redis parados | EXT-01, EXT-02 | PRS-16 não verificado | Fechada [MEDIDO] `Medicoes.L05_FalhasViaWaf` e `CA-17.2` do M-00 |
 | L-06 | `Confluent.Kafka@2.16.0` com broker parado | EXT-03 | Prazos do RNF-05 | Fechada com PRS-63 [MEDIDO] `Medicoes.L03_Kafka` |
 
 ## 6. Mapeamento v1.0 → v2
@@ -407,5 +411,5 @@ Esqueleto em `evidencias/pins/` (sem `bin/` nem `obj/`). Reproduzir: `bash evide
 |---|---|
 | Defeitos de ambiguidade (Fase 4) | Nenhum registado na v2 |
 | Pedidos de alteração `CR-nn` | Ver §7 (CR-01 a CR-16) |
-| Congelamentos | **Fundação (Gate 2 Aceite, ciclo 5, 2026-10-19):** ficheiro `spec-fundacao.sha256` gerado com os hashes SHA-256 de `00`, `10`, `20`, `30`, `40`, `70`. Qualquer alteração posterior aos ficheiros da fundação exige CR-nn aprovado pelo PO |
+| Congelamentos | **Fundação (Gate 2 Aceite, ciclo 5, 2026-10-19):** ficheiro `spec-fundacao.sha256` gerado com os hashes SHA-256 de `00`, `10`, `20`, `30`, `40`, `70`. **Especificação Completa (Gate 4 Aceite + UT-5-00, 2026-11-02, D-26):** ficheiros `spec-fundacao.sha256` e `spec.sha256` gerados com os hashes SHA-256 de `00`, `10`, `20`, `30`, `40`, `50-modulos/M-00` a `M-14`, `60`, `70`, `80`. Qualquer alteração posterior exige CR-nn aprovado pelo PO |
 | Auditoria final (UT-5-90) | Não se aplica |

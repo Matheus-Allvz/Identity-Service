@@ -3,18 +3,18 @@
 | Ficheiro de origem | Secções incluídas | Tamanho (KiB) |
 |---|---|---|
 | `10-nucleo.md` | Núcleo base (§1-§2, §3 comum, §4, §6-§10) + extras §3.10, §5 | 17.4 |
-| `30-dados.md` | Comum (§1, §2, §3) + ENT-03, ENT-05, ENT-07, §5, §5.1 | 8.8 |
-| `40-contratos.md` | §1 + operações/itens de §4 (IF-08.1, IF-11, IF-11.1, IF-11.2, IF-11.3) + tipos partilhados | 9.0 |
+| `30-dados.md` | Comum (§1, §2, §3) + ENT-03, ENT-05, ENT-07, §5, §5.1 | 8.7 |
+| `40-contratos.md` | §1 + operações/itens de §4 (IF-08.1, IF-08.2, IF-11, IF-11.1, IF-11.2, IF-11.3) + tipos partilhados | 9.2 |
 | `70-ambiente-teste.md` | Comum §1 | 3.6 |
 | `20-sistema-existente.md` | EXT-01 | 0.5 |
 | `90-registo.md` | UT-3-13 (§1) + PRS (§2.2): Nenhum | 0.3 |
-| **Total contexto** | **Todas as origens** | **39.6** |
+| **Total contexto** | **Todas as origens** | **39.8** |
 
 <!-- FIM DO CABECALHO -->
 
 # 10 · Núcleo — Identity-Service
 
-> **Conjunto:** [00 Índice](00-indice.md) · **Dono:** ARQ (UT-1-01) · **Estado:** Rascunho (ciclo 5, UT-2-91) · **Atualizado em:** 2026-10-19
+> **Conjunto:** [00 Índice](00-indice.md) · **Dono:** ARQ (UT-1-01) · **Estado:** Congelado (Gate 4) · **Atualizado em:** 2026-11-02
 > **Núcleo base** (todos os pacotes): tudo antes da secção final "Extras". Cada extra diz no título em que pacotes entra. Estado dos PRS: `90` §2.
 
 ## 1. Instruções obrigatórias para a LLM
@@ -217,7 +217,7 @@ Um módulo **NÃO DEVE** criar códigos: um código em falta é um `CR-nn`.
 
 # 30 · Dados — Identity-Service
 
-> **Conjunto:** [00 Índice](00-indice.md) · **Dono:** ARQ (UT-2-01) · **Estado:** Rascunho (ciclo 5; decisões do PO de 2026-10-19 aplicadas) · **Atualizado em:** 2026-10-19
+> **Conjunto:** [00 Índice](00-indice.md) · **Dono:** ARQ (UT-2-01) · **Estado:** Congelado (Gate 4) · **Atualizado em:** 2026-11-02
 > Contrato partilhado: é congelado no Gate 2. Cada tabela tem **um** módulo dono, o único com código que a escreve. Os outros módulos escrevem só através da interface `IF-nn` do dono (`40`). O esquema inteiro (§3, §5, §6) é criado pela migração do M-11.
 > **Nomes de restrições:** `pk_<tabela>`, `fk_<tabela>_<coluna>`, `uq_<tabela>_<colunas>`, `ck_<tabela>_<coluna>` para o CHECK de uma coluna e o nome indicado nos CHECK de tabela. Forma executável e medida de §3, §5 e §6: `evidencias/pg-ddl.sql` (resultado em `evidencias/medir-postgres.out.txt`); uma diferença entre os dois é um defeito e vale este ficheiro.
 
@@ -389,6 +389,7 @@ Tipos públicos na pasta indicada; namespace = `IdentityService.Modules.<pasta c
 
 | IF-08 | `IAuthContext` (`M00Transversal/Auth/`) | M-00 | Valores por pedido (*scoped*) |
 | IF-08.1 | Propriedades de `IAuthContext` (tipos partilhados) | Só leitura. `BypassTenantFilter` = `true` nos pedidos a EP-01 a EP-05 (com ou sem token) e com `platform_role = PLATFORM_ADMIN`; `false` nos restantes | M-02 (`IpAddress`), M-03, M-04, M-05, M-06, M-09, M-10, M-12, M-13, M-14 |
+| IF-08.2 | `void AuthorizeTenantWrite(Guid tenantId)` | Acrescenta `tenantId` a `WriteTenants`; chamado depois da camada 4 e antes de abrir a ligação da transação (PRS-51) | M-04 (EP-06), M-05 (EP-07) |
 | IF-11 | `ITenantIsolation` (`M13Isolamento/Interface/`) | M-13 | Registo no DI: `ITenantIsolation` *singleton*; os interceptores *scoped* (leem o `IAuthContext` do pedido). `IdentityDbContext` registado com `AddDbContext` (*scoped*), sem *pooling* |
 | IF-11.1 | `void ApplyQueryFilters(ModelBuilder modelBuilder, IdentityDbContext context)` | Camada 2: para cada entidade `ITenantScoped`, filtro `e => context.AuthContext.BypassTenantFilter \|\| context.TenantIsolationBypass \|\| context.AuthContext.AllowedTenants.Contains(e.TenantId)`; a referência à instância `context` faz o EF parametrizar o filtro por pedido. Chamado no `OnModelCreating` | M-11 |
 | IF-11.2 | `IReadOnlyList<IInterceptor> CreateInterceptors(IServiceProvider requestServices)` | Devolve o `TenantSaveChangesInterceptor` (camada 3) e o `RlsConnectionInterceptor` (camada 4) do âmbito do pedido; o M-11 chama-o em `AddDbContext<IdentityDbContext>((sp, o) => o.AddInterceptors(isolation.CreateInterceptors(sp)))`; nunca no contexto de migração | M-11 |
@@ -400,7 +401,7 @@ Tipos públicos na pasta indicada; namespace = `IdentityService.Modules.<pasta c
 | `IdentityDbContext` | `M11Esquema/Persistence/` | `DbContext` com as propriedades `IAuthContext AuthContext { get; }` (injetada) e `bool TenantIsolationBypass { get; set; }` (`false` ao criar; só `ExecuteWithBypassAsync` a altera) e um `DbSet` por tabela |
 # 70 · Contrato do ambiente de teste — Identity-Service
 
-> **Conjunto:** [00 Índice](00-indice.md) · **Dono:** AUD (UT-2-03; reconciliado em UT-2-90) · **Estado:** Rascunho (ciclo 5, UT-2-91) · **Atualizado em:** 2026-10-19
+> **Conjunto:** [00 Índice](00-indice.md) · **Dono:** AUD (UT-2-03; reconciliado em UT-2-90) · **Estado:** Congelado (Gate 4) · **Atualizado em:** 2026-11-02
 > **Medições:** cada `[MEDIDO]` deste ficheiro cita um teste do esqueleto `evidencias/env70/` (`Medicoes.cs`, `Cunhagem.cs`, `Kestrel.cs`), executado por `evidencias/medir-env70.sh` com resultado em `evidencias/medir-env70.out.txt` (UT-2-93; Docker 29.7.2).
 > **Parte comum = cabeçalho + §1: entra em todos os pacotes.** Tudo o que obriga o código está na §1; as secções extra só entram nos pacotes da tabela abaixo.
 

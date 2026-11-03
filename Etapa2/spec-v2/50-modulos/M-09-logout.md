@@ -1,6 +1,6 @@
 # M-09 · Logout
 
-> **Conjunto:** [00 Índice](../00-indice.md) · **Dono:** AR (UT-3-09) · **Estado:** Rascunho (ciclo 5) · **Atualizado em:** 2026-10-19
+> **Conjunto:** [00 Índice](../00-indice.md) · **Dono:** AR (UT-3-09) · **Estado:** Congelado (Gate 4) · **Atualizado em:** 2026-11-02
 > **Pacote de contexto deste módulo:** este ficheiro + `10` (base §1–§2, §3 comum, §4, §6–§10) + `30` (comum §1–§3, ENUM-06, AUD.M09) + `40` (§1–§3, EP-04, IF-01.3, IF-03.1, IF-04.1, IF-08.1, tipos partilhados) + `70` (comum §1). Tamanho total: 36.9 KiB (orçamento: 60 KiB).
 
 ## 1. Âmbito do módulo
@@ -24,7 +24,7 @@
 | RF | RF-05 |
 | Autenticação / Permissão | JWT em `Authorization: Bearer <jwt>`. Qualquer token válido emitido pelo serviço (`view_mode` = `NONE`, `SINGLE`, `MACRO_GROUP` ou sob `act`). Todos os escopos e papéis de plataforma (`40` §5) |
 | Idempotência | Sim. `SET` no Redis é idempotente. `IF-01.3` atualiza status `ACTIVE`/`CONSUMED` para `REVOKED`; se já revogados, retorna 0 sem erro. Chamadas posteriores com mesmo token recebem 401 `ERR-AUTH-002` (RG-06) |
-| RN aplicáveis | RN-110, RN-111, RN-112, RN-113, RN-114, RN-115, RN-116 |
+| RN aplicáveis | RN-10, RN-110 a RN-116 |
 
 **Request**
 
@@ -54,7 +54,7 @@
 | 9 | Se corpo for objeto JSON: possui 0 propriedades (RN-110) | Formato (3) | 400 `ERR-VAL-001` |
 | 10 | Matriz de autorização: sem condição restritiva | Autorização (4) | Nenhuma |
 | 11 | Conectividade PostgreSQL e Redis operacional | Regras de negócio (6) | 503 `ERR-SYS-002` |
-| 12 | Revogação de família (IF-01.3 se `fid`), auditoria `LOGOUT` (IF-03.1), denylist:jti (IF-04.1) e commit na BD (RN-111 a RN-115) | Regras de negócio (6) | 204 sem corpo |
+| 12 | Revogação de família (IF-01.3 se `fid`), auditoria `LOGOUT` (IF-03.1), denylist:jti (IF-04.1) e commit na BD (RN-10, RN-111 a RN-115) | Regras de negócio (6) | 204 sem corpo |
 
 **Respostas** (incluindo as do middleware)
 
@@ -72,15 +72,7 @@
 | 500 | Erro inesperado no servidor | `ERR-SYS-001` |
 | 503 | PostgreSQL, Redis ou `ISigningKey` indisponível | `ERR-SYS-002` |
 
-**Corpo de sucesso**
-
-| Campo | Tipo | Sempre presente | Valor / regra de cálculo | Ordenação |
-|---|---|---|---|---|
-| Nenhum | Não se aplica | Não se aplica | 204 sem corpo (0 bytes) | Não se aplica |
-
-```text
-(Sem corpo - 0 bytes)
-```
+**Corpo de sucesso:** 204 sem corpo (0 bytes).
 
 **Efeitos colaterais (por ordem):**
 1. Se claim `fid` presente (`IAuthContext.FamilyId ≠ null`), executa `ISessionStore.RevokeFamilyAsync(familyId)` (`IF-01.3`) na transação da base de dados: status vira `REVOKED` e `revoked_at = agora`. Se `fid` nula, omite o passo.
@@ -92,10 +84,7 @@
 Revogação em `refresh_token` (`IF-01.3`) e auditoria em `auth_audit_log` (`IF-03.1`) partilham a mesma transação no `IdentityDbContext`. A gravação no Redis (`IF-04.1`) ocorre antes do commit (PRS-15, UT-3-09). Em caso de falha no Redis ou no commit, a transação na base de dados é revertida integralmente e retorna 503 `ERR-SYS-002`.
 
 ### EV (Eventos)
-
-| Campo | Tipo | Obrigatório | Valor |
-|---|---|---|---|
-| Nenhum | Não se aplica | Não se aplica | M-09 não define eventos Kafka diretamente (publicação via outbox pertence a M-14) |
+O módulo M-09 não define eventos Kafka diretamente (publicação via outbox pertence a M-14). Total EV = 0.
 
 ## 3. Requisitos funcionais
 
@@ -106,16 +95,16 @@ Revogação em `refresh_token` (`IF-01.3`) e auditoria em `auth_audit_log` (`IF-
 | Prioridade | MUST |
 | Ator / Gatilho | Utilizador autenticado (qualquer papel ou escopo, com ou sem impersonation) / Requisição HTTP `POST /api/v1/auth/logout` |
 | Pré-condições | JWT válido em `Authorization: Bearer <jwt>`, assinado por chave RSA do serviço, `exp > agora` e sem revogação prévia na denylist do Redis |
-| RN | RN-110, RN-111, RN-112, RN-113, RN-114, RN-115, RN-116 |
+| RN | RN-10, RN-110, RN-111, RN-112, RN-113, RN-114, RN-115, RN-116 |
 
 **Fluxo principal:**
 1. Cliente envia `POST /api/v1/auth/logout` com `Authorization: Bearer <jwt>`, corpo de 0 bytes ou `{}`.
 2. Middleware valida assinatura e avalia RG-06, RG-07 e RG-08 no Redis, populando `IAuthContext`.
 3. Endpoint valida que o corpo é vazio ou `{}` (RN-110).
 4. Módulo inicia transação de base de dados no `IdentityDbContext`.
-5. Se `fid` presente, invoca `ISessionStore.RevokeFamilyAsync(familyId)` (`IF-01.3`) para revogar tokens da família (RN-112, RN-115). Se `fid` nula, segue sem revogação.
-6. Invoca `IAuditLog.Append` (`IF-03.1`) com evento `LOGOUT`, claims do token e `metadata = {}` (RN-113).
-7. Grava no Redis `denylist:jti:{jti}` = `"1"` com TTL = `max(1, exp − agora)` segundos via `IF-04.1` (RN-111).
+5. Se `fid` presente, invoca `ISessionStore.RevokeFamilyAsync(familyId)` (`IF-01.3`) para revogar tokens da família (RN-10, RN-112, RN-115). Se `fid` nula, segue sem revogação.
+6. Invoca `IAuditLog.Append` (`IF-03.1`) com evento `LOGOUT`, claims do token e `metadata = {}` (RN-10, RN-113).
+7. Grava no Redis `denylist:jti:{jti}` = `"1"` com TTL = `max(1, exp − agora)` segundos via `IF-04.1` (RN-10, RN-111).
 8. Confirma transação de base de dados via `SaveChangesAsync()` (RN-114).
 9. Retorna 204 sem corpo, com `Cache-Control: no-store` e `X-Correlation-Id` (RN-116).
 
@@ -151,13 +140,14 @@ Revogação em `refresh_token` (`IF-01.3`) e auditoria em `auth_audit_log` (`IF-
 
 | ID | Tipo | Regra (SE / ENTÃO / SENÃO) | Parâmetros | Erro | RF | Evidência |
 |---|---|---|---|---|---|---|
-| RN-110 | Validação | **SE** corpo tem 0 bytes ou é objeto JSON `{}` **ENTÃO** aceita corpo e prossegue **SENÃO** rejeita com status 400 e código `ERR-VAL-001` | `MAX_BODY_BYTES = 65536` | `ERR-VAL-001` | RF-05 | `[DOC] 40 §3 (R1, R2)` |
-| RN-111 | Integridade | **SE** requisição validada e autenticada **ENTÃO** grava no Redis `denylist:jti:{jti}` = `"1"` com TTL = `max(1, exp − agora)` segundos via `IF-04.1` antes do status 204 **SENÃO** rejeita com status 503 `ERR-SYS-002` | `TTL = max(1, exp − agora)` | `ERR-SYS-002` | RF-05 | `[DOC] ADR-06, 40 IF-04.1, UT-3-09` |
-| RN-112 | Integridade | **SE** token contém claim `fid` com UUID v7 **ENTÃO** atualiza na BD tokens da família com status `ACTIVE`/`CONSUMED` para `REVOKED` com `revoked_at = agora` via `IF-01.3` **SENÃO** omite revogação de família | Nenhum | Nenhum | RF-05 | `[DOC] ADR-07, 40 IF-01.3, UT-3-09` |
-| RN-113 | Integridade | **SE** processamento de logout executado **ENTÃO** insere em `auth_audit_log` via `IF-03.1` evento `LOGOUT` com claims do token e `metadata = {}` **SENÃO** interrompe com status 500 `ERR-SYS-001` em erro irrecuperável | Nenhum | `ERR-SYS-001` | RF-05 | `[DOC] 30 AUD.M09, 40 IF-03.1, UT-3-09` |
-| RN-114 | Integridade | **SE** operação persiste alterações na BD (`refresh_token` e `auth_audit_log`) **ENTÃO** executa operações SQL em transação única antes do status 204 **SENÃO** reverte alterações na BD em falha | Nenhum | `ERR-SYS-002` | RF-05 | `[DOC] 10 §3.4, UT-3-09` |
-| RN-115 | Integridade | **SE** família informada por `fid` tem zero tokens `ACTIVE` ou `CONSUMED` **ENTÃO** `IF-01.3` retorna 0 linhas e conclui com sucesso **SENÃO** atualiza linhas elegíveis e conclui com sucesso | Nenhum | Nenhum | RF-05 | `[DOC] 40 IF-01, IF-01.3` |
-| RN-116 | Validação | **SE** processamento resulta em status 204 **ENTÃO** inclui cabeçalho `Cache-Control: no-store` e omite `Pragma: no-cache` **SENÃO** segue convenção de erro | Nenhum | Nenhum | RF-05 | `[DOC] 40 §1, PRS-44` |
+| RN-10 | Integridade | **SE** logout efetuado com sucesso **ENTÃO** revoga token na denylist Redis (`denylist:jti`), revoga família (`fid`) na BD (se presente) e grava auditoria `LOGOUT` em transação única antes de responder 204 **SENÃO** rejeita | Da v1.0 | `ERR-SYS-002` | RF-05 | `90-registo.md:298` |
+| RN-110 | Validação | **SE** corpo tem 0 bytes ou é objeto JSON `{}` **ENTÃO** aceita corpo e prossegue **SENÃO** rejeita com status 400 e código `ERR-VAL-001` | `MAX_BODY = 65536` | `ERR-VAL-001` | RF-05 | `40` §3 (R1, R2) |
+| RN-111 | Integridade | **SE** requisição validada e autenticada **ENTÃO** grava no Redis `denylist:jti:{jti}` = `"1"` com TTL = `max(1, exp − agora)` segundos via `IF-04.1` antes do status 204 **SENÃO** rejeita com status 503 `ERR-SYS-002` | TTL max(1, exp-agora) | `ERR-SYS-002` | RF-05 | ADR-06, UT-3-09 |
+| RN-112 | Integridade | **SE** token contém claim `fid` com UUID v7 **ENTÃO** atualiza na BD tokens da família com status `ACTIVE`/`CONSUMED` para `REVOKED` com `revoked_at = agora` via `IF-01.3` **SENÃO** omite revogação de família | – | – | RF-05 | ADR-07, UT-3-09 |
+| RN-113 | Integridade | **SE** processamento de logout executado **ENTÃO** insere em `auth_audit_log` via `IF-03.1` evento `LOGOUT` com claims do token e `metadata = {}` **SENÃO** interrompe com status 500 `ERR-SYS-001` | – | `ERR-SYS-001` | RF-05 | AUD.M09, UT-3-09 |
+| RN-114 | Integridade | **SE** operação persiste alterações na BD (`refresh_token` e `auth_audit_log`) **ENTÃO** executa operações SQL em transação única antes do status 204 **SENÃO** reverte alterações na BD em falha | – | `ERR-SYS-002` | RF-05 | `10` §3.4, UT-3-09 |
+| RN-115 | Integridade | **SE** família informada por `fid` tem zero tokens `ACTIVE` ou `CONSUMED` **ENTÃO** `IF-01.3` retorna 0 linhas e conclui com sucesso **SENÃO** atualiza linhas elegíveis e conclui com sucesso | – | – | RF-05 | `40` IF-01.3 |
+| RN-116 | Validação | **SE** processamento resulta em status 204 **ENTÃO** inclui cabeçalho `Cache-Control: no-store` e omite `Pragma: no-cache` **SENÃO** segue convenção de erro | – | – | RF-05 | `40` §1, PRS-44 |
 
 ## 5. Critérios de aceitação
 
@@ -168,7 +158,7 @@ Funcionalidade: RF-05 — Efetuar logout de sessão
   Contexto:
     Dado grupo "GRP1", tenant "TEN1" e utilizador "018f0003-0000-7000-8000-000000000001" ativos
 
-  @CA-05.1 @RF-05 @RN-111 @RN-112 @RN-113 @RN-114 @RN-116 @MUST @borda
+  @CA-05.1 @RF-05 @RN-10 @RN-111 @RN-112 @RN-113 @RN-114 @RN-116 @MUST @borda
   Cenário: Logout de sessão normal com corpo de 0 bytes e expiração iminente
     Dado família "FAM1" com tokens "ACTIVE" e "CONSUMED" para o utilizador
     E token JWT válido com jti "JTI-01", fid "FAM1" e exp a 1 segundo adiante de agora
@@ -182,15 +172,15 @@ Funcionalidade: RF-05 — Efetuar logout de sessão
     E os refresh tokens de "FAM1" têm status "REVOKED" e revoked_at preenchido
     E existe registo em "auth_audit_log" com event_type "LOGOUT" e metadata "{}"
 
-  @CA-05.2 @RF-05 @RN-110 @RN-113 @RN-116 @MUST @borda
+  @CA-05.2 @RF-05 @RN-10 @RN-110 @RN-113 @RN-116 @MUST @borda
   Cenário: Logout de sessão sob impersonation com corpo "{}" e ticket no limite de tamanho
     Dado agente "018f0003-0000-7000-8000-000000000099" com platform_role "SUPPORT_AGENT"
-    E token JWT sob impersonation com jti "JTI-02", sem fid, e act com sub "018f0003-0000-7000-8000-000000000099" e ticket_id "SUP-20261019-12345678" de 21 caracteres
-    Quando é enviado POST "/api/v1/auth/logout" com corpo "{}" e cabeçalho Content-Type "application/json ; charset=utf-8"
+    E token JWT sob impersonation com jti "JTI-02", sem fid, e act com sub "018f0003-0000-7000-8000-000000000099" e ticket_id "SUP-12345678" de 12 caracteres
+    Quando é enviado POST "/api/v1/auth/logout" com corpo "{}" e cabeçalho Content-Type "application/json; charset=utf-8"
     Então o status da resposta é 204
     E a chave Redis "denylist:jti:JTI-02" tem valor "1"
     E nenhum registo da tabela "refresh_token" é alterado
-    E existe registo em "auth_audit_log" com event_type "LOGOUT", actor_user_id "018f0003-0000-7000-8000-000000000099" e ticket_id "SUP-20261019-12345678"
+    E existe registo em "auth_audit_log" com event_type "LOGOUT", actor_user_id "018f0003-0000-7000-8000-000000000099" e ticket_id "SUP-12345678"
 
   @CA-05.3 @RF-05 @RN-110 @MUST @borda
   Esquema do Cenário: Rejeição de corpo contendo propriedades ou JSON inválido
@@ -209,7 +199,7 @@ Funcionalidade: RF-05 — Efetuar logout de sessão
       | "\"logout\""          |
       | "{"                   |
 
-  @CA-05.4 @RF-05 @RN-112 @RN-115 @MUST @borda
+  @CA-05.4 @RF-05 @RN-10 @RN-112 @RN-115 @MUST @borda
   Cenário: Idempotência de logout quando refresh tokens da família já estão revogados ou ausentes
     Dado família "FAM2" sem refresh tokens com status "ACTIVE" nem "CONSUMED"
     E token JWT válido com jti "JTI-04" e fid "FAM2"
@@ -234,7 +224,7 @@ Funcionalidade: RF-05 — Efetuar logout de sessão
       | "jti já consta na denylist"         | cabeçalho Authorization com jti já revogado            |
       | "assinatura forjada"                | cabeçalho Authorization com assinatura inválida        |
 
-  @CA-05.6 @RF-05 @RN-111 @RN-114 @MUST @critico @borda
+  @CA-05.6 @RF-05 @RN-10 @RN-111 @RN-114 @MUST @critico @borda
   Cenário: Execução simultânea de dois pedidos de logout com o mesmo token de acesso
     Dado família "FAM3" com refresh token "ACTIVE"
     E token JWT válido com jti "JTI-06" e fid "FAM3"
@@ -244,7 +234,7 @@ Funcionalidade: RF-05 — Efetuar logout de sessão
     E os refresh tokens de "FAM3" têm status "REVOKED"
     E chamada subsequente com o token "JTI-06" retorna status 401 com código "ERR-AUTH-002"
 
-  @CA-05.7 @RF-05 @RN-111 @RN-114 @MUST @critico @borda
+  @CA-05.7 @RF-05 @RN-10 @RN-111 @RN-114 @MUST @critico @borda
   Cenário: Reversão atómica de transação em caso de timeout ou falha do Redis
     Dado família "FAM4" com refresh token "ACTIVE"
     E token JWT válido com jti "JTI-07" e fid "FAM4"
@@ -275,25 +265,12 @@ Funcionalidade: RF-05 — Efetuar logout de sessão
 
 | RF | Prioridade | RN | EP / EV | EX | CA | Fase |
 |---|---|---|---|---|---|---|
-| RF-05 | MUST | RN-110, RN-111, RN-112, RN-113, RN-114, RN-115, RN-116 | EP-04 | EX-05.1, EX-05.2, EX-05.3, EX-05.4, EX-05.5, EX-05.6, EX-05.7, EX-05.8 | CA-05.1, CA-05.2, CA-05.3, CA-05.4, CA-05.5, CA-05.6, CA-05.7, CA-05.8 | F-00 |
+| RF-05 | MUST | RN-10, RN-110 a RN-116 | EP-04 | EX-05.1 a EX-05.8 | CA-05.1 a CA-05.8 | F-01 |
 
-**Totais:** RF = 1 · RN = 7 · EP = 1 · EV = 0 · CA = 8 (`@critico` = 4) · Σw = 24
+**Totais:** RF = 1 · RN = 8 · EP = 1 · EV = 0 · CA = 8 (`@critico` = 4) · Σw = 24
 
 ## 7. Pressupostos do módulo
 
-### 7.1 Pressupostos (PRS)
-
 | ID | Pressuposto | Justificação | Aprovado por (data) |
 |---|---|---|---|
-| PRS-190 | A gravação em `denylist:jti:{jti}` no Redis (`IF-04.1`) ocorre antes do commit na base de dados (`IdentityDbContext.SaveChangesAsync()`), garantindo reversão da transação em falha do Redis | Alinhado a PRS-15 (SET antes do commit), ADR-06 e regra de dependências (10 §7) | Pendente (PO) |
-
-### 7.2 Dúvidas (Q)
-
-| ID | Dúvida | Hipótese adotada | Bloqueia |
-|---|---|---|---|
-| Q-110 | Qual é a fase de entrega de RF-05 no plano de fases (`60`)? | Hipótese: RF-05 pertence à fase `F-00` por integrar o laço transversal de autenticação (`10` §3.4 e guia §3.3) | Não |
-| Q-111 | Qual é a convenção de pesos para o somatório $\Sigma w$? | Hipótese: Cada CA `@MUST` possui peso $w = 3$, totalizando $\Sigma w = 8 \times 3 = 24$ | Não |
-
-### 7.3 Pedidos de alteração (CR)
-
-Nenhum. Interfaces internas, contratos de dados, tabelas e erros necessários constam integralmente em `pacote-M-09.md`.
+| PRS-190 | A gravação em `denylist:jti:{jti}` no Redis (`IF-04.1`) ocorre antes do commit na base de dados (`IdentityDbContext.SaveChangesAsync()`), garantindo reversão da transação em falha do Redis | Alinhado a PRS-15 (SET antes do commit), ADR-06 e regra de dependências (10 §7) | PO, 2026-11-02 (D-23) |

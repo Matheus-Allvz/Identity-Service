@@ -1,6 +1,6 @@
 # M-14 · Eventos
 
-> **Conjunto:** [00 Índice](../00-indice.md) · **Dono:** AR · **Estado:** Proposta (UT-3-14) · **Atualizado em:** 2026-10-19
+> **Conjunto:** [00 Índice](../00-indice.md) · **Dono:** AR · **Estado:** Congelado (Gate 4) · **Atualizado em:** 2026-11-02
 > **Pacote de contexto deste módulo:** este ficheiro + `10` (base + extras §3.7 e §5) + `30` (comum, ENT-10, enums) + `40` (§1, §6, EV-01 a EV-04, IF-05.1, IF-07, IF-08.1, tipos partilhados) + `70` (comum) + `20` (EXT-03) + `90` (UT-3-14, PRS-09, PRS-42, PRS-43). Tamanho total: 39.0 KiB (orçamento: 60 KiB).
 
 ## 1. Âmbito do módulo
@@ -133,7 +133,7 @@ Funcionalidade: RF-14 — Publicação transacional de eventos de identidade
     E que ISigningKey possui KeyId "key-2026-01" e par de chaves RSA 2048 bits
     E que o broker Kafka está ativo com timeout 3000 ms e Acks All
 
-  @CA-14.1 @RF-14 @RN-160 @RN-161 @RN-162 @RN-163 @RN-167 @RN-168 @MUST
+  @CA-14.1 @RF-14 @RN-160 @RN-161 @RN-162 @RN-163 @RN-167 @RN-168 @MUST @borda
   Cenário: Enfileiramento e publicação de EV-01 empresa_cadastrada
     Dado a execução de IF-07.1 com TenantId "0192e2c0-0010-7000-8000-000000000010", GroupId "0192e2c0-0001-7000-8000-000000000001" e CNPJ "99000001000101"
     E que IAuthContext possui UserId "0192e2c0-0099-7000-8000-000000000099", ActiveScope "TENANT_ADMIN" e Act nulo
@@ -143,7 +143,7 @@ Funcionalidade: RF-14 — Publicação transacional de eventos de identidade
     E a mensagem contém header "acting_scope" com valor "TENANT_ADMIN" e header "actor_user_id" ausente
     E o cabeçalho "context_jws" possui assinatura RS256 válida com exp = iat + 300
 
-  @CA-14.2 @RF-14 @RN-161 @RN-162 @RN-163 @RN-168 @MUST
+  @CA-14.2 @RF-14 @RN-161 @RN-162 @RN-163 @RN-168 @MUST @borda
   Cenário: Publicação de EV-02 tenant_bloqueado com personificação ativa
     Dado a execução de IF-07.2 para TenantId "0192e2c0-0020-7000-8000-000000000020" e GroupId "0192e2c0-0001-7000-8000-000000000001"
     E que IAuthContext possui UserId "0192e2c0-0005-7000-8000-000000000005" e ActorUserId "0192e2c0-0009-7000-8000-000000000009"
@@ -152,7 +152,7 @@ Funcionalidade: RF-14 — Publicação transacional de eventos de identidade
     E o header "initiator_user_id" é "0192e2c0-0005-7000-8000-000000000005" e "actor_user_id" é "0192e2c0-0009-7000-8000-000000000009"
     E a outbox_message correspondente assume status "PUBLISHED"
 
-  @CA-14.3 @RF-14 @RN-162 @RN-164 @RN-168 @MUST
+  @CA-14.3 @RF-14 @RN-162 @RN-164 @RN-168 @MUST @borda
   Cenário: Publicação de EV-03 usuario_bloqueado por tentativas de login incorretas
     Dado a execução de IF-07.3 para UserId "0192e2c0-0003-7000-8000-000000000003" com status LOCKED
     Quando a transação é confirmada e o worker outbox processa o lote
@@ -161,7 +161,7 @@ Funcionalidade: RF-14 — Publicação transacional de eventos de identidade
     E o header "acting_scope" possui o valor "NONE"
     E o payload contém status "LOCKED" e reason "Excesso de tentativas consecutivas de login com palavra-passe incorreta"
 
-  @CA-14.4 @RF-14 @RN-162 @RN-164 @RN-168 @MUST
+  @CA-14.4 @RF-14 @RN-162 @RN-164 @RN-168 @MUST @borda
   Cenário: Publicação de EV-03 usuario_bloqueado por suspensão administrativa
     Dado a execução de IF-07.4 para UserId "0192e2c0-0003-7000-8000-000000000003" com reason "Violacao de politica"
     E que IAuthContext possui UserId "0192e2c0-0001-7000-8000-000000000001", GroupId "0192e2c0-0002-7000-8000-000000000002" e ActiveTenantId nulo
@@ -170,7 +170,7 @@ Funcionalidade: RF-14 — Publicação transacional de eventos de identidade
     E o header "group_id" é "0192e2c0-0002-7000-8000-000000000002" e "tenant_id" está ausente
     E o payload contém status "SUSPENDED" e locked_until nulo
 
-  @CA-14.5 @RF-14 @RN-161 @RN-162 @RN-165 @RN-168 @MUST @critico
+  @CA-14.5 @RF-14 @RN-161 @RN-162 @RN-165 @RN-168 @MUST @critico @borda
   Cenário: Publicação de EV-04 sessao_comprometida a partir de FamilyContext
     Dado a execução de IF-07.5 com FamilyContext contendo UserId "0192e2c0-0007-7000-8000-000000000007", GroupId "0192e2c0-0001-7000-8000-000000000001", ActiveTenantId "0192e2c0-0010-7000-8000-000000000010" e ActiveScope "BUYER"
     Quando a transação é confirmada e o worker outbox processa o lote
@@ -178,7 +178,7 @@ Funcionalidade: RF-14 — Publicação transacional de eventos de identidade
     E o header "acting_scope" é "BUYER" e o header "actor_user_id" está ausente
     E o claim "allowed_tenants" de "context_jws" contém as claims resolvidas da família
 
-  @CA-14.6 @RF-14 @RN-166 @RN-167 @RN-168 @MUST
+  @CA-14.6 @RF-14 @RN-166 @RN-167 @RN-168 @MUST @borda
   Esquema do Cenário: Limiar temporal de publicação da outbox RNF-05 em lote
     Dado que existem <qtd> mensagens em outbox_message com status "PENDING"
     Quando o worker outbox executa com intervalo de 500 ms
@@ -188,7 +188,7 @@ Funcionalidade: RF-14 — Publicação transacional de eventos de identidade
       | 1   |
       | 50  |
 
-  @CA-14.7 @RF-14 @RN-167 @RN-169 @MUST @critico
+  @CA-14.7 @RF-14 @RN-167 @RN-169 @MUST @critico @borda
   Esquema do Cenário: Ciclo de retentativas e transição para FAILED após 5 tentativas falhadas
     Dado que existe uma mensagem PENDING com retry_count inicial <retry_inicial>
     E que o broker Kafka rejeita a publicação da mensagem
@@ -200,7 +200,7 @@ Funcionalidade: RF-14 — Publicação transacional de eventos de identidade
       | 3             | "PENDING"    | 4           |
       | 4             | "FAILED"     | 5           |
 
-  @CA-14.8 @RF-14 @RN-167 @RN-169 @MUST @critico
+  @CA-14.8 @RF-14 @RN-167 @RN-169 @MUST @critico @borda
   Cenário: Resiliência do worker sob indisponibilidade do broker Kafka
     Dado que o broker Kafka está pausado
     E que existem 2 mensagens em outbox_message com status "PENDING"
@@ -223,6 +223,6 @@ Funcionalidade: RF-14 — Publicação transacional de eventos de identidade
 
 | ID | Pressuposto | Justificação | Aprovado por (data) |
 |---|---|---|---|
-| PRS-320 | O serializador Kafka utiliza codificação UTF-8 estrita para payloads JSON e headers | Interoperabilidade com consumidores externos (10 §3.3) | PO, 2026-10-19 |
-| PRS-321 | Mensagens com status `FAILED` não são reprocessadas pelo worker ordinário | Evitar envenenamento de fila após 5 tentativas falhadas (ENT-10, PRS-43) | PO, 2026-10-19 |
-| PRS-322 | A validação de deduplicação e inspeção de `context_jws` é dos consumidores | Desacoplamento entre produtor e consumidores (PRS-14, L-02) | PO, 2026-10-19 |
+| PRS-320 | O serializador Kafka utiliza codificação UTF-8 estrita para payloads JSON e headers | Interoperabilidade com consumidores externos (10 §3.3) | PO, 2026-11-02 (D-23) |
+| PRS-321 | Mensagens com status `FAILED` não são reprocessadas pelo worker ordinário | Evitar envenenamento de fila após 5 tentativas falhadas (ENT-10, PRS-43) | PO, 2026-11-02 (D-23) |
+| PRS-322 | A validação de deduplicação e inspeção de `context_jws` é dos consumidores | Desacoplamento entre produtor e consumidores (PRS-14, L-02) | PO, 2026-11-02 (D-23) |

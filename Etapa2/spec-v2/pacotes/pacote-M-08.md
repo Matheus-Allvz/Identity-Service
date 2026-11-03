@@ -3,7 +3,7 @@
 | Ficheiro de origem | Secções incluídas | Tamanho (KiB) |
 |---|---|---|
 | `10-nucleo.md` | Núcleo base (§1-§2, §3 comum, §4, §6-§10) + extras §3.8 | 16.8 |
-| `30-dados.md` | Comum (§1, §2, §3) + ENT-01, ENT-02, ENT-03, ENT-04, ENT-05, ENT-06, ENT-07, ENUM-01, ENUM-03, ENUM-04, §4, §6 | 13.1 |
+| `30-dados.md` | Comum (§1, §2, §3) + ENT-01, ENT-02, ENT-03, ENT-04, ENT-05, ENT-06, ENT-07, ENUM-01, ENUM-03, ENUM-04, §4, §6 | 13.0 |
 | `40-contratos.md` | §1 + operações/itens de §4 (IF-04.5, IF-04.6, IF-09, IF-09.1, IF-09.2, IF-09.3, IF-09.4, IF-09.5, IF-09.6, IF-09.7, IF-09.8, IF-11.3) + tipos partilhados | 11.6 |
 | `70-ambiente-teste.md` | Comum §1 | 3.6 |
 | `20-sistema-existente.md` | EXT-02 | 0.4 |
@@ -14,7 +14,7 @@
 
 # 10 · Núcleo — Identity-Service
 
-> **Conjunto:** [00 Índice](00-indice.md) · **Dono:** ARQ (UT-1-01) · **Estado:** Rascunho (ciclo 5, UT-2-91) · **Atualizado em:** 2026-10-19
+> **Conjunto:** [00 Índice](00-indice.md) · **Dono:** ARQ (UT-1-01) · **Estado:** Congelado (Gate 4) · **Atualizado em:** 2026-11-02
 > **Núcleo base** (todos os pacotes): tudo antes da secção final "Extras". Cada extra diz no título em que pacotes entra. Estado dos PRS: `90` §2.
 
 ## 1. Instruções obrigatórias para a LLM
@@ -211,7 +211,7 @@ Um módulo **NÃO DEVE** criar códigos: um código em falta é um `CR-nn`.
 
 # 30 · Dados — Identity-Service
 
-> **Conjunto:** [00 Índice](00-indice.md) · **Dono:** ARQ (UT-2-01) · **Estado:** Rascunho (ciclo 5; decisões do PO de 2026-10-19 aplicadas) · **Atualizado em:** 2026-10-19
+> **Conjunto:** [00 Índice](00-indice.md) · **Dono:** ARQ (UT-2-01) · **Estado:** Congelado (Gate 4) · **Atualizado em:** 2026-11-02
 > Contrato partilhado: é congelado no Gate 2. Cada tabela tem **um** módulo dono, o único com código que a escreve. Os outros módulos escrevem só através da interface `IF-nn` do dono (`40`). O esquema inteiro (§3, §5, §6) é criado pela migração do M-11.
 > **Nomes de restrições:** `pk_<tabela>`, `fk_<tabela>_<coluna>`, `uq_<tabela>_<colunas>`, `ck_<tabela>_<coluna>` para o CHECK de uma coluna e o nome indicado nos CHECK de tabela. Forma executável e medida de §3, §5 e §6: `evidencias/pg-ddl.sql` (resultado em `evidencias/medir-postgres.out.txt`); uma diferença entre os dois é um defeito e vale este ficheiro.
 
@@ -478,7 +478,7 @@ Tipos públicos na pasta indicada; namespace = `IdentityService.Modules.<pasta c
 | `TenantInfo` | `M08Acessos/Interface/` | `record (Guid TenantId, Guid GroupId, EntityStatus Status, EntityStatus GroupStatus)` |
 # 70 · Contrato do ambiente de teste — Identity-Service
 
-> **Conjunto:** [00 Índice](00-indice.md) · **Dono:** AUD (UT-2-03; reconciliado em UT-2-90) · **Estado:** Rascunho (ciclo 5, UT-2-91) · **Atualizado em:** 2026-10-19
+> **Conjunto:** [00 Índice](00-indice.md) · **Dono:** AUD (UT-2-03; reconciliado em UT-2-90) · **Estado:** Congelado (Gate 4) · **Atualizado em:** 2026-11-02
 > **Medições:** cada `[MEDIDO]` deste ficheiro cita um teste do esqueleto `evidencias/env70/` (`Medicoes.cs`, `Cunhagem.cs`, `Kestrel.cs`), executado por `evidencias/medir-env70.sh` com resultado em `evidencias/medir-env70.out.txt` (UT-2-93; Docker 29.7.2).
 > **Parte comum = cabeçalho + §1: entra em todos os pacotes.** Tudo o que obriga o código está na §1; as secções extra só entram nos pacotes da tabela abaixo.
 

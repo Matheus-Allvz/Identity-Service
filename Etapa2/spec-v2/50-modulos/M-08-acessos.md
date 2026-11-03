@@ -1,6 +1,6 @@
 # M-08 · Acessos
 
-> **Conjunto:** [00 Índice](../00-indice.md) · **Dono:** AR (UT-3-08) · **Estado:** Rascunho (ciclo 5, UT-3-08) · **Atualizado em:** 2026-10-19
+> **Conjunto:** [00 Índice](../00-indice.md) · **Dono:** AR (UT-3-08) · **Estado:** Congelado (Gate 4) · **Atualizado em:** 2026-11-02
 > **Pacote:** este ficheiro + `10` (§1-§2, §3, §3.8, §4, §6-§10) + `30` (§1-§3 ENT-01 a ENT-07, ENUM-01, ENUM-03, ENUM-04, §4, §6) + `40` (§1, IF-04.5, IF-04.6, IF-09, IF-11.3, tipos) + `70` (§1) + `20` (EXT-02) + `90` (UT-3-08, PRS-05). Total: 57 KiB (orçamento: 60 KiB).
 
 ## 1. Âmbito do módulo
@@ -67,7 +67,7 @@ Funcionalidade: RF-18 — Consulta e validação de acessos, papéis e permissõ
   Contexto:
     Dado que a base de dados relacional e o cache Redis estão operacionais
 
-  @CA-18.1 @RF-18 @RN-100 @RN-101 @RN-102 @MUST @critico
+  @CA-18.1 @RF-18 @RN-100 @RN-101 @RN-102 @MUST @critico @borda
   Cenário: Resolução de papéis e permissões para proprietário de tenant (SINGLE)
     Dado que o utilizador "01900000-0000-7000-8000-000000000001" é proprietário "is_owner = true" do tenant "01900000-0000-7000-8000-000000000100"
     E que o tenant possui o escopo "BUYER" ativo
@@ -76,14 +76,20 @@ Funcionalidade: RF-18 — Consulta e validação de acessos, papéis e permissõ
     E o campo "Roles" contém o papel "BUYER_OPERATOR"
     E o campo "Permissions" contém as 4 permissões associadas a "BUYER_OPERATOR" ordenadas ordinalmente
 
-  @CA-18.2 @RF-18 @RN-105 @RN-106 @MUST @critico
-  Cenário: Resolução de contexto MACRO_GROUP com interseção de permissões
-    Dado que o utilizador é membro ativo com "can_view_group = true" nos tenants "TEN-1" e "TEN-2" do mesmo grupo
-    E que o tenant "TEN-1" possui as permissões "mapa:visualizar" e "tenant:listar"
-    E que o tenant "TEN-2" possui as permissões "mapa:visualizar" e "membro:listar"
-    Quando o método "ResolveMacroGroupAsync" é invocado com escopo "TENANT_ADMIN"
-    Então o resultado tem "Ok = true"
-    E o conjunto de permissões do "MacroContext" contém exatamente a interseção "mapa:visualizar"
+  @CA-18.2 @RF-18 @RN-105 @RN-106 @MUST @critico @borda
+  Esquema do Cenário: Resolução de contexto MACRO_GROUP com interseção de permissões e borda de conjunto vazio
+    Dado que o utilizador é membro ativo com "can_view_group = true" nos tenants "TEN-1" e <tenant_2> do mesmo grupo
+    E que no tenant "TEN-1" o utilizador possui "is_owner = true" e escopo "BUYER" ativo
+    E que no tenant <tenant_2> o utilizador possui papel <papel_ten2> no escopo "BUYER"
+    Quando o método "ResolveMacroGroupAsync" é invocado com lista de tenants ["TEN-1", <tenant_2>] e escopo "BUYER"
+    Então o resultado tem "Ok = <sucesso>"
+    E o campo "ErrorCode" é <codigo_erro>
+    E as permissões do "MacroContext" contêm <permissoes>
+
+    Exemplos:
+      | tenant_2 | papel_ten2       | sucesso | codigo_erro   | permissoes                                                                            |
+      | "TEN-2"  | "BUYER_OPERATOR" | true    | "Nenhum"      | "[\"demanda:criar\", \"demanda:listar\", \"leilao:participar\", \"pedido:visualizar\"]" |
+      | "TEN-3"  | "Nenhum"         | false   | "ERR-CTX-003" | "[]"                                                                                  |
 
   @CA-18.3 @RF-18 @RN-105 @MUST @borda
   Esquema do Cenário: Validação de bordas na lista de tenants em MACRO_GROUP
@@ -103,7 +109,7 @@ Funcionalidade: RF-18 — Consulta e validação de acessos, papéis e permissõ
     Então o resultado tem "Ok = false"
     E o campo "ErrorCode" é "ERR-AUTH-004"
 
-  @CA-18.5 @RF-18 @RN-107 @MUST
+  @CA-18.5 @RF-18 @RN-107 @MUST @borda
   Cenário: Consulta de filiação a grupo via GetGroupMembershipAsync com bypass
     Dado que o utilizador é membro sem propriedade em um tenant do grupo "01900000-0000-7000-8000-000000000010"
     Quando o método "GetGroupMembershipAsync" é invocado
@@ -117,12 +123,12 @@ Funcionalidade: RF-18 — Consulta e validação de acessos, papéis e permissõ
 |---|---|---|---|---|---|---|
 | RF-18 | MUST | RN-100 a RN-107 | IF-09 (IF-09.1 a IF-09.8) | Nenhum | CA-18.1 a CA-18.5 | F-00 |
 
-**Totais:** RF = 1 · RN = 8 · EP = 0 · EV = 0 · CA = 5 (`@critico` = 3) · Σw = 8
+**Totais:** RF = 1 · RN = 8 · EP = 0 · EV = 0 · CA = 5 (`@critico` = 3) · Σw = 15
 
 ## 7. Pressupostos do módulo
 
 | ID | Pressuposto | Justificação | Aprovado por (data) |
 |---|---|---|---|
-| PRS-180 | Operações de `IAccessQueries` filtram dados explicitamente sem depender de `AllowedTenants` do contexto | Em fluxos de autenticação o token ainda não possui o tenant ativo definido (PRS-07) | PO, 2026-10-19 |
-| PRS-181 | Tenant inexistente em `CheckTenantAsync` ou `CheckMembershipAsync` retorna 403 `ERR-CTX-001` | Previne enumeração de recursos por chamadores não autorizados (PRS-58) | PO, 2026-10-19 |
-| PRS-182 | Donos de tenant exigem obrigatoriamente `can_view_group = true` para participar em visões macro | Garante conformidade com o modelo de consentimento federado multi-CNPJ (PRS-05) | PO, 2026-10-19 |
+| PRS-180 | Operações de `IAccessQueries` filtram dados explicitamente sem depender de `AllowedTenants` do contexto | Em fluxos de autenticação o token ainda não possui o tenant ativo definido (PRS-07) | PO, 2026-11-02 (D-23) |
+| PRS-181 | Tenant inexistente em `CheckTenantAsync` ou `CheckMembershipAsync` retorna 403 `ERR-CTX-001` | Previne enumeração de recursos por chamadores não autorizados (PRS-58) | PO, 2026-11-02 (D-23) |
+| PRS-182 | Donos de tenant exigem obrigatoriamente `can_view_group = true` para participar em visões macro | Garante conformidade com o modelo de consentimento federado multi-CNPJ (PRS-05) | PO, 2026-11-02 (D-23) |

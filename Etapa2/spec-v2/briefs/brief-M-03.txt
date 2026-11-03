@@ -3,7 +3,7 @@ Lê SÓ: Etapa2/spec-v2/pacotes/pacote-M-03.md (o teu pacote de contexto; o que 
 Etapa1/03_guia_preenchimento_template.md §2 e §G-50, e o modelo Etapa1/template/50-modulos/M-nn-modelo.md.
 NÃO lês a spec v1.0, outros módulos nem o 90 completo.
 Escreves SÓ: Etapa2/spec-v2/50-modulos/M-03-troca-contexto.md.
-IDs: só da tua faixa (cabeçalho do pacote / 00 §4): RN RN-50 a RN-59, PRS PRS-130 a PRS-139, Q Q-50 a Q-59; CA-06.m (trocas de contexto e RF associados).
+IDs: só da tua faixa (cabeçalho do pacote / 00 §4): RN RN-50 a RN-59, PRS PRS-130 a PRS-139, Q Q-50 a Q-59; CA-02.m e CA-03.m.
 Tarefa: especificar o módulo segundo a Fase 3 do processo (E1 §4): endpoints em detalhe (EP-02), validação e troca de contexto,
 RF, RN em SE/ENTÃO/SENÃO, EX, tabela de concorrência/idempotência/retoma, CA em Gherkin com borda em cada CA e cobertura mínima,
 rastreabilidade e PRS. Cumpre as linhas "Entradas para a UT-3-03" (ordem da camada 6 do EP-02, validação de SINGLE e MACRO_GROUP, denylist do token anterior, emissão de novo access token com mesmo fid e sem escrita na BD/Redis em caso de rejeição) e os PRS de módulo que estão no fim do teu pacote.

@@ -7,7 +7,7 @@ IDs: só da tua faixa (cabeçalho do pacote / 00 §4): RN RN-150 a RN-159, PRS P
 Tarefa: especificar o módulo segundo a Fase 3 do processo (E1 §4): isolamento multi-tenant (camadas 2, 3 e 4), IF-11 (com ITenantScoped),
 RF (RF-16), RN em SE/ENTÃO/SENÃO, EX, tabela de concorrência/idempotência/retoma, CA em Gherkin com borda em cada CA e cobertura mínima,
 rastreabilidade e PRS. Cumpre as linhas "Entradas para a UT-3-13" (RNF-06 com 1 CA @critico por camada, matriz 30 §5.1 como oráculo, IF-11.3 reposição com exceção) e os PRS de módulo que estão no fim do teu pacote.
-Teto do ficheiro do módulo: 18 KiB (máximo rigoroso: não ultrapassar 18.4 KiB para respeitar o orçamento de 60 KiB da Onda 4).
+Teto do ficheiro do módulo: 16 KiB (máximo rigoroso: não ultrapassar 16.0 KiB para respeitar o orçamento de 60 KiB da Onda 4).
 Se precisares de algo partilhado que não está no pacote: NÃO inventes nem alteres; regista em "Pedidos de alteração".
 Ambiguidade: regista em "Dúvidas" com a hipótese mais simples marcada.
 Lint 0 (termos proibidos do guia §2.3; nenhum placeholder por preencher).
