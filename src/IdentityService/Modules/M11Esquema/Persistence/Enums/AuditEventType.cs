@@ -1,0 +1,17 @@
+namespace IdentityService.Modules.M11Esquema.Persistence.Enums;
+
+public enum AuditEventType
+{
+    LOGIN_SUCCESS,
+    LOGIN_FAILED,
+    USER_LOCKED,
+    CONTEXT_SWITCHED,
+    TOKEN_REFRESHED,
+    TOKEN_REUSE_DETECTED,
+    LOGOUT,
+    IMPERSONATION_STARTED,
+    TENANT_CREATED,
+    MEMBER_ADDED,
+    TENANT_STATUS_CHANGED,
+    USER_STATUS_CHANGED
+}
