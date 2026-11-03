@@ -13,4 +13,9 @@ public class ApiErrorException : Exception
     {
         Code = code;
     }
+
+    public ApiErrorException(string code, string message, Exception? innerException) : base(message, innerException)
+    {
+        Code = code;
+    }
 }
