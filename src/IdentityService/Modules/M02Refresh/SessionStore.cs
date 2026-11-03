@@ -68,7 +68,8 @@ public class SessionStore : ISessionStore
         }
 
         var activeToken = await _dbContext.RefreshTokens
-            .FirstOrDefaultAsync(r => r.FamilyId == familyId && r.Status == RefreshTokenStatus.ACTIVE, cancellationToken);
+            .FromSqlInterpolated($"SELECT * FROM refresh_token WHERE family_id = {familyId} AND status = 'ACTIVE' FOR UPDATE")
+            .FirstOrDefaultAsync(cancellationToken);
 
         if (activeToken == null)
         {

@@ -99,7 +99,10 @@ public static class SwitchContextEndpoint
             permissions = macroCheck.Value!.Permissions;
         }
 
-        // RN-54: Update active context in session store
+        // Transaction to serialize concurrent switch-context requests and ensure atomic revocation (CA-03.4, A-132)
+        await using var tx = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+
+        // RN-54: Update active context in session store (locks row FOR UPDATE)
         var updateOk = await sessionStore.UpdateActiveContextAsync(
             authContext.FamilyId!.Value,
             requestData.ViewMode,
@@ -111,9 +114,20 @@ public static class SwitchContextEndpoint
 
         if (!updateOk)
         {
+            await tx.RollbackAsync(cancellationToken);
             // PRS-73: Family without ACTIVE line -> 401 ERR-AUTH-002
             throw new ApiErrorException("ERR-AUTH-002", "Token de acesso ausente, inválido, expirado ou revogado");
         }
+
+        // Check if jti was already revoked by a concurrent request while waiting for the lock
+        if (await denylist.IsJtiRevokedAsync(authContext.Jti!, cancellationToken))
+        {
+            await tx.RollbackAsync(cancellationToken);
+            throw new ApiErrorException("ERR-AUTH-002", "Token de acesso ausente, inválido, expirado ou revogado");
+        }
+
+        // RN-55: Revoke previous jti in Redis before commit
+        await denylist.RevokeJtiAsync(authContext.Jti!, authContext.Exp!.Value, cancellationToken);
 
         // Audit log CONTEXT_SWITCHED
         auditLog.Append(
@@ -129,10 +143,8 @@ public static class SwitchContextEndpoint
                 active_scope = requestData.TargetScope.ToString()
             });
 
-        // RN-55: Revoke previous jti in Redis before commit
-        await denylist.RevokeJtiAsync(authContext.Jti!, authContext.Exp!.Value, cancellationToken);
-
         await dbContext.SaveChangesAsync(cancellationToken);
+        await tx.CommitAsync(cancellationToken);
 
         // Issue new JWT with same fid
         var claims = new AccessTokenClaims(

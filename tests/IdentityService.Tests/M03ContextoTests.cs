@@ -597,51 +597,13 @@ public class M03ContextoTests
         Assert.Equal("ERR-AUTH-002", doc.RootElement.GetProperty("code").GetString());
     }
 
-    [Fact(Timeout = 60000)]
+    [Fact(Timeout = 120000)]
     [Trait("Critico", "sim")]
     public async Task CA_03_4_Borda_ConcorrenciaComMesmoToken()
     {
         await _fixture.CleanDatabaseAsync();
         var now = _timeProvider.GetUtcNow();
-
-        var userId = Guid.NewGuid();
-        var groupId = Guid.NewGuid();
-        var tenantId = Guid.NewGuid();
-        var familyId = Guid.NewGuid();
-
-        await using (var db = _fixture.CreateDbContext())
-        {
-            var group = new EconomicGroup { Id = groupId, Name = "Grupo 1", Status = EntityStatus.ACTIVE, CreatedAt = now, UpdatedAt = now };
-            var tenant = new Tenant { Id = tenantId, GroupId = groupId, Cnpj = "99000001000101", LegalName = "Tenant 1", BranchType = BranchType.HQ, GeoLat = 0, GeoLng = 0, Status = EntityStatus.ACTIVE, CreatedAt = now, UpdatedAt = now };
-            var scope = new TenantScope { Id = Guid.NewGuid(), TenantId = tenantId, Scope = OperationalScope.BUYER, IsActive = true, CreatedAt = now };
-            var user = new UserAccount { Id = userId, Email = "u1@example.test", PasswordHash = "$argon2id$v=19$m=19456,t=2,p=1$c29tZXNhbHQ$c29tZWhhc2g", Name = "Utilizador Teste 01", Status = UserStatus.ACTIVE, PlatformRole = PlatformRole.NONE, CreatedAt = now, UpdatedAt = now };
-            var member = new TenantMember { Id = Guid.NewGuid(), TenantId = tenantId, UserId = userId, IsOwner = true, CanViewGroup = true, Status = EntityStatus.ACTIVE, CreatedAt = now, UpdatedAt = now };
-            var rt = new RefreshToken { Id = Guid.NewGuid(), FamilyId = familyId, UserId = userId, TokenHash = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef", Status = RefreshTokenStatus.ACTIVE, ViewMode = ViewMode.NONE, CreatedAt = now, ExpiresAt = now.AddSeconds(604800) };
-
-            db.EconomicGroups.Add(group);
-            db.Tenants.Add(tenant);
-            db.TenantScopes.Add(scope);
-            db.UserAccounts.Add(user);
-            db.TenantMembers.Add(member);
-            db.RefreshTokens.Add(rt);
-            await db.SaveChangesAsync();
-        }
-
         var issuer = CreateIssuer();
-        var claims = new AccessTokenClaims(
-            Sub: userId,
-            FamilyId: familyId,
-            PlatformRole: PlatformRole.NONE,
-            ViewMode: ViewMode.NONE,
-            GroupId: null,
-            TenantId: null,
-            AllowedTenants: [],
-            ActiveScope: null,
-            Roles: [],
-            Permissions: [],
-            Act: null
-        );
-        var token = issuer.Issue(claims);
 
         await using var app = CreateTestApp();
         await app.StartAsync();
@@ -649,36 +611,91 @@ public class M03ContextoTests
         var client1 = app.GetTestClient();
         var client2 = app.GetTestClient();
 
-        var payload = new
+        var redisMux = ConnectionMultiplexer.Connect(_fixture.GetRedisConnectionString());
+        var redisDb = redisMux.GetDatabase();
+
+        // 20 repetitions with Barrier(2) verifying [200, 401] multiset (A-132, PRS-97)
+        for (var rep = 0; rep < 20; rep++)
         {
-            view_mode = "SINGLE",
-            target_scope = "BUYER",
-            target_tenant_id = tenantId.ToString("D")
-        };
+            var userId = Guid.NewGuid();
+            var groupId = Guid.NewGuid();
+            var tenantId = Guid.NewGuid();
+            var familyId = Guid.NewGuid();
 
-        var barrier = new Barrier(2);
+            await using (var db = _fixture.CreateDbContext())
+            {
+                var group = new EconomicGroup { Id = groupId, Name = $"Grupo {rep}", Status = EntityStatus.ACTIVE, CreatedAt = now, UpdatedAt = now };
+                var tenantCnpj = $"99000001{rep:D4}01";
+                var tenant = new Tenant { Id = tenantId, GroupId = groupId, Cnpj = tenantCnpj, LegalName = $"Tenant {rep}", BranchType = BranchType.HQ, GeoLat = 0, GeoLng = 0, Status = EntityStatus.ACTIVE, CreatedAt = now, UpdatedAt = now };
+                var scope = new TenantScope { Id = Guid.NewGuid(), TenantId = tenantId, Scope = OperationalScope.BUYER, IsActive = true, CreatedAt = now };
+                var user = new UserAccount { Id = userId, Email = $"u{rep}@example.test", PasswordHash = "$argon2id$v=19$m=19456,t=2,p=1$c29tZXNhbHQ$c29tZWhhc2g", Name = $"Utilizador Teste {rep:D2}", Status = UserStatus.ACTIVE, PlatformRole = PlatformRole.NONE, CreatedAt = now, UpdatedAt = now };
+                var member = new TenantMember { Id = Guid.NewGuid(), TenantId = tenantId, UserId = userId, IsOwner = true, CanViewGroup = true, Status = EntityStatus.ACTIVE, CreatedAt = now, UpdatedAt = now };
+                var rtHash = Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes($"rt-{rep}")));
+                var rt = new RefreshToken { Id = Guid.NewGuid(), FamilyId = familyId, UserId = userId, TokenHash = rtHash, Status = RefreshTokenStatus.ACTIVE, ViewMode = ViewMode.NONE, CreatedAt = now, ExpiresAt = now.AddSeconds(604800) };
 
-        var task1 = Task.Run(async () =>
-        {
-            var req = new HttpRequestMessage(HttpMethod.Post, "/api/v1/auth/switch-context");
-            req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token.AccessToken);
-            req.Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-            barrier.SignalAndWait();
-            return await client1.SendAsync(req);
-        });
+                db.EconomicGroups.Add(group);
+                db.Tenants.Add(tenant);
+                db.TenantScopes.Add(scope);
+                db.UserAccounts.Add(user);
+                db.TenantMembers.Add(member);
+                db.RefreshTokens.Add(rt);
+                await db.SaveChangesAsync();
+            }
 
-        var task2 = Task.Run(async () =>
-        {
-            var req = new HttpRequestMessage(HttpMethod.Post, "/api/v1/auth/switch-context");
-            req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token.AccessToken);
-            req.Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-            barrier.SignalAndWait();
-            return await client2.SendAsync(req);
-        });
+            var claims = new AccessTokenClaims(
+                Sub: userId,
+                FamilyId: familyId,
+                PlatformRole: PlatformRole.NONE,
+                ViewMode: ViewMode.NONE,
+                GroupId: null,
+                TenantId: null,
+                AllowedTenants: [],
+                ActiveScope: null,
+                Roles: [],
+                Permissions: [],
+                Act: null
+            );
+            var token = issuer.Issue(claims);
 
-        var responses = await Task.WhenAll(task1, task2);
-        var statusCodes = responses.Select(r => r.StatusCode).ToList();
+            var payload = new
+            {
+                view_mode = "SINGLE",
+                target_scope = "BUYER",
+                target_tenant_id = tenantId.ToString("D")
+            };
 
-        Assert.Contains(HttpStatusCode.OK, statusCodes);
+            var barrier = new Barrier(2);
+
+            var task1 = Task.Run(async () =>
+            {
+                var req = new HttpRequestMessage(HttpMethod.Post, "/api/v1/auth/switch-context");
+                req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token.AccessToken);
+                req.Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+                barrier.SignalAndWait();
+                return await client1.SendAsync(req);
+            });
+
+            var task2 = Task.Run(async () =>
+            {
+                var req = new HttpRequestMessage(HttpMethod.Post, "/api/v1/auth/switch-context");
+                req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token.AccessToken);
+                req.Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+                barrier.SignalAndWait();
+                return await client2.SendAsync(req);
+            });
+
+            var responses = await Task.WhenAll(task1, task2);
+            var statusCodes = responses.Select(r => r.StatusCode).ToList();
+
+            Assert.Contains(HttpStatusCode.OK, statusCodes);
+            Assert.Contains(HttpStatusCode.Unauthorized, statusCodes);
+
+            var unauthorizedRes = responses.First(r => r.StatusCode == HttpStatusCode.Unauthorized);
+            var json = await unauthorizedRes.Content.ReadAsStringAsync();
+            using var doc = JsonDocument.Parse(json);
+            Assert.Equal("ERR-AUTH-002", doc.RootElement.GetProperty("code").GetString());
+
+            Assert.True(await redisDb.KeyExistsAsync($"denylist:jti:{token.Jti}"));
+        }
     }
 }
