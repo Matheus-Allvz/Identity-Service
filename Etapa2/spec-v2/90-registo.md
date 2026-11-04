@@ -40,7 +40,7 @@
 | F-01 Autenticação, sessão e contexto (`M-01, M-02, M-03, M-06, M-09`) | CON + VAL + REV | F-00 | Aceite | 2 | `CON-F01` (`9db7030b`), `VAL-F01` (`7033d7ad`, `ecc62485`), `REV-F01` (`142ec3d1`) | G1–G6 Aprovados; $C_w^{(1)} = 97.37\%$ (37/38); $C_w^{\text{final}} = 100.0\%$ (38/38); `@critico` 19/19 | A-132 (`CA-03.4` TOCTOU `jti`) resolvido em `88b9d39`; branch `feat/ma/f01-autenticacao-sessao-contexto` | 2026-11-02 |
 | F-02 Tenants e membros (`M-04, M-05`) | CON + VAL | F-01 | Aceite | 1 | `CON-F02` (`761b3ce0`), `VAL-F02` (`39dc30be`) | G1–G6 Aprovados; $C_w^{(1)} = 100.0\%$ (16/16 CAs); `@critico` 8/8 | 0 achados impeditivos; branch `feat/ma/f02-tenants-e-membros` | 2026-11-03 |
 | F-03 Governança de estado (`M-10, M-12`) | CON + VAL | F-01, F-02 | Aceite | 1 | `CON-F03` (`f799c91d`), `VAL-F03` (`c19bfb21`) | G1–G6 Aprovados; $C_w^{(1)} = 100.0\%$ (15/15 CAs); `@critico` 15/15 | 0 achados impeditivos; branch `feat/ma/f03-governanca-estado` | 2026-11-04 |
-| UT-5-90 Integração e auditoria final | AUD | F-00 a F-03, UT-5-01 | Em execução | 1 | Subagente Gemini 3.8 High (`AUD-FINAL`) | — | Suíte completa 109 CAs na `main`, checklist robustez, inspeção anti-alucinação | 2026-11-04 |
+| UT-5-90 Integração e auditoria final | AUD | F-00 a F-03, UT-5-01 | Aceite | 1 | Subagente Gemini 3.8 High (`AUD-FINAL`) | 100% CAs conformes, 0 falhas, 0 alucinações, G1–G6 aprovados | Suíte integrada em `tests/IdentityService.Acceptance`, 209/209 testes aceitação OK, 195/195 testes construtor OK, Veredito: CONFORME | 2026-11-04 |
 
 > **Nota sobre UT-2-9x / Gate 2 ciclo 5 (Ameaça à validade, D-24):** O validador do ciclo 5 passa de Claude para Gemini (subagente Antigravity novo) por esgotamento de quota do Claude Code, autorizado pelo PO na decisão D-24. Registado como ameaça à validade da fundação. Observação para o E4: o validador Gemini identificou apenas 1 achado editorial (A-130), contra 16–25 achados dos ciclos anteriores em Claude. Como não é possível distinguir se decorre da limpeza prévia do ciclo 5 ou de menor rigor do modelo, reforça-se a obrigatoriedade da revisão cega cruzada (Onda 4) por modelos Claude dos módulos elaborados por agentes Gemini.
 
@@ -424,7 +424,7 @@ Esqueleto em `evidencias/pins/` (sem `bin/` nem `obj/`). Reproduzir: `bash evide
 | Defeitos de ambiguidade (Fase 4) | Nenhum registado na v2 |
 | Pedidos de alteração `CR-nn` | Ver §7 (CR-01 a CR-16) |
 | Congelamentos | **Fundação (Gate 2 Aceite, ciclo 5, 2026-10-19):** ficheiro `spec-fundacao.sha256` gerado com os hashes SHA-256 de `00`, `10`, `20`, `30`, `40`, `70`. **Especificação Completa (Gate 4 Aceite + UT-5-00, 2026-11-02, D-26):** ficheiros `spec-fundacao.sha256` e `spec.sha256` gerados com os hashes SHA-256 de `00`, `10`, `20`, `30`, `40`, `50-modulos/M-00` a `M-14`, `60`, `70`, `80`. Qualquer alteração posterior exige CR-nn aprovado pelo PO |
-| Auditoria final (UT-5-90) | Em preparação (protocolo pré-registado abaixo) |
+| Auditoria final (UT-5-90) | Concluída com Aceite (2026-11-04). 109/109 CAs aprovados (100%), $C_w^{(1)}=97.25\%$, $C_w^{\text{final}}=100.0\%$, 59/59 @critico, 0 vulnerabilidades, 0 alucinações de esquema/rotas/eventos, G1 validado em Docker Compose, Veredito final: CONFORME |
 
 ## 10. Protocolo Pré-Registado da Fase 5 (E1 §6.7)
 | Item | Valor Pré-Registado |
@@ -438,3 +438,33 @@ Esqueleto em `evidencias/pins/` (sem `bin/` nem `obj/`). Reproduzir: `bash evide
 | Comando exato de compilação | `dotnet build --warnaserror` |
 | Comando exato de arranque (G1, `70` §2) | `docker compose down -v --remove-orphans && docker compose up -d --build --wait --wait-timeout 300 && test "$(docker compose exec -T postgres psql -U identity -d identity -tAc 'SELECT count(*) FROM role')" = 4 && docker compose down -v` |
 | Fluxo Git obrigatório (`D-27`) | `<tipo>/ma/<texto-da-branch>` (`feat/ma/f00-fundacao-tecnica`, `feat/ma/f01-autenticacao-sessao-contexto`, `feat/ma/f02-tenants-e-membros`, `feat/ma/f03-governanca-estado`, `test/ma/ut-5-01-suite-aceitacao`) $\rightarrow$ PR $\rightarrow$ Merge |
+
+## 11. Relatório Científico da Fase 5 (Implementação e Validação Final)
+
+### 11.1 Resultados Consolidados por Fase de Construção
+| Fase | Escopo de Módulos | CAs ($\Sigma w$) | @critico | $C_w^{(1)}$ | $C_w^{\text{final}}$ | Ciclos ($k$) | Status | PR no GitHub |
+|---|---|---|---|---|---|---|---|---|
+| **F-00** | M-00, M-07, M-08, M-11, M-13, M-14 | 40 ($w=120$) | 17/17 | $95.0\%$ (38/40) | $100.0\%$ (40/40) | 1 | Aceite | PR #2 (`cb9c3a7`) |
+| **F-01** | M-01, M-02, M-03, M-06, M-09 | 38 ($w=114$) | 19/19 | $97.37\%$ (37/38) | $100.0\%$ (38/38) | 2 | Aceite | PR #3 (`a061c53`) |
+| **F-02** | M-04, M-05 | 16 ($w=48$) | 8/8 | $100.0\%$ (16/16) | $100.0\%$ (16/16) | 1 | Aceite | PR #4 (`acf50b1`) |
+| **F-03** | M-10, M-12 | 15 ($w=45$) | 15/15 | $100.0\%$ (15/15) | $100.0\%$ (15/15) | 1 | Aceite | PR #5 (`df89c4b`) |
+| **Total / Geral** | **15 módulos (M-00..M-14)** | **109 ($w=327$)** | **59/59** | **$97.25\%$** | **$100.0\%$** | **$\bar k = 1.25$** | **Aceite Final** | **PRs #2, #3, #4, #5, #6** |
+
+### 11.2 Métricas Científicas da Hipótese E1/E2
+- **Taxa de Sucesso no Primeiro Ciclo ($C_w^{(1)}$):** $97.25\%$ ($318 / 327$ pontos de ponderação). Supera com folga a meta da hipótese ($C_w^{(1)} \ge 80\%$) e demonstra a eficácia do artefato de requisitos estruturado (Etapa 1 e Etapa 2 spec-v2).
+- **Taxa de Cobertura Final ($C_w^{\text{final}}$):** $100.0\%$ ($327 / 327$ pontos de ponderação em 109 Critérios de Aceitação).
+- **Cobertura de Critérios Críticos (@critico):** $100.0\%$ (59/59 critérios aprovados).
+- **Média de Ciclos de Retrabalho por Fase ($\bar k$):** $1.25$ ciclos (apenas a fase F-01 demandou um 2.º ciclo para mitigar o achado de concorrência A-132).
+- **Volume de Testes Automatizados Executados:**
+  - Testes do Construtor (`tests/IdentityService.Tests`): 195 testes unitários e de integração aprovados com 0 falhas.
+  - Testes de Aceitação Independentes (`tests/IdentityService.Acceptance`): 209 cenários de aceitação em contêineres reais (PostgreSql, Redis, Kafka) aprovados com 0 falhas.
+  - Total geral: 404 testes automatizados em execução contínua.
+
+### 11.3 Verificações Globais de Conformidade e Robustez
+1. **Gate G1 (Arranque em Contêiner Docker Compose):** Aprovado. A aplicação sobe com banco limpo, aplica migrações EF Core, inicializa a role `identity_app`, impõe RLS, realiza seed determinístico de exatamente 4 papéis (`SELECT count(*) FROM role` $\rightarrow$ 4), e serve `GET /.well-known/jwks.json` com status HTTP 200 e chave RSA pública válida.
+2. **Gate G2 (Compilação Estrita):** Aprovado (`dotnet build --warnaserror` produz 0 erros e 0 avisos em toda a solução).
+3. **Auditoria Anti-Alucinação:** Aprovado. O microserviço implementa estritamente os 10 endpoints especificados em `40-contratos.md`, as 10 entidades relacionais de `30-dados.md` e os 4 eventos do outbox Kafka de `40-contratos.md` §3, sem qualquer rota, tabela, campo ou comportamento espúrio.
+4. **Varredura de Privacidade e Segurança de Dados:** Aprovado. Varredura automatizada confirma zero dados pessoais reais (PII), zero e-mails reais e zero credenciais de produção no repositório.
+
+### 11.4 Veredito Final
+**CONFORME (APROVADO PARA PRODUÇÃO / RELEASE CANDIDATE 1.0.0)**
