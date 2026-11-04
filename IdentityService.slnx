@@ -3,6 +3,7 @@
     <Project Path="src/IdentityService/IdentityService.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/IdentityService.Acceptance/IdentityService.Acceptance.csproj" />
     <Project Path="tests/IdentityService.Tests/IdentityService.Tests.csproj" />
   </Folder>
 </Solution>

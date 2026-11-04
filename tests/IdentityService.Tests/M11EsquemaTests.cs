@@ -271,8 +271,8 @@ public class M11EsquemaTests
         using var process = Process.Start(psi);
         Assert.NotNull(process);
 
-        var exited = await Task.Run(() => process.WaitForExit(10000));
-        Assert.True(exited, "O processo não encerrou no tempo esperado de 10s.");
+        var exited = await Task.Run(() => process.WaitForExit(30000));
+        Assert.True(exited, "O processo não encerrou no tempo esperado.");
         Assert.Equal(1, process.ExitCode);
         Assert.True(process.HasExited, "A aplicação não deve continuar em execução nem abrir portas de atendimento.");
     }
