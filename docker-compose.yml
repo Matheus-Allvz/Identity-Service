@@ -28,7 +28,7 @@ services:
       DB_CONNECTION_STRING: Host=postgres;Port=5432;Database=identity;Username=identity;Password=identity-test
       REDIS_CONNECTION_STRING: redis:6379
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-    ports: ["8080:8080"]
+    ports: ["127.0.0.1:8080:8080"]
     depends_on:
       postgres: { condition: service_healthy }
       redis: { condition: service_healthy }

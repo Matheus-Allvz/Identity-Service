@@ -1,0 +1,836 @@
+{
+  "info": {
+    "_postman_id": "7b084e31-6e3d-4c31-9a74-9f20e4b85d01",
+    "name": "Identity Service B2B API",
+    "description": "Coleção oficial de testes e consumo do Identity-Service B2B em produção (identity.matheus-alves.dev).\nContempla autenticação multi-tenant, troca de contexto dinâmico (SINGLE e MACRO_GROUP), rotação de refresh tokens com detecção de reuso, governança de tenants e usuários, e encerramento de sessão com denylist em Redis.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://identity.matheus-alves.dev",
+      "type": "string"
+    },
+    {
+      "key": "adminEmail",
+      "value": "admin@agrobrasil.com.br",
+      "type": "string"
+    },
+    {
+      "key": "supplierEmail",
+      "value": "fornecedor@agrobrasil.com.br",
+      "type": "string"
+    },
+    {
+      "key": "buyerEmail",
+      "value": "comprador@agrobrasil.com.br",
+      "type": "string"
+    },
+    {
+      "key": "carrierEmail",
+      "value": "transportador@agrobrasil.com.br",
+      "type": "string"
+    },
+    {
+      "key": "defaultPassword",
+      "value": "SenhaForte@2026!",
+      "type": "string"
+    },
+    {
+      "key": "groupId",
+      "value": "01900000-0000-7000-8000-000000000001",
+      "type": "string"
+    },
+    {
+      "key": "matrizTenantId",
+      "value": "01900000-0000-7000-8000-000000000010",
+      "type": "string"
+    },
+    {
+      "key": "filialTenantId",
+      "value": "01900000-0000-7000-8000-000000000020",
+      "type": "string"
+    },
+    {
+      "key": "carrierTenantId",
+      "value": "01900000-0000-7000-8000-000000000030",
+      "type": "string"
+    },
+    {
+      "key": "targetUserId",
+      "value": "01900000-0000-7000-8000-000000000102",
+      "type": "string"
+    },
+    {
+      "key": "tempToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminTempToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "buyerTempToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "buyerMacroToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "supplierTempToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "bearerToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminBearerToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "supplierRefreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "consumedSupplierRefreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "dynamicCnpj",
+      "value": "99000002000186",
+      "type": "string"
+    },
+    {
+      "key": "createdTenantId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. JWKS (Chaves Públicas)",
+      "item": [
+        {
+          "name": "Obter Chaves Públicas (JWKS)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/.well-known/jwks.json",
+              "host": ["{{baseUrl}}"],
+              "path": [".well-known", "jwks.json"]
+            },
+            "description": "Retorna o conjunto de chaves públicas RSA (RS256) utilizadas pelo Identity Service para assinar os tokens JWT emitidos."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code é 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Contém chaves RSA ativas\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.keys).to.be.an('array').that.is.not.empty;",
+                  "    pm.expect(json.keys[0].kty).to.eql('RSA');",
+                  "    pm.expect(json.keys[0].alg).to.eql('RS256');",
+                  "    pm.expect(json.keys[0].kid).to.eql('key-2026-01');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Autenticação (Login)",
+      "item": [
+        {
+          "name": "Login - Admin Matriz (Salva tempToken e tenants)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{defaultPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "login"]
+            },
+            "description": "Autentica o administrador do grupo AgroBrasil. Salva o token temporário (tempToken e adminTempToken), o refresh token e os contextos de tenant disponíveis."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code é 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "var json = pm.response.json();",
+                  "pm.test(\"Retorna tokens e contextos disponíveis\", function () {",
+                  "    pm.expect(json.access_token).to.be.a('string');",
+                  "    pm.expect(json.refresh_token).to.be.a('string');",
+                  "    pm.expect(json.available_contexts).to.be.an('array').that.is.not.empty;",
+                  "});",
+                  "",
+                  "pm.collectionVariables.set(\"tempToken\", json.access_token);",
+                  "pm.collectionVariables.set(\"adminTempToken\", json.access_token);",
+                  "pm.collectionVariables.set(\"refreshToken\", json.refresh_token);",
+                  "var matriz = json.available_contexts.find(function(c) { return c.cnpj === '11222333000181'; });",
+                  "if (matriz) {",
+                  "    pm.collectionVariables.set(\"matrizTenantId\", matriz.tenant_id);",
+                  "    pm.collectionVariables.set(\"groupId\", matriz.group_id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login - Fornecedor Matriz",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{supplierEmail}}\",\n  \"password\": \"{{defaultPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "login"]
+            },
+            "description": "Autentica o vendedor da AgroBrasil Matriz (escopo SUPPLIER, role SUPPLIER_SALES)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code é 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "pm.expect(json.user.email).to.eql(\"fornecedor@agrobrasil.com.br\");",
+                  "pm.collectionVariables.set(\"supplierTempToken\", json.access_token);",
+                  "pm.collectionVariables.set(\"supplierRefreshToken\", json.refresh_token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login - Comprador Multi-Tenant (Matriz e Filial)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{buyerEmail}}\",\n  \"password\": \"{{defaultPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "login"]
+            },
+            "description": "Autentica o operador de compras, comprovando vínculo simultâneo com Matriz e Filial."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code é 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "pm.expect(json.available_contexts.length).to.be.at.least(2);",
+                  "pm.collectionVariables.set(\"buyerTempToken\", json.access_token);",
+                  "var filial = json.available_contexts.find(function(c) { return c.cnpj === '44555666000192'; });",
+                  "if (filial) {",
+                  "    pm.collectionVariables.set(\"filialTenantId\", filial.tenant_id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login - Falha de Credenciais (401)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"usuario.inexistente@agrobrasil.com.br\",\n  \"password\": \"SenhaInvalida@2026!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "login"]
+            },
+            "description": "Valida que tentativa de login com credenciais inválidas retorna 401 ERR-AUTH-001 em tempo constante sem expor existência de conta."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code é 401 Unauthorized\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "pm.expect(json.code).to.eql(\"ERR-AUTH-001\");"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. Troca de Contexto (Switch Context)",
+      "item": [
+        {
+          "name": "Trocar Contexto - Admin Matriz (SINGLE - TENANT_ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminTempToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"view_mode\": \"SINGLE\",\n  \"target_scope\": \"TENANT_ADMIN\",\n  \"target_tenant_id\": \"{{matrizTenantId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/switch-context",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "switch-context"]
+            },
+            "description": "Ativa o contexto operacional da Matriz com perfil TENANT_ADMIN. Salva o token JWT contextualizado (bearerToken e adminBearerToken)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code é 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "pm.expect(json.access_token).to.be.a('string');",
+                  "pm.expect(json.context.active_scope).to.eql('TENANT_ADMIN');",
+                  "pm.expect(json.context.view_mode).to.eql('SINGLE');",
+                  "pm.collectionVariables.set(\"bearerToken\", json.access_token);",
+                  "pm.collectionVariables.set(\"adminBearerToken\", json.access_token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Trocar Contexto - Comprador Macro Grupo (MACRO_GROUP - BUYER)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyerTempToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"view_mode\": \"MACRO_GROUP\",\n  \"target_scope\": \"BUYER\",\n  \"target_group_id\": \"{{groupId}}\",\n  \"target_tenants\": [\n    \"{{matrizTenantId}}\",\n    \"{{filialTenantId}}\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/switch-context",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "switch-context"]
+            },
+            "description": "Ativa o modo consolidado de grupo econômico (MACRO_GROUP) utilizando o token de comprador."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code é 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "pm.expect(json.context.view_mode).to.eql('MACRO_GROUP');",
+                  "pm.expect(json.context.allowed_tenants.length).to.be.at.least(2);",
+                  "pm.collectionVariables.set(\"buyerMacroToken\", json.access_token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Trocar Contexto - Comprador Filial (SINGLE - BUYER)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyerMacroToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"view_mode\": \"SINGLE\",\n  \"target_scope\": \"BUYER\",\n  \"target_tenant_id\": \"{{filialTenantId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/switch-context",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "switch-context"]
+            },
+            "description": "Ativa o contexto operacional da Filial Cooperativa AgroBrasil Sul no escopo BUYER utilizando o token já contextualizado do comprador."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code é 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "pm.expect(json.context.active_scope).to.eql('BUYER');",
+                  "pm.expect(json.context.view_mode).to.eql('SINGLE');"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4. Renovação de Sessão (Refresh)",
+      "item": [
+        {
+          "name": "Renovar Sessão - Rotação de Refresh Token (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "refresh"]
+            },
+            "description": "Renova a sessão ativa do Administrador rotacionando o refresh token."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code é 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "pm.expect(json.access_token).to.be.a('string');",
+                  "pm.expect(json.refresh_token).to.be.a('string');",
+                  "pm.collectionVariables.set(\"adminBearerToken\", json.access_token);",
+                  "pm.collectionVariables.set(\"bearerToken\", json.access_token);",
+                  "pm.collectionVariables.set(\"refreshToken\", json.refresh_token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Consumir Refresh Token (Sessão Fornecedor)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"{{supplierRefreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "refresh"]
+            },
+            "description": "Consome legitimamente o refresh token do fornecedor para salvar a cópia antiga."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code é 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set(\"consumedSupplierRefreshToken\", pm.collectionVariables.get(\"supplierRefreshToken\"));",
+                  "pm.collectionVariables.set(\"supplierRefreshToken\", json.refresh_token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Detecção de Reúso de Refresh Token (401)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"{{consumedSupplierRefreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "refresh"]
+            },
+            "description": "Submete o refresh token recém-consumido do fornecedor para comprovar a detecção de reuso (ERR-AUTH-006)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code é 401 Unauthorized\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "pm.expect(json.code).to.eql(\"ERR-AUTH-006\");"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "5. Governança de Tenants",
+      "item": [
+        {
+          "name": "Criar Novo Tenant no Grupo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminBearerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"group_id\": \"{{groupId}}\",\n  \"cnpj\": \"{{dynamicCnpj}}\",\n  \"legal_name\": \"AgroBrasil Armazéns e Silos S.A.\",\n  \"branch_type\": \"BRANCH\",\n  \"geo_lat\": -16.467400,\n  \"geo_lng\": -54.636100,\n  \"scopes\": [\n    \"BUYER\",\n    \"SUPPLIER\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tenants",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "tenants"]
+            },
+            "description": "Provisiona um novo tenant vinculado ao grupo econômico autenticado usando o token de administrador."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Gera CNPJ matematicamente válido dinâmico",
+                  "var d = [];",
+                  "for (var i = 0; i < 8; i++) d.push(Math.floor(Math.random() * 9));",
+                  "d.push(0, 0, 0, 1);",
+                  "var w1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];",
+                  "var s1 = 0;",
+                  "for (var i = 0; i < 12; i++) s1 += d[i] * w1[i];",
+                  "var r1 = s1 % 11;",
+                  "var dg1 = r1 < 2 ? 0 : 11 - r1;",
+                  "d.push(dg1);",
+                  "var w2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];",
+                  "var s2 = 0;",
+                  "for (var i = 0; i < 13; i++) s2 += d[i] * w2[i];",
+                  "var r2 = s2 % 11;",
+                  "var dg2 = r2 < 2 ? 0 : 11 - r2;",
+                  "d.push(dg2);",
+                  "pm.collectionVariables.set(\"dynamicCnpj\", d.join(''));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code é 201 Created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set(\"createdTenantId\", json.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Atualizar Status do Tenant (Governança)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminBearerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"ACTIVE\",\n  \"reason\": \"Auditoria periódica de conformidade operacional\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tenants/{{matrizTenantId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "tenants", "{{matrizTenantId}}", "status"]
+            },
+            "description": "Atualiza o status administrativo do tenant Matriz para ACTIVE, mantendo a conformidade cadastral."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code é 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "pm.expect(json.status).to.eql(\"ACTIVE\");"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "6. Governança de Usuários",
+      "item": [
+        {
+          "name": "Suspender Usuário",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminBearerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"SUSPENDED\",\n  \"reason\": \"Bloqueio administrativo temporário\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/{{targetUserId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "{{targetUserId}}", "status"]
+            },
+            "description": "Suspende o acesso do usuário no grupo econômico, registrando auditoria e denylist em Redis."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code é 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "pm.expect(json.status).to.eql(\"SUSPENDED\");"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reativar Usuário",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminBearerToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"ACTIVE\",\n  \"reason\": \"Reativação de credenciais após validação cadastral\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/{{targetUserId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "{{targetUserId}}", "status"]
+            },
+            "description": "Reativa a conta do usuário para o status ACTIVE."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code é 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "pm.expect(json.status).to.eql(\"ACTIVE\");"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "7. Encerramento de Sessão (Logout)",
+      "item": [
+        {
+          "name": "Logout Ativo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminBearerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "logout"]
+            },
+            "description": "Encerra ativamente a sessão, revogando o JTI no Redis e a família de refresh tokens no PostgreSQL."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code é 204 No Content\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

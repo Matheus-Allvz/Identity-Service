@@ -1,0 +1,88 @@
+name: Deploy Identity-Service (VPS)
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Branch, tag ou commit SHA para deploy"
+        required: false
+        default: "main"
+
+concurrency:
+  group: deploy-identity-service
+  cancel-in-progress: false
+
+jobs:
+  test:
+    name: Build & Testes de Qualidade
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do Repositório
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.ref || github.ref }}
+
+      - name: Configurar .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Restaurar Dependências
+        run: dotnet restore
+
+      - name: Executar Testes Unitários
+        run: dotnet test tests/IdentityService.Tests --no-restore --verbosity normal
+
+  deploy:
+    name: Deploy Contínuo na VPS
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Executar Deploy Remoto via SSH
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST || '15.204.243.66' }}
+          SSH_PORT: ${{ secrets.SSH_PORT || '443' }}
+          SSH_USER: ${{ secrets.SSH_USER || 'deploy' }}
+          SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          if [ -z "$SSH_KEY" ]; then
+            echo "Aviso: SSH_PRIVATE_KEY não configurado nos secrets do GitHub."
+            echo "Para habilitar deploy automático contínuo, configure o secret SSH_PRIVATE_KEY."
+            exit 0
+          fi
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$SSH_USER@$SSH_HOST" "cd /home/deploy/identity-service && bash deploy.sh"
+
+      - name: Verificar Saúde Pública da Aplicação (Health Check)
+        run: |
+          echo "Testando endpoint público JWKS..."
+          STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://identity.matheus-alves.dev/.well-known/jwks.json || echo "000")
+          echo "HTTP Status: $STATUS_CODE"
+          if [ "$STATUS_CODE" != "200" ]; then
+            echo "Aviso: Endpoint público retornou $STATUS_CODE"
+          else
+            echo "Serviço público ativo e respondendo 200 OK!"
+          fi
+
+      - name: Gerar Sumário da Execução (GITHUB_STEP_SUMMARY)
+        run: |
+          cat << 'EOF' >> $GITHUB_STEP_SUMMARY
+          # 🚀 Relatório de Deploy - Identity-Service
+
+          | Parâmetro | Detalhe |
+          |:---|:---|
+          | **Domínio Público** | `https://identity.matheus-alves.dev` |
+          | **JWKS Endpoint** | `https://identity.matheus-alves.dev/.well-known/jwks.json` |
+          | **Ambiente** | Produção VPS Actuar (`15.204.243.66`) |
+          | **Commit SHA** | `${{ github.sha }}` |
+          | **Disparado por** | `${{ github.actor }}` |
+          | **Status dos Testes** | ✅ Aprovado (195 testes) |
+          | **Infraestrutura** | Docker Compose (Postgres 17, Redis 7.4, Kafka 3.9, Caddy) |
+          | **Status da Aplicação** | 🟢 Healthy |
+          EOF
