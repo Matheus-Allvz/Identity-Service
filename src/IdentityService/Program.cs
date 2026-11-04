@@ -10,7 +10,9 @@ using IdentityService.Modules.M06Impersonation;
 using IdentityService.Modules.M07Chaves;
 using IdentityService.Modules.M08Acessos;
 using IdentityService.Modules.M09Logout;
+using IdentityService.Modules.M10EstadoUsuario;
 using IdentityService.Modules.M11Esquema;
+using IdentityService.Modules.M12EstadoTenant;
 using IdentityService.Modules.M13Isolamento;
 using IdentityService.Modules.M14Eventos;
 
@@ -51,7 +53,9 @@ builder.Services.AddM06Impersonation();
 builder.Services.AddM07Chaves();
 builder.Services.AddM08Acessos();
 builder.Services.AddM09Logout();
+builder.Services.AddM10EstadoUsuario();
 builder.Services.AddM11Esquema(builder.Configuration);
+builder.Services.AddM12EstadoTenant();
 builder.Services.AddM13Isolamento();
 builder.Services.AddM14Eventos(builder.Configuration);
 
@@ -87,10 +91,8 @@ app.MapM05Membros();
 app.MapM06Impersonation();
 app.MapM07Chaves();
 app.MapM09Logout();
-
-// Placeholder endpoints das rotas de negócio restantes para validação transversal (40 §1.1)
-app.MapPatch("/api/v1/tenants/{tenant_id}/status", (string tenant_id) => Results.Ok(new { message = "tenant status placeholder" }));
-app.MapPatch("/api/v1/users/{user_id}/status", (string user_id) => Results.Ok(new { message = "user status placeholder" }));
+app.MapM10EstadoUsuario();
+app.MapM12EstadoTenant();
 
 app.Run();
 
