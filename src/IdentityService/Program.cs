@@ -4,6 +4,8 @@ using IdentityService.Modules.M00Transversal.Errors;
 using IdentityService.Modules.M01Login;
 using IdentityService.Modules.M02Refresh;
 using IdentityService.Modules.M03Contexto;
+using IdentityService.Modules.M04Tenants;
+using IdentityService.Modules.M05Membros;
 using IdentityService.Modules.M06Impersonation;
 using IdentityService.Modules.M07Chaves;
 using IdentityService.Modules.M08Acessos;
@@ -43,6 +45,8 @@ builder.Services.AddM00Transversal(builder.Configuration);
 builder.Services.AddM01Login();
 builder.Services.AddM02Refresh();
 builder.Services.AddM03Contexto();
+builder.Services.AddM04Tenants();
+builder.Services.AddM05Membros();
 builder.Services.AddM06Impersonation();
 builder.Services.AddM07Chaves();
 builder.Services.AddM08Acessos();
@@ -78,13 +82,13 @@ app.UseM00Transversal();
 app.MapM01Login();
 app.MapM02Refresh();
 app.MapM03Contexto();
+app.MapM04Tenants();
+app.MapM05Membros();
 app.MapM06Impersonation();
 app.MapM07Chaves();
 app.MapM09Logout();
 
 // Placeholder endpoints das rotas de negócio restantes para validação transversal (40 §1.1)
-app.MapPost("/api/v1/tenants", () => Results.Created("/api/v1/tenants/00000000-0000-0000-0000-000000000000", new { message = "tenant created placeholder" }));
-app.MapPost("/api/v1/tenants/{tenant_id}/members", (string tenant_id) => Results.Ok(new { message = "members placeholder" }));
 app.MapPatch("/api/v1/tenants/{tenant_id}/status", (string tenant_id) => Results.Ok(new { message = "tenant status placeholder" }));
 app.MapPatch("/api/v1/users/{user_id}/status", (string user_id) => Results.Ok(new { message = "user status placeholder" }));
 
