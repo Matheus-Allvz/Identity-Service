@@ -4,7 +4,7 @@
 
 O **Identity-Service B2B** é um serviço de identidade, autenticação e autorização projetado para plataformas comerciais corporativas multi-tenant com grupos econômicos, suporte a múltiplos escopos operacionais (`BUYER`, `SUPPLIER`, `CARRIER`, `TENANT_ADMIN`) e isolamento estrito de dados através de Row Level Security (RLS) e Redis denylist.
 
-### Dados do Ambiente de Produção (VPS Actuar):
+### Dados do Ambiente de Produção (VPS Privada):
 - **URL Base Pública:** `https://identity.matheus-alves.dev`
 - **Chaves Públicas (JWKS):** `https://identity.matheus-alves.dev/.well-known/jwks.json`
 - **Algoritmo de Assinatura:** `RS256` (RSA 2048-bit, Key ID: `key-2026-01`)
