@@ -87,7 +87,7 @@ jobs:
           | **Domínio Público** | `https://identity.matheus-alves.dev` |
           | **JWKS Endpoint** | `https://identity.matheus-alves.dev/.well-known/jwks.json` |
           | **Health Live** | `https://identity.matheus-alves.dev/health/live` |
-          | **Ambiente** | Produção VPS Actuar (`15.204.243.66`) |
+          | **Ambiente** | VPS Privada (`15.204.243.66`) |
           | **Estratégia de Deploy** | Blue/Green Zero Downtime (Caddy Active Health Check 1s) |
           | **Commit SHA** | `${{ github.sha }}` |
           | **Disparado por** | `${{ github.actor }}` |
