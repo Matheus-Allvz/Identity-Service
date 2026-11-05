@@ -5,6 +5,7 @@ using IdentityService.Modules.M11Esquema.Persistence;
 using IdentityService.Modules.M11Esquema.Persistence.Entities;
 using IdentityService.Modules.M11Esquema.Persistence.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -63,79 +64,112 @@ public class OutboxPublisherWorker : BackgroundService
         using var scope = _scopeFactory.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
 
-        // RN-166: Até 50 registos PENDING ordenados por created_at ASC, id ASC
-        var messages = await dbContext.OutboxMessages
-            .Where(m => m.Status == OutboxStatus.PENDING)
-            .OrderBy(m => m.CreatedAt)
-            .ThenBy(m => m.Id)
-            .Take(50)
-            .ToListAsync(cancellationToken);
+        List<OutboxMessage> messages;
+        IDbContextTransaction? transaction = null;
+
+        if (dbContext.Database.IsNpgsql())
+        {
+            transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+            messages = await dbContext.OutboxMessages
+                .FromSqlRaw("SELECT * FROM outbox_message WHERE status = 'PENDING' ORDER BY created_at ASC, id ASC LIMIT 50 FOR UPDATE SKIP LOCKED")
+                .ToListAsync(cancellationToken);
+        }
+        else
+        {
+            // RN-166: Até 50 registos PENDING ordenados por created_at ASC, id ASC (compatibilidade in-memory/sqlite)
+            messages = await dbContext.OutboxMessages
+                .Where(m => m.Status == OutboxStatus.PENDING)
+                .OrderBy(m => m.CreatedAt)
+                .ThenBy(m => m.Id)
+                .Take(50)
+                .ToListAsync(cancellationToken);
+        }
 
         if (messages.Count == 0)
         {
+            if (transaction != null)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                await transaction.DisposeAsync();
+            }
             return 0;
         }
 
         var publishedCount = 0;
 
-        foreach (var message in messages)
+        try
         {
-            if (cancellationToken.IsCancellationRequested)
-                break;
-
-            var kafkaHeaders = new Headers();
-            if (!string.IsNullOrWhiteSpace(message.Headers))
+            foreach (var message in messages)
             {
-                var headersDict = JsonSerializer.Deserialize<Dictionary<string, string>>(message.Headers);
-                if (headersDict != null)
+                if (cancellationToken.IsCancellationRequested)
+                    break;
+
+                var kafkaHeaders = new Headers();
+                if (!string.IsNullOrWhiteSpace(message.Headers))
                 {
-                    foreach (var (k, v) in headersDict)
+                    var headersDict = JsonSerializer.Deserialize<Dictionary<string, string>>(message.Headers);
+                    if (headersDict != null)
                     {
-                        kafkaHeaders.Add(k, Encoding.UTF8.GetBytes(v));
+                        foreach (var (k, v) in headersDict)
+                        {
+                            kafkaHeaders.Add(k, Encoding.UTF8.GetBytes(v));
+                        }
                     }
                 }
-            }
 
-            var kafkaMessage = new Message<string, string>
-            {
-                Key = message.PartitionKey,
-                Value = message.Payload,
-                Headers = kafkaHeaders
-            };
-
-            var now = _timeProvider.GetUtcNow();
-
-            try
-            {
-                // RN-167: Publicar com Acks = All e timeout 3000 ms configurados no produtor
-                await _producer.ProduceAsync(message.Topic, kafkaMessage, cancellationToken);
-
-                // RN-168: Confirmado pelo broker
-                message.Status = OutboxStatus.PUBLISHED;
-                message.ProcessedAt = now;
-                publishedCount++;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Falha ao enviar mensagem {EventId} para Kafka.", message.Id);
-
-                // RN-169: Ciclo de retentativas
-                var nextRetry = message.RetryCount + 1;
-                if (nextRetry >= 5)
+                var kafkaMessage = new Message<string, string>
                 {
-                    message.Status = OutboxStatus.FAILED;
-                    message.RetryCount = 5;
+                    Key = message.PartitionKey,
+                    Value = message.Payload,
+                    Headers = kafkaHeaders
+                };
+
+                var now = _timeProvider.GetUtcNow();
+
+                try
+                {
+                    // RN-167: Publicar com Acks = All e timeout 3000 ms configurados no produtor
+                    await _producer.ProduceAsync(message.Topic, kafkaMessage, cancellationToken);
+
+                    // RN-168: Confirmado pelo broker
+                    message.Status = OutboxStatus.PUBLISHED;
                     message.ProcessedAt = now;
+                    publishedCount++;
                 }
-                else
+                catch (Exception ex)
                 {
-                    message.RetryCount = nextRetry;
-                    message.Status = OutboxStatus.PENDING;
-                    message.ProcessedAt = null;
+                    _logger.LogWarning(ex, "Falha ao enviar mensagem {EventId} para Kafka.", message.Id);
+
+                    // RN-169: Ciclo de retentativas
+                    var nextRetry = message.RetryCount + 1;
+                    if (nextRetry >= 5)
+                    {
+                        message.Status = OutboxStatus.FAILED;
+                        message.RetryCount = 5;
+                        message.ProcessedAt = now;
+                    }
+                    else
+                    {
+                        message.RetryCount = nextRetry;
+                        message.Status = OutboxStatus.PENDING;
+                        message.ProcessedAt = null;
+                    }
                 }
+
+                await dbContext.SaveChangesAsync(cancellationToken);
             }
 
-            await dbContext.SaveChangesAsync(cancellationToken);
+            if (transaction != null)
+            {
+                await transaction.CommitAsync(cancellationToken);
+            }
+        }
+        finally
+        {
+            if (transaction != null)
+            {
+                await transaction.DisposeAsync();
+            }
         }
 
         return publishedCount;

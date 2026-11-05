@@ -94,6 +94,62 @@ app.MapM09Logout();
 app.MapM10EstadoUsuario();
 app.MapM12EstadoTenant();
 
+// Probes de Saúde
+app.MapGet("/health/live", () => Results.Ok(new { status = "UP" }));
+
+app.MapGet("/health/ready", async (IdentityService.Modules.M11Esquema.Persistence.IdentityDbContext dbContext, IServiceProvider sp, CancellationToken ct) =>
+{
+    var checks = new Dictionary<string, string>();
+    bool healthy = true;
+
+    try
+    {
+        var dbOk = await dbContext.Database.CanConnectAsync(ct);
+        if (dbOk)
+        {
+            checks["database"] = "UP";
+        }
+        else
+        {
+            checks["database"] = "DOWN";
+            healthy = false;
+        }
+    }
+    catch (Exception ex)
+    {
+        checks["database"] = $"DOWN: {ex.Message}";
+        healthy = false;
+    }
+
+    var redis = sp.GetService<StackExchange.Redis.IConnectionMultiplexer>();
+    if (redis != null)
+    {
+        try
+        {
+            await redis.GetDatabase().PingAsync();
+            checks["redis"] = "UP";
+        }
+        catch (Exception ex)
+        {
+            checks["redis"] = $"DOWN: {ex.Message}";
+            healthy = false;
+        }
+    }
+    else
+    {
+        checks["redis"] = "UP (NOT_CONFIGURED)";
+    }
+
+    var result = new
+    {
+        status = healthy ? "UP" : "DOWN",
+        checks
+    };
+
+    return healthy ? Results.Ok(result) : Results.Json(result, statusCode: 503);
+});
+
+
 app.Run();
 
 public partial class Program;

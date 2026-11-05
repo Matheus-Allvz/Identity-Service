@@ -168,7 +168,9 @@ public partial class AuthContextMiddleware
     {
         if (path.Equals("/api/v1/auth/login", StringComparison.OrdinalIgnoreCase) ||
             path.Equals("/api/v1/auth/refresh", StringComparison.OrdinalIgnoreCase) ||
-            path.Equals("/.well-known/jwks.json", StringComparison.OrdinalIgnoreCase))
+            path.Equals("/.well-known/jwks.json", StringComparison.OrdinalIgnoreCase) ||
+            path.Equals("/health/live", StringComparison.OrdinalIgnoreCase) ||
+            path.Equals("/health/ready", StringComparison.OrdinalIgnoreCase))
         {
             return false;
         }

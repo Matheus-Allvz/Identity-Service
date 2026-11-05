@@ -19,7 +19,9 @@ public class TransportValidationMiddleware
     public async Task InvokeAsync(HttpContext context)
     {
         var path = context.Request.Path.Value ?? string.Empty;
-        if (path.Equals("/.well-known/jwks.json", StringComparison.OrdinalIgnoreCase))
+        if (path.Equals("/.well-known/jwks.json", StringComparison.OrdinalIgnoreCase) ||
+            path.Equals("/health/live", StringComparison.OrdinalIgnoreCase) ||
+            path.Equals("/health/ready", StringComparison.OrdinalIgnoreCase))
         {
             await _next(context);
             return;
