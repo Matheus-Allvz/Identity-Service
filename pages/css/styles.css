@@ -1,0 +1,161 @@
+/* Design System Tokens & Custom Styles for Identity-Service Playground */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  /* Surfaces Light Mode */
+  --color-surface-canvas: #f8fafc;
+  --color-surface-1: #ffffff;
+  --color-surface-2: #f1f5f9;
+  --color-surface-3: #e2e8f0;
+  --color-border-subtle: rgba(0, 0, 0, 0.08);
+  --color-border-strong: rgba(0, 0, 0, 0.16);
+
+  /* Texts Light Mode */
+  --color-text-main: #0f172a;
+  --color-text-muted: #64748b;
+  --color-text-subtle: #94a3b8;
+
+  /* Semantics */
+  --color-primary: #4f46e5;
+  --color-primary-hover: #4338ca;
+  --color-success: #059669;
+  --color-error: #dc2626;
+  --color-warning: #d97706;
+  --color-info: #0284c7;
+
+  /* Shadows */
+  --elevation-card: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --glow-primary: 0 0 16px -2px rgba(79, 70, 229, 0.25);
+  --glow-success: 0 0 16px -2px rgba(5, 150, 105, 0.25);
+  --glow-error: 0 0 16px -2px rgba(220, 38, 38, 0.25);
+}
+
+.dark {
+  /* Surfaces Dark Mode (Default Deep Obsidian) */
+  --color-surface-canvas: #080b11;
+  --color-surface-1: #0f172a;
+  --color-surface-2: #1e293b;
+  --color-surface-3: #334155;
+  --color-border-subtle: rgba(255, 255, 255, 0.08);
+  --color-border-strong: rgba(255, 255, 255, 0.18);
+
+  /* Texts Dark */
+  --color-text-main: #f8fafc;
+  --color-text-muted: #94a3b8;
+  --color-text-subtle: #64748b;
+
+  /* Semantics Dark */
+  --color-primary: #6366f1;
+  --color-primary-hover: #818cf8;
+  --color-success: #10b981;
+  --color-error: #ef4444;
+  --color-warning: #f59e0b;
+  --color-info: #06b6d4;
+
+  /* Neon Glows */
+  --elevation-card: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --glow-primary: 0 0 20px -3px rgba(99, 102, 241, 0.35);
+  --glow-success: 0 0 16px -2px rgba(16, 185, 129, 0.40);
+  --glow-error: 0 0 16px -2px rgba(239, 68, 68, 0.35);
+  --glow-cyan: 0 0 16px -2px rgba(6, 182, 212, 0.35);
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--color-surface-canvas);
+  color: var(--color-text-main);
+  overflow-x: hidden;
+}
+
+code, pre, kbd, .font-mono {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.2);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.4);
+}
+
+/* Glow Utilities */
+.shadow-glow-indigo {
+  box-shadow: var(--glow-primary);
+}
+.shadow-glow-emerald {
+  box-shadow: var(--glow-success);
+}
+.shadow-glow-coral {
+  box-shadow: var(--glow-error);
+}
+.shadow-glow-cyan {
+  box-shadow: 0 0 16px -2px rgba(6, 182, 212, 0.35);
+}
+
+/* JSON Syntax Highlighting */
+.json-key {
+  color: #38bdf8; /* sky-400 */
+}
+.dark .json-key {
+  color: #7dd3fc;
+}
+.json-string {
+  color: #34d399; /* emerald-400 */
+}
+.json-number {
+  color: #fbbf24; /* amber-400 */
+}
+.json-boolean {
+  color: #c084fc; /* purple-400 */
+}
+.json-null {
+  color: #94a3b8; /* slate-400 */
+}
+
+/* Keyboard badge */
+kbd {
+  display: inline-block;
+  padding: 0.15rem 0.4rem;
+  font-size: 0.72rem;
+  line-height: 1;
+  color: #cbd5e1;
+  background-color: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+}
+.light kbd {
+  color: #334155;
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+/* Pulse animation for health check */
+@keyframes ping-slow {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.4); opacity: 0.4; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.animate-ping-slow {
+  animation: ping-slow 2.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* Shimmer progress */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.progress-shimmer {
+  background: linear-gradient(90deg, rgba(99, 102, 241, 0.8) 0%, rgba(129, 140, 248, 1) 50%, rgba(99, 102, 241, 0.8) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}

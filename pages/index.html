@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Identity-Service Playground | Test & Homologation B2B</title>
+  <meta name="description" content="Página de Testes, Homologação e Playground Interativo do Identity-Service (.NET 10, RS256, Argon2id, RLS, Redis Denylist, RFC 9457).">
+  
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236366f1'><path d='M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z'/></svg>">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            surface: {
+              canvas: 'var(--color-surface-canvas)',
+              1: 'var(--color-surface-1)',
+              2: 'var(--color-surface-2)',
+              3: 'var(--color-surface-3)'
+            },
+            brand: {
+              400: '#818cf8',
+              500: '#6366f1',
+              600: '#4f46e5'
+            }
+          },
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Fira Code', 'monospace']
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Custom Theme Styles -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-surface-canvas text-slate-100 min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
+
+  <!-- 1. TOPBAR & ENVIRONMENT SELECTOR -->
+  <header class="h-14 border-b border-white/10 bg-slate-950/80 backdrop-blur-md sticky top-0 z-40 px-4 flex items-center justify-between">
+    <!-- Brand / Logo -->
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 flex items-center justify-center shadow-glow-indigo">
+        <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="font-bold text-sm tracking-tight text-white">Identity-Service</span>
+          <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 font-semibold">Playground B2B v1.0</span>
+        </div>
+        <p class="text-[10px] text-slate-400 hidden sm:block">Homologação & Auditoria Criptográfica RS256 / RLS</p>
+      </div>
+    </div>
+
+    <!-- Center: Environment & Live Health -->
+    <div class="flex items-center gap-2.5">
+      <!-- Environment Dropdown -->
+      <div class="relative flex items-center">
+        <label for="env-select" class="sr-only">Selecionar Ambiente</label>
+        <select id="env-select" class="bg-slate-900 border border-white/15 text-slate-200 text-xs font-mono rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-indigo-500 transition cursor-pointer">
+          <!-- Populated by JS -->
+        </select>
+      </div>
+
+      <!-- Health Badge -->
+      <div id="health-badge" class="px-2.5 py-1 rounded-lg bg-slate-900/80 border border-white/10 flex items-center gap-2 cursor-pointer hover:border-white/20 transition" title="Clique para atualizar health">
+        <span id="health-dot" class="w-2 h-2 rounded-full bg-emerald-400 animate-ping-slow"></span>
+        <span id="health-text" class="text-xs font-mono font-medium text-emerald-400">Verificando...</span>
+      </div>
+    </div>
+
+    <!-- Right Actions -->
+    <div class="flex items-center gap-2">
+      <!-- JWKS Explorer Button -->
+      <button id="btn-open-jwks" class="text-xs font-mono px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-200 border border-white/10 flex items-center gap-1.5 transition">
+        <span>🔑</span>
+        <span class="hidden md:inline">JWKS</span>
+      </button>
+
+      <!-- Suite Runner Button -->
+      <button id="btn-run-tests" class="text-xs font-medium px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-1.5 shadow-sm transition">
+        <span>▶</span>
+        <span class="hidden sm:inline">Suíte de Testes (J-08)</span>
+      </button>
+
+      <!-- Dark/Light Mode Toggle -->
+      <button id="theme-toggle" class="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-white/10 transition" title="Alternar Tema Claro / Escuro">
+        <span id="theme-icon">🌙</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- 2. MAIN 3-COLUMNS RESPONSIVE GRID -->
+  <main class="flex-1 p-3 lg:p-4 max-w-[1920px] w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 pb-14">
+
+    <!-- ==================== COLUNA 1: CONTROLES, PERSONAS & CHAOS (3 cols) ==================== -->
+    <section class="lg:col-span-3 space-y-4 flex flex-col">
+      
+      <!-- Quick Personas Picker -->
+      <div class="p-3.5 rounded-xl bg-slate-900/50 border border-white/10 backdrop-blur-sm">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-1.5">
+            <span class="text-indigo-400 font-bold">⚡</span>
+            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-200">Quick Personas (1-Clique)</h2>
+          </div>
+          <span class="text-[10px] text-slate-400 font-mono"><kbd>Alt+1..4</kbd></span>
+        </div>
+        <p class="text-[11px] text-slate-400 mb-2.5">Credenciais seed do Grupo AgroBrasil prontas para teste:</p>
+        
+        <div id="personas-container" class="space-y-2">
+          <!-- Populated by personas.js -->
+        </div>
+      </div>
+
+      <!-- Sessão Ativa & Estado -->
+      <div class="p-3.5 rounded-xl bg-slate-900/50 border border-white/10">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">Sessão Ativa</h3>
+          <button id="btn-clear-session" class="text-[10px] font-mono text-red-400 hover:text-red-300">Limpar Sessão</button>
+        </div>
+        <div class="space-y-2 text-xs font-mono">
+          <div class="flex items-center justify-between bg-slate-950/60 p-2 rounded border border-white/5">
+            <span class="text-slate-400">Usuário:</span>
+            <span id="session-user-pill" class="text-slate-200 font-semibold truncate max-w-[150px]">Nenhuma Persona</span>
+          </div>
+          <div class="flex items-center justify-between bg-slate-950/60 p-2 rounded border border-white/5">
+            <span class="text-slate-400">Estado:</span>
+            <div id="session-token-pill" class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400 border border-white/10">
+              Sem Token
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chaos & Security Playground -->
+      <div class="p-3.5 rounded-xl bg-slate-900/50 border border-white/10 flex-1 flex flex-col">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-1.5">
+            <span class="text-amber-400">🛡️</span>
+            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-200">Chaos & Security Playground</h2>
+          </div>
+          <button id="btn-chaos-clear-log" class="text-[10px] text-slate-400 hover:text-slate-200">Limpar Log</button>
+        </div>
+        <p class="text-[11px] text-slate-400 mb-3">Simulações de ataque e resiliência com Redis Denylist e RFC 9457:</p>
+
+        <div class="grid grid-cols-2 gap-2 mb-3">
+          <button id="btn-chaos-revoked" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-white/10 text-left transition hover:border-red-500/50">
+            <div class="flex items-center gap-1 text-[11px] font-semibold text-red-400 mb-0.5">
+              <span>🚫</span> Token Revogado
+            </div>
+            <p class="text-[10px] text-slate-400">Logout + Denylist Redis</p>
+          </button>
+
+          <button id="btn-chaos-refresh-reuse" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-white/10 text-left transition hover:border-amber-500/50">
+            <div class="flex items-center gap-1 text-[11px] font-semibold text-amber-400 mb-0.5">
+              <span>⚡</span> Reúso Refresh
+            </div>
+            <p class="text-[10px] text-slate-400">Invalidação em cascata</p>
+          </button>
+
+          <button id="btn-chaos-tamper" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-white/10 text-left transition hover:border-cyan-500/50">
+            <div class="flex items-center gap-1 text-[11px] font-semibold text-cyan-400 mb-0.5">
+              <span>🔏</span> Assinatura Forjada
+            </div>
+            <p class="text-[10px] text-slate-400">Adulteração de Claims</p>
+          </button>
+
+          <button id="btn-chaos-bruteforce" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-white/10 text-left transition hover:border-purple-500/50">
+            <div class="flex items-center gap-1 text-[11px] font-semibold text-purple-400 mb-0.5">
+              <span>🔒</span> Brute Force (5x)
+            </div>
+            <p class="text-[10px] text-slate-400">Limiar de lockout</p>
+          </button>
+        </div>
+
+        <!-- Chaos Live Console Terminal -->
+        <div class="flex-1 min-h-[140px] max-h-[220px] bg-slate-950 rounded-lg p-2.5 border border-white/10 font-mono text-xs overflow-y-auto" id="chaos-log">
+          <div class="text-[11px] text-slate-500">Terminal de Segurança pronto. Selecione um cenário acima para disparar.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== COLUNA 2: CONSOLE INTERATIVO HTTP (5 cols) ==================== -->
+    <section class="lg:col-span-5 space-y-4 flex flex-col">
+      <div class="p-3.5 rounded-xl bg-slate-900/50 border border-white/10 backdrop-blur-sm flex-1 flex flex-col">
+        
+        <!-- Header & Endpoint Catalog -->
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-1.5">
+            <span class="text-cyan-400 font-bold">💻</span>
+            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-200">Console Interativo HTTP (Developer-First)</h2>
+          </div>
+          <span class="text-[10px] text-slate-400 font-mono"><kbd>Ctrl+Enter</kbd></span>
+        </div>
+
+        <!-- Endpoint Dropdown Selector -->
+        <div class="mb-3">
+          <label for="endpoint-select" class="sr-only">Selecione o Endpoint</label>
+          <select id="endpoint-select" class="w-full bg-slate-900 border border-white/15 text-slate-200 text-xs font-mono rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-indigo-500 transition cursor-pointer">
+            <!-- Populated by catalog.js -->
+          </select>
+        </div>
+
+        <!-- Request Bar: Method + Path + Execute + Copy cURL -->
+        <div class="flex items-center gap-2 mb-3">
+          <select id="request-method" class="text-xs font-mono font-bold px-2.5 py-1.5 rounded-lg border bg-amber-500/20 text-amber-400 border-amber-500/40 focus:outline-none">
+            <option value="POST">POST</option>
+            <option value="GET">GET</option>
+            <option value="PATCH">PATCH</option>
+            <option value="PUT">PUT</option>
+            <option value="DELETE">DELETE</option>
+          </select>
+
+          <input type="text" id="request-url" value="/api/v1/auth/login" class="flex-1 bg-slate-900 border border-white/15 rounded-lg px-3 py-1.5 text-xs font-mono text-slate-200 focus:outline-none focus:border-indigo-500 transition">
+
+          <button id="btn-execute-request" class="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs flex items-center gap-1.5 transition shadow-sm">
+            <span>▶</span> Executar
+          </button>
+
+          <button id="btn-copy-curl" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-white/10 transition" title="Copiar cURL (Ctrl+Shift+C)">
+            📋
+          </button>
+        </div>
+
+        <!-- Request Tabs: Body JSON / Headers -->
+        <div class="flex items-center justify-between border-b border-white/10 mb-2">
+          <div class="flex gap-2">
+            <button class="req-tab-btn active px-3 py-1.5 text-xs font-medium border-b-2 border-indigo-500 text-indigo-400 transition" data-tab="body">
+              Body JSON
+            </button>
+            <button class="req-tab-btn px-3 py-1.5 text-xs font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition" data-tab="headers">
+              Headers HTTP
+            </button>
+          </div>
+          <button id="btn-format-json" class="text-[10px] font-mono text-slate-400 hover:text-indigo-400">
+            Formatar JSON
+          </button>
+        </div>
+
+        <!-- Request Tab Content -->
+        <div class="mb-4">
+          <div id="tab-content-body" class="req-tab-content">
+            <textarea id="request-body" rows="6" class="w-full bg-slate-950 rounded-lg p-2.5 font-mono text-xs text-slate-200 border border-white/10 focus:outline-none focus:border-indigo-500 resize-y" placeholder="{ &quot;email&quot;: &quot;admin@agrobrasil.com.br&quot; }"></textarea>
+          </div>
+          <div id="tab-content-headers" class="req-tab-content hidden p-2 bg-slate-950 rounded-lg border border-white/10">
+            <div id="headers-container">
+              <!-- Populated by app.js -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Response Terminal Metrics Bar -->
+        <div class="border-t border-white/10 pt-3 mb-2 flex items-center justify-between flex-wrap gap-2 text-xs">
+          <div class="flex items-center gap-2">
+            <span class="text-slate-400 font-medium">Resposta:</span>
+            <span id="resp-status" class="px-2 py-0.5 rounded border text-xs font-mono font-bold bg-slate-800 text-slate-400 border-white/10">Aguardando</span>
+            <span id="resp-latency" class="text-xs font-mono text-slate-400">0ms</span>
+            <span id="resp-size" class="text-[11px] font-mono text-slate-500">0 B</span>
+          </div>
+          <div id="resp-correlation" class="flex items-center gap-1">
+            <!-- Correlation ID badge -->
+          </div>
+        </div>
+
+        <!-- Response Tabs -->
+        <div class="flex gap-2 border-b border-white/10 mb-2">
+          <button class="resp-tab-btn active px-3 py-1 text-xs font-medium border-b-2 border-indigo-500 text-indigo-400 transition" data-tab="json">
+            JSON Viewer
+          </button>
+          <button class="resp-tab-btn px-3 py-1 text-xs font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition" data-tab="headers">
+            Response Headers
+          </button>
+          <button id="tab-btn-rfc" class="resp-tab-btn hidden px-3 py-1 text-xs font-medium border-b-2 border-transparent text-red-400 hover:text-red-300 transition" data-tab="rfc">
+            RFC 9457 Alerta
+          </button>
+        </div>
+
+        <!-- RFC 9457 Dedicated Inspector (shown on error) -->
+        <div id="rfc-inspector" class="hidden mb-3">
+          <!-- Populated when HTTP >= 400 -->
+        </div>
+
+        <!-- Response Body Viewer -->
+        <div class="flex-1 min-h-[180px] bg-slate-950 rounded-lg p-3 border border-white/10 font-mono text-xs overflow-auto">
+          <div id="tab-content-resp-json" class="resp-tab-content">
+            <pre id="resp-json" class="text-slate-300 leading-relaxed whitespace-pre-wrap break-all">// Envie uma requisição para inspecionar a resposta</pre>
+          </div>
+          <div id="tab-content-resp-headers" class="resp-tab-content hidden">
+            <div id="resp-headers" class="space-y-1">
+              <span class="text-slate-500">// Nenhum cabeçalho disponível</span>
+            </div>
+          </div>
+          <div id="tab-content-resp-rfc" class="resp-tab-content hidden">
+            <!-- Duplicated in rfc-inspector -->
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== COLUNA 3: JWT INSPECTOR & B2B CONTEXT (4 cols) ==================== -->
+    <section class="lg:col-span-4 space-y-4 flex flex-col">
+
+      <!-- Interactive JWT Inspector -->
+      <div class="p-3.5 rounded-xl bg-slate-900/50 border border-white/10 backdrop-blur-sm">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-1.5">
+            <span class="text-indigo-400">🔐</span>
+            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-200">Interactive JWT Inspector (RS256)</h2>
+          </div>
+          <span class="text-[10px] font-mono text-cyan-400 bg-cyan-950/40 px-1.5 py-0.5 rounded border border-cyan-500/30">Client-Side WebCrypto</span>
+        </div>
+
+        <div id="jwt-inspector-content">
+          <div class="p-6 text-center text-xs text-slate-500 border border-dashed border-white/10 rounded-lg">
+            Nenhum token JWT ativo. Faça login ou selecione uma persona para decodificar e validar a assinatura RS256.
+          </div>
+        </div>
+      </div>
+
+      <!-- B2B Context Switcher Widget -->
+      <div class="p-3.5 rounded-xl bg-slate-900/50 border border-white/10 backdrop-blur-sm flex-1">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-1.5">
+            <span class="text-emerald-400">🏢</span>
+            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-200">B2B Context Switcher Widget</h2>
+          </div>
+          <span class="text-[10px] font-mono text-slate-400">Multi-Tenant</span>
+        </div>
+        <p class="text-[11px] text-slate-400 mb-3">Comutação dinâmica de empresa e escopo sem deslogar:</p>
+
+        <div id="context-switcher-container">
+          <div class="p-4 text-center text-xs text-slate-500 bg-slate-900/40 rounded-lg border border-dashed border-white/10">
+            Faça login com uma persona multi-tenant (ex: 👑 Admin ou 🛒 Comprador) para listar empresas.
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- 3. FOOTER STATUS BAR -->
+  <footer class="h-10 border-t border-white/10 bg-slate-950/90 backdrop-blur-md fixed bottom-0 left-0 right-0 z-30 px-4 flex items-center justify-between text-[11px] font-mono text-slate-400">
+    <div class="flex items-center gap-3 overflow-x-auto whitespace-nowrap">
+      <span>Engine: <span class="text-slate-200 font-semibold">.NET 10.0.1 (Kestrel)</span></span>
+      <span>•</span>
+      <span>Crypto: <span class="text-emerald-400 font-semibold">RS256 (JWKS)</span></span>
+      <span>•</span>
+      <span>Storage: <span class="text-indigo-400 font-semibold">PostgreSQL 17.2 RLS Force</span></span>
+      <span>•</span>
+      <span>Cache: <span class="text-amber-400 font-semibold">Redis 7.4.6 Denylist</span></span>
+      <span>•</span>
+      <span>TLS: <span class="text-cyan-400 font-semibold">Caddy / ZeroSSL</span></span>
+    </div>
+    <div class="hidden sm:flex items-center gap-2">
+      <span class="text-slate-500">Atalhos:</span>
+      <span><kbd>Ctrl+Enter</kbd> Enviar</span>
+      <span><kbd>Alt+1..4</kbd> Personas</span>
+      <span><kbd>Ctrl+Shift+C</kbd> cURL</span>
+    </div>
+  </footer>
+
+  <!-- 4. MODAL: JWKS EXPLORER -->
+  <div id="jwks-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-white/15 rounded-xl max-w-2xl w-full shadow-2xl overflow-hidden animate-in fade-in zoom-in-95">
+      <div class="px-4 py-3 border-b border-white/10 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-base">🔑</span>
+          <h3 class="text-sm font-bold text-slate-100">Auditoria Criptográfica: JWKS Oficial</h3>
+          <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">/.well-known/jwks.json</span>
+        </div>
+        <button id="btn-close-jwks" class="text-slate-400 hover:text-white text-base">✕</button>
+      </div>
+      <div id="jwks-modal-content" class="p-4 max-h-[75vh] overflow-y-auto">
+        <!-- Populated by app.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. MODAL: ONE-CLICK TEST RUNNER (J-08) -->
+  <div id="test-runner-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-white/15 rounded-xl max-w-3xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+      <!-- Header -->
+      <div class="px-5 py-3.5 border-b border-white/10 flex items-center justify-between">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-base">▶</span>
+            <h3 class="text-sm font-bold text-slate-100">One-Click Test Pipeline Runner (J-08)</h3>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Jornadas J-01 a J-07</span>
+          </div>
+          <p class="text-[11px] text-slate-400">Execução sequencial automatizada, medição de latência e asserção RFC 9457.</p>
+        </div>
+        <button onclick="document.getElementById('test-runner-modal').classList.add('hidden')" class="text-slate-400 hover:text-white text-base">✕</button>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="px-5 pt-3 pb-2 border-b border-white/5">
+        <div class="flex items-center justify-between text-xs font-mono mb-1">
+          <span class="text-slate-400">Progresso Geral:</span>
+          <span id="runner-percent" class="text-indigo-400 font-bold">0%</span>
+        </div>
+        <div class="w-full bg-slate-950 rounded-full h-2 overflow-hidden border border-white/5">
+          <div id="runner-progress-bar" class="h-full bg-indigo-500 progress-shimmer transition-all duration-300" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Steps Table -->
+      <div id="runner-steps-container" class="p-5 flex-1 overflow-y-auto space-y-2">
+        <!-- Populated by runner.js -->
+      </div>
+
+      <!-- Footer / Report Export -->
+      <div id="runner-footer" class="px-5 py-3 border-t border-white/10 bg-slate-950/60 flex items-center justify-between">
+        <span class="text-xs text-slate-400">Aguardando início dos testes...</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. TOAST CONTAINER -->
+  <div id="toast-container" class="fixed bottom-12 right-4 z-50 flex flex-col gap-2 max-w-sm pointer-events-none">
+    <!-- Populated by app.js showToast -->
+  </div>
+
+  <!-- Application Main Script -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
