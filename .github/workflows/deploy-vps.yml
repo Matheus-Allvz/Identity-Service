@@ -33,11 +33,17 @@ jobs:
       - name: Restaurar Dependências
         run: dotnet restore
 
+      - name: Compilar com Avisos como Erros
+        run: dotnet build --no-restore --warnaserror
+
       - name: Executar Testes Unitários
-        run: dotnet test tests/IdentityService.Tests --no-restore --verbosity normal
+        run: dotnet test tests/IdentityService.Tests --no-build --verbosity normal
+
+      - name: Executar Testes de Aceitação
+        run: dotnet test tests/IdentityService.Acceptance --no-build --verbosity normal
 
   deploy:
-    name: Deploy Contínuo na VPS
+    name: Deploy Contínuo na VPS (Zero Downtime Blue/Green)
     needs: test
     runs-on: ubuntu-latest
 
@@ -63,9 +69,10 @@ jobs:
         run: |
           echo "Testando endpoint público JWKS..."
           STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://identity.matheus-alves.dev/.well-known/jwks.json || echo "000")
-          echo "HTTP Status: $STATUS_CODE"
+          echo "HTTP Status JWKS: $STATUS_CODE"
           if [ "$STATUS_CODE" != "200" ]; then
             echo "Aviso: Endpoint público retornou $STATUS_CODE"
+            exit 1
           else
             echo "Serviço público ativo e respondendo 200 OK!"
           fi
@@ -73,16 +80,18 @@ jobs:
       - name: Gerar Sumário da Execução (GITHUB_STEP_SUMMARY)
         run: |
           cat << 'EOF' >> $GITHUB_STEP_SUMMARY
-          # 🚀 Relatório de Deploy - Identity-Service
+          # 🚀 Relatório de Deploy Zero Downtime - Identity-Service
 
           | Parâmetro | Detalhe |
           |:---|:---|
           | **Domínio Público** | `https://identity.matheus-alves.dev` |
           | **JWKS Endpoint** | `https://identity.matheus-alves.dev/.well-known/jwks.json` |
+          | **Health Live** | `https://identity.matheus-alves.dev/health/live` |
           | **Ambiente** | Produção VPS Actuar (`15.204.243.66`) |
+          | **Estratégia de Deploy** | Blue/Green Zero Downtime (Caddy Active Health Check 1s) |
           | **Commit SHA** | `${{ github.sha }}` |
           | **Disparado por** | `${{ github.actor }}` |
-          | **Status dos Testes** | ✅ Aprovado (195 testes) |
-          | **Infraestrutura** | Docker Compose (Postgres 17, Redis 7.4, Kafka 3.9, Caddy) |
-          | **Status da Aplicação** | 🟢 Healthy |
+          | **Status dos Testes** | ✅ Aprovado (195 Unitários + 209 Aceitação) |
+          | **Infraestrutura** | Persistente (`docker-compose.infra.yml`) + App Blue/Green (`docker-compose.yml`) |
+          | **Status da Aplicação** | 🟢 Healthy (Zero Downtime) |
           EOF

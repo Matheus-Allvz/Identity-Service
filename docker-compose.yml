@@ -1,40 +1,81 @@
 name: identity-service
+
+networks:
+  identity-net:
+    name: identity-net
+    external: true
+
+x-app-environment: &app-environment
+  ASPNETCORE_ENVIRONMENT: Production
+  DB_CONNECTION_STRING: Host=postgres;Port=5432;Database=identity;Username=identity;Password=identity-test
+  REDIS_CONNECTION_STRING: redis:6379
+  KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+  JWT_KEY_ID: key-2026-01
+  JWT_RSA_PRIVATE_KEY_PEM: |
+    -----BEGIN PRIVATE KEY-----
+    MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQCxbpCZC3xvdxSF
+    ZxqndUqMVHtaA1zDYNZW63t38xIuI+Ia9+uPeKQWDmuAxmoOn8+0P9Il7Vy4+3uc
+    0+HPkRNJm92ITAnevJx6nl9DYFZMAoaXAFwgEkmH3zkob0C+LgztXNxx+onguVVj
+    eOpCiSVk/amHyI3PVV9rj7ixnkDf9HjLKjTwZ/HcJMnPZl/g3kau9XGdaTL5bDYC
+    A8Hxr9IW1QjPKSoCMQQp3JLAGNFTWmlAaON8jLmH8fR/2QxA3jm2N3+E6afLJbyA
+    qP5SghS9zEqWEamxNiwHABCekTNlPvlU1O2n1STP4+93tPEvhuoeWE1efGmhbx2Q
+    MiQYQox1AgMBAAECggEBAJ9VTnxhGClwofj6EbF3Xq6N3weCJXc+Krx7UrDwks7k
+    YlMdd2erSo6T/G3zv6HKWVbgSPLOKInlK6g1jX48JTngwht3TRW8AjkKpzl19Yjk
+    a8CGDjSut2FQT5/D6DvgVrOAxGWGOvKW+9sL5jJBvlbmg6rvqokZfUq2EYFPP6rb
+    +lUj40cwXv/j3X4k30EC/0ZkSn++R9nAfOlGcBCGWTbGV0ktEk6aRgtbXgVvEH4s
+    bODAEhlQs7xbLd9meUB3+mt7afyiwcmKiEY7QJCOpl1au8xeYa+YAdWffPy5033T
+    /dyK9zhHiWeUS8SXyqts47/SfO+kmOAj481FGvQUPLECgYEAwVmJPcqkIjFWjRB5
+    6WoS9vicDhkglJJnWWoLcNsy5y/O0Anh/CHMuRbsXGBQoda3yqIRM7z/Q8T+6IAU
+    rwqfaTjUVTETxEUN39ePGZzNmd8d0upZDy40KtMdUF/MQEl4ocf6G4jFw4wzIV0U
+    xqMFUwMxFnyiixlcoton6bnKyjcCgYEA6uyiVpIhiIB1wSFlH2xTxmf7vYZMcsyG
+    0zCwXRka1B8a5qEaTtUvFSDRKmHh8iXgfyM4DyBwSzKSigNVG73sA8BVPUIMxh4B
+    7jsV7njGbHIRjZSssXztkkX1SZ0qzkrgr7G0FyGfi6dUpHIPeXoME7x0dxhFMAcn
+    xtRGxw6OGLMCgYEAjRtgGrWKJd4mEVtF7cBZSN7VXUCfU26peEr5QIro0mpEn/Wm
+    dJDiTO5a32v3TLVcesjejwjOrtHVSy82aSzyfCNaazYe++19m7BAomuabUK1DFm1
+    V2vb7KkYSrEvand0T3WXpYKi+fyW0DGTWQheeV/p8kRRh/yha8SUvnG2eu8CgYEA
+    sJA5Uqdx3I3v8r+OqRdZv3zXj5IoUv+1NXUamF4N8++M4Fmk1CsVv+NyUVBP6Rbe
+    q69kqrnOrDXOPTxT8w3DHO6pIelKgHx9Jvfxe9H6D/eLicV8JcmnJJC/0hv12CYe
+    yO3eVKRIrUWOMCopxzsbaJnzTq9HENnP43gX2fPuiFECgYAGy8HeeoOT2qDlXgCY
+    s0+WXEhDuVwB91ssCYs+DZoztBsVPQkVvkAMN9O+oDmrlTEqpZrVguOxZOY/NUJq
+    ov4roK8YGMuo/0a4Sk4ieILWyfQZo6tyivkOY0BadLWxfnHAmmgDD4U1k7PTkrrM
+    S3x4Wl+iT15IwAQhR73a9c//Sw==
+    -----END PRIVATE KEY-----
+
 services:
-  postgres:
-    image: postgres:17.6
-    environment: { POSTGRES_DB: identity, POSTGRES_USER: identity, POSTGRES_PASSWORD: identity-test }
-    healthcheck: { test: ["CMD-SHELL", "pg_isready -U identity -d identity"], interval: 2s, timeout: 2s, retries: 30 }
-  redis:
-    image: redis:7.4.6
-    healthcheck: { test: ["CMD", "redis-cli", "ping"], interval: 2s, timeout: 2s, retries: 30 }
-  kafka:
-    image: apache/kafka:3.9.1
+  identity-service-blue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: identity-service:latest
+    container_name: identity-service-blue
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8081:8080"
+    networks:
+      - identity-net
     environment:
-      KAFKA_NODE_ID: 1
-      KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-    healthcheck: { test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 > /dev/null"], interval: 5s, timeout: 10s, retries: 24 }
-  identity-service:
-    build: .
-    environment:
-      ASPNETCORE_ENVIRONMENT: Testing
-      DB_CONNECTION_STRING: Host=postgres;Port=5432;Database=identity;Username=identity;Password=identity-test
-      REDIS_CONNECTION_STRING: redis:6379
-      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-    ports: ["127.0.0.1:8080:8080"]
-    depends_on:
-      postgres: { condition: service_healthy }
-      redis: { condition: service_healthy }
-      kafka: { condition: service_healthy }
+      <<: *app-environment
     healthcheck:
-      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/8080 && printf 'GET /.well-known/jwks.json HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && head -n 1 <&3 | grep -q ' 200 '"]
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080 && printf 'GET /health/live HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && head -n 1 <&3 | grep -q ' 200 '"]
       interval: 2s
-      timeout: 3s
-      retries: 60
+      timeout: 2s
+      retries: 30
+
+  identity-service-green:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: identity-service:latest
+    container_name: identity-service-green
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8082:8080"
+    networks:
+      - identity-net
+    environment:
+      <<: *app-environment
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080 && printf 'GET /health/live HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && head -n 1 <&3 | grep -q ' 200 '"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
