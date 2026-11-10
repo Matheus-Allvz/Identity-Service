@@ -123,6 +123,16 @@ curl -s -i -X POST https://identity.matheus-alves.dev/api/v1/auth/logout \
 ```
 > Responde com `HTTP/2 204 No Content`.
 
+### Passo 6: Diagnóstico de Token via Introspecção (Apenas Desenvolvimento)
+```bash
+curl -s -X POST https://identity.matheus-alves.dev/api/v1/auth/introspect \
+  -H "Content-Type: application/json" \
+  -d '{
+    "token": "<BEARER_TOKEN>"
+  }' | jq .
+```
+> ⚠️ **Nota:** A introspecção é uma ferramenta de diagnóstico para desenvolvimento local. Em microsserviços de produção, a validação de tokens **DEVE** ser feita localmente via chave pública JWKS (RS256) com cache em memória.
+
 ---
 
 ## 5. Como Importar e Usar no Postman

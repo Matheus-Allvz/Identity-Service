@@ -421,6 +421,35 @@ Solicita-se à **Equipe 9** que na configuração do Nginx Gateway:
 
 ---
 
+### 3.9. D-ECO-09: Cache-Control HTTP e Política de Consulta ao JWKS
+
+O endpoint público `/.well-known/jwks.json` expõe a chave pública RSA-2048 com cabeçalhos de cache agressivos para evitar sobrecarga na rede e garantir alta disponibilidade:
+```http
+Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+```
+- **TTL Canônico:** 1 hora (`max-age=3600`), com tolerância de até 24 horas em caso de falha de conexão (`stale-while-revalidate=86400`).
+- **Diretriz Arquitetural:** Os microsserviços consumidores **DEVEM** utilizar clientes com cache em memória (como o `PyJWKClient` com `lifespan=3600`), consultando o endpoint apenas na inicialização ou após expiração do TTL. Chamadas síncronas a cada requisição de usuário são consideradas anti-padrão grave.
+
+---
+
+### 3.10. D-ECO-10: Ferramenta de Diagnóstico de Token (`POST /api/v1/auth/introspect`)
+
+Para auxiliar as equipes parceiras na depuração de JWTs durante o desenvolvimento local sem depender de bibliotecas externas complexas, o `Identity-Service` disponibiliza um endpoint de introspecção (RFC 7662):
+- **URL:** `POST /api/v1/auth/introspect`
+- **Cabeçalho de Aviso:** `X-B2B-Notice: Diagnostic-Only; Local JWKS caching required for production microservices`
+- **Payload de Entrada:** `{"token": "<access_token>"}`
+- **Diretriz de Uso:** Este endpoint é **exclusivo para diagnóstico e testes manuais**. Em microsserviços de produção e sob carga, a validação de tokens **DEVE** ocorrer obrigatoriamente de forma offline/local via assinatura RS256 e cache do JWKS.
+
+---
+
+### 3.11. D-ECO-11: Permissões de Negócio nas Personas de Seed (Comprador Cadastrando Produtos)
+
+Para atender à orientação pedagógica da disciplina e à dinâmica de mercado B2B, a persona Compradora (`comprador@agrobrasil.com.br`) recebe explicitamente no papel `BUYER_OPERATOR` a permissão:
+- `produtos:criar`: Permite ao comprador cadastrar especificações de commodities no catálogo para posterior abertura de demandas de compra.
+- O endpoint `POST /api/v1/produtos` do Grupo 2 homologa os escopos `["SUPPLIER", "BUYER", "TENANT_ADMIN"]`.
+
+---
+
 ## 4. Guia de Ação Rápida para as Equipes Parceiras
 
 ### 4.1. Equipe 9 (`portal-b2b-kit-infra`)

@@ -17,6 +17,7 @@ public static class ModuleRegistration
     public static IEndpointRouteBuilder MapM01Login(this IEndpointRouteBuilder app)
     {
         app.MapPost("/api/v1/auth/login", LoginEndpoint.HandleAsync);
+        app.MapPost("/api/v1/auth/introspect", IntrospectEndpoint.HandleAsync).AllowAnonymous();
         return app;
     }
 }
