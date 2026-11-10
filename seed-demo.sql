@@ -148,3 +148,9 @@ VALUES
     -- Transportador -> CARRIER_DISPATCHER em Transportadora
     ('01900000-0000-7000-8000-000000000305', '01900000-0000-7000-8000-000000000030', '01900000-0000-7000-8000-000000000205', '01900000-0000-7000-8000-000000000003', '2026-01-01T00:00:00Z')
 ON CONFLICT (tenant_member_id, role_id) DO NOTHING;
+
+-- 7. Afinação de Permissões das Personas de Demonstração (D-ECO-11)
+-- Garante que BUYER_OPERATOR receba a permissão produtos:criar para cadastro de commodities
+UPDATE role
+SET permissions = array_cat(permissions, '{produtos:criar}'::text[])
+WHERE name = 'BUYER_OPERATOR' AND NOT (permissions @> '{produtos:criar}');

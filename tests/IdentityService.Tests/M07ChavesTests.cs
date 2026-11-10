@@ -275,7 +275,7 @@ public class M07ChavesTests
         var response = await client.GetAsync("/.well-known/jwks.json");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal("public, max-age=300", response.Headers.CacheControl?.ToString());
+        Assert.Equal("public, max-age=3600, stale-while-revalidate=86400", response.Headers.CacheControl?.ToString());
 
         var json = await response.Content.ReadAsStringAsync();
         using var doc = JsonDocument.Parse(json);

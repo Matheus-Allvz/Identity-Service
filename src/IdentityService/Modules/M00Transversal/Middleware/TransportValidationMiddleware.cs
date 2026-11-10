@@ -9,6 +9,10 @@ public class TransportValidationMiddleware
         @"^application/json(?:\s*;\s*charset\s*=\s*utf-8)?$",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
+    private static readonly Regex IntrospectContentTypeRegex = new(
+        @"^(?:application/json|application/x-www-form-urlencoded)(?:\s*;\s*charset\s*=\s*utf-8)?$",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
     private readonly RequestDelegate _next;
 
     public TransportValidationMiddleware(RequestDelegate next)
@@ -61,7 +65,12 @@ public class TransportValidationMiddleware
             if (totalRead > 0)
             {
                 var contentType = context.Request.ContentType;
-                if (string.IsNullOrWhiteSpace(contentType) || !ContentTypeRegex.IsMatch(contentType.Trim()))
+                var isIntrospect = path.Equals("/api/v1/auth/introspect", StringComparison.OrdinalIgnoreCase);
+                var isMatch = isIntrospect
+                    ? (!string.IsNullOrWhiteSpace(contentType) && IntrospectContentTypeRegex.IsMatch(contentType.Trim()))
+                    : (!string.IsNullOrWhiteSpace(contentType) && ContentTypeRegex.IsMatch(contentType.Trim()));
+
+                if (!isMatch)
                 {
                     throw new ApiErrorException("ERR-REQ-004", "Tipo de conteúdo não suportado");
                 }

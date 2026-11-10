@@ -2339,6 +2339,122 @@ public sealed class F01AceitacaoTests : IAsyncLifetime
     }
 
     #endregion
+
+    #region Introspecção de Token (RFC 7662)
+
+    [Fact(Timeout = 60000)]
+    [Trait("Fase", "F01")]
+    public async Task CA_Introspect_TokenValido_RetornaActiveTrueEWarningEHeader()
+    {
+        var userId = Guid.NewGuid();
+        var password = "PasswordSegura123!";
+        var passwordHash = await DbHelper.GerarPasswordHashArgon2idAsync(password);
+
+        await DbHelper.InserirUserAccountAsync(
+            _fixture.ConnectionString,
+            userId,
+            "introspect_user@agrobrasil.com.br",
+            passwordHash,
+            "Utilizador Introspect",
+            status: "ACTIVE");
+
+        var loginReq = new HttpRequestMessage(HttpMethod.Post, "/api/v1/auth/login")
+        {
+            Content = new StringContent(
+                JsonSerializer.Serialize(new { email = "introspect_user@agrobrasil.com.br", password }),
+                Encoding.UTF8,
+                "application/json")
+        };
+        var loginRes = await _fixture.Client.SendAsync(loginReq);
+        Assert.Equal(HttpStatusCode.OK, loginRes.StatusCode);
+        var loginJson = await loginRes.Content.ReadAsStringAsync();
+        using var loginDoc = JsonDocument.Parse(loginJson);
+        var token = loginDoc.RootElement.GetProperty("access_token").GetString()!;
+
+        // Chamar POST /api/v1/auth/introspect de forma anônima
+        var req = new HttpRequestMessage(HttpMethod.Post, "/api/v1/auth/introspect")
+        {
+            Content = new StringContent(JsonSerializer.Serialize(new { token }), Encoding.UTF8, "application/json")
+        };
+
+        var res = await _fixture.Client.SendAsync(req);
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        Assert.True(res.Headers.Contains("X-B2B-Notice"));
+        Assert.Equal(
+            "Diagnostic-Only; Local JWKS caching required for production microservices",
+            res.Headers.GetValues("X-B2B-Notice").Single());
+
+        var json = await res.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        var root = doc.RootElement;
+
+        Assert.True(root.GetProperty("active").GetBoolean());
+        Assert.Equal(userId.ToString("D"), root.GetProperty("sub").GetString());
+        Assert.Equal(
+            "Este endpoint destina-se estritamente a diagnóstico em desenvolvimento. Microsserviços em produção DEVEM validar tokens localmente via JWKS (RS256) com cache em memória.",
+            root.GetProperty("warning").GetString());
+    }
+
+    [Fact(Timeout = 60000)]
+    [Trait("Fase", "F01")]
+    public async Task CA_Introspect_TokenInvalidoOuRevogado_RetornaActiveFalse()
+    {
+        // 1. Token inválido/malformado
+        var reqInvalido = new HttpRequestMessage(HttpMethod.Post, "/api/v1/auth/introspect")
+        {
+            Content = new StringContent(JsonSerializer.Serialize(new { token = "token.invalido.123" }), Encoding.UTF8, "application/json")
+        };
+        var resInvalido = await _fixture.Client.SendAsync(reqInvalido);
+        Assert.Equal(HttpStatusCode.OK, resInvalido.StatusCode);
+        var jsonInvalido = await resInvalido.Content.ReadAsStringAsync();
+        using var docInvalido = JsonDocument.Parse(jsonInvalido);
+        Assert.False(docInvalido.RootElement.GetProperty("active").GetBoolean());
+
+        // 2. Token revogado no Redis (via logout)
+        var userId = Guid.NewGuid();
+        var password = "PasswordSegura123!";
+        var passwordHash = await DbHelper.GerarPasswordHashArgon2idAsync(password);
+
+        await DbHelper.InserirUserAccountAsync(
+            _fixture.ConnectionString,
+            userId,
+            "introspect_revogado@agrobrasil.com.br",
+            passwordHash,
+            "Utilizador Revogado",
+            status: "ACTIVE");
+
+        var loginReq = new HttpRequestMessage(HttpMethod.Post, "/api/v1/auth/login")
+        {
+            Content = new StringContent(
+                JsonSerializer.Serialize(new { email = "introspect_revogado@agrobrasil.com.br", password }),
+                Encoding.UTF8,
+                "application/json")
+        };
+        var loginRes = await _fixture.Client.SendAsync(loginReq);
+        Assert.Equal(HttpStatusCode.OK, loginRes.StatusCode);
+        var loginJson = await loginRes.Content.ReadAsStringAsync();
+        using var loginDoc = JsonDocument.Parse(loginJson);
+        var token = loginDoc.RootElement.GetProperty("access_token").GetString()!;
+
+        // Fazer logout para revogar JTI no Redis
+        var logoutReq = new HttpRequestMessage(HttpMethod.Post, "/api/v1/auth/logout");
+        logoutReq.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var logoutRes = await _fixture.Client.SendAsync(logoutReq);
+        Assert.Equal(HttpStatusCode.NoContent, logoutRes.StatusCode);
+
+        // Introspecção do token revogado deve retornar active: false
+        var reqRevogado = new HttpRequestMessage(HttpMethod.Post, "/api/v1/auth/introspect")
+        {
+            Content = new StringContent(JsonSerializer.Serialize(new { token }), Encoding.UTF8, "application/json")
+        };
+        var resRevogado = await _fixture.Client.SendAsync(reqRevogado);
+        Assert.Equal(HttpStatusCode.OK, resRevogado.StatusCode);
+        var jsonRevogado = await resRevogado.Content.ReadAsStringAsync();
+        using var docRevogado = JsonDocument.Parse(jsonRevogado);
+        Assert.False(docRevogado.RootElement.GetProperty("active").GetBoolean());
+    }
+
+    #endregion
 }
 
 public class FailingDenylist : IDenylist

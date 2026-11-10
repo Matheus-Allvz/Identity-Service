@@ -19,7 +19,7 @@ public static class ModuleRegistration
             var modulus = signingKey.Modulus;
             var exponent = signingKey.Exponent;
 
-            context.Response.Headers.CacheControl = "public, max-age=300";
+            context.Response.Headers.CacheControl = "public, max-age=3600, stale-while-revalidate=86400";
 
             var jwks = new
             {

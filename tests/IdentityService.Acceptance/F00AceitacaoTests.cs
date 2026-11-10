@@ -207,7 +207,7 @@ public sealed class F00AceitacaoTests : IAsyncLifetime
         var res = await _fixture.Client.SendAsync(req);
         Assert.Equal(HttpStatusCode.OK, res.StatusCode);
         Assert.Equal("application/json", res.Content.Headers.ContentType?.MediaType);
-        Assert.Equal("public, max-age=300", res.Headers.CacheControl?.ToString());
+        Assert.Equal("public, max-age=3600, stale-while-revalidate=86400", res.Headers.CacheControl?.ToString());
 
         var json = await res.Content.ReadAsStringAsync();
         using var doc = JsonDocument.Parse(json);

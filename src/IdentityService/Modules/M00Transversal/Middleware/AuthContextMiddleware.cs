@@ -31,13 +31,14 @@ public partial class AuthContextMiddleware
         var method = context.Request.Method;
         var path = context.Request.Path.Value ?? string.Empty;
 
-        var isTokenRequired = IsTokenRequiredEndpoint(method, path);
+        var isAnonymous = IsAnonymousEndpoint(path);
+        var isTokenRequired = !isAnonymous && IsTokenRequiredEndpoint(method, path);
         var hasAuthHeader = context.Request.Headers.TryGetValue("Authorization", out var authHeaders) &&
                             !string.IsNullOrWhiteSpace(authHeaders);
         var authHeaderStr = hasAuthHeader ? authHeaders.ToString() : string.Empty;
         var hasBearer = hasAuthHeader && authHeaderStr.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase);
 
-        if (isTokenRequired || hasBearer)
+        if (!isAnonymous && (isTokenRequired || hasBearer))
         {
             // PRS-71: Read signing key BEFORE checking Authorization header if token is required.
             // If the signing key is unavailable (CryptographicException), it must throw here.
@@ -164,13 +165,19 @@ public partial class AuthContextMiddleware
         await _next(context);
     }
 
+    private static bool IsAnonymousEndpoint(string path)
+    {
+        return path.Equals("/api/v1/auth/login", StringComparison.OrdinalIgnoreCase) ||
+               path.Equals("/api/v1/auth/refresh", StringComparison.OrdinalIgnoreCase) ||
+               path.Equals("/api/v1/auth/introspect", StringComparison.OrdinalIgnoreCase) ||
+               path.Equals("/.well-known/jwks.json", StringComparison.OrdinalIgnoreCase) ||
+               path.Equals("/health/live", StringComparison.OrdinalIgnoreCase) ||
+               path.Equals("/health/ready", StringComparison.OrdinalIgnoreCase);
+    }
+
     private static bool IsTokenRequiredEndpoint(string method, string path)
     {
-        if (path.Equals("/api/v1/auth/login", StringComparison.OrdinalIgnoreCase) ||
-            path.Equals("/api/v1/auth/refresh", StringComparison.OrdinalIgnoreCase) ||
-            path.Equals("/.well-known/jwks.json", StringComparison.OrdinalIgnoreCase) ||
-            path.Equals("/health/live", StringComparison.OrdinalIgnoreCase) ||
-            path.Equals("/health/ready", StringComparison.OrdinalIgnoreCase))
+        if (IsAnonymousEndpoint(path))
         {
             return false;
         }
