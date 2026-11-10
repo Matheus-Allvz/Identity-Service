@@ -242,7 +242,8 @@ jwks_client = PyJWKClient(
     cache_keys=True,
     max_cached_keys=10,
     cache_jwk_set=True,
-    lifespan=3600  # 1 hora de retenção de chaves públicas
+    lifespan=3600,  # 1 hora de retenção de chaves públicas
+    headers={"User-Agent": "PortalB2B-Client/1.0"}
 )
 
 security = HTTPBearer()
@@ -259,6 +260,8 @@ def get_current_token_payload(credentials: HTTPAuthorizationCredentials = Securi
             token,
             signing_key.key,
             algorithms=["RS256"],
+            audience="b2b-platform",
+            leeway=60,
             options={
                 "verify_signature": True,
                 "verify_exp": True,
