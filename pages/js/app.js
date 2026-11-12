@@ -284,6 +284,7 @@ async function executePersonaLogin(persona) {
       });
 
       if (switchRes.status === 200 && switchRes.data?.access_token) {
+        state.tempToken = null;
         state.bearerToken = switchRes.data.access_token;
         state.activeToken = switchRes.data.access_token;
         if (switchRes.data.refresh_token) {
@@ -434,7 +435,7 @@ async function executeSwitchContext() {
     return;
   }
 
-  const tokenToUse = state.tempToken || state.bearerToken;
+  const tokenToUse = state.activeToken || state.bearerToken || state.tempToken;
   if (!tokenToUse) {
     showToast('Nenhum token disponível. Faça login primeiro.', 'warn');
     return;
@@ -458,6 +459,7 @@ async function executeSwitchContext() {
   renderResponse(res);
 
   if (res.status === 200 && res.data?.access_token) {
+    state.tempToken = null;
     state.bearerToken = res.data.access_token;
     state.activeToken = res.data.access_token;
     if (res.data.refresh_token) {
@@ -814,6 +816,7 @@ async function handleExecuteRequest() {
       await updateJwtInspector(state.activeToken);
       showToast('Login efetuado com sucesso!', 'success');
     } else if (path.includes('/switch-context')) {
+      state.tempToken = null;
       state.bearerToken = res.data.access_token;
       state.activeToken = res.data.access_token;
       if (res.data.refresh_token) {
