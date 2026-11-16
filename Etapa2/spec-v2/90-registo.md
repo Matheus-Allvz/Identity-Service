@@ -468,3 +468,18 @@ Esqueleto em `evidencias/pins/` (sem `bin/` nem `obj/`). Reproduzir: `bash evide
 
 ### 11.4 Veredito Final
 **CONFORME (APROVADO PARA PRODUÇÃO / RELEASE CANDIDATE 1.0.0)**
+
+## 12. Evolução pós-MVP (adenda viva, 2026-11-16)
+
+A especificação congelada no Gate 4 (`spec.sha256`) mantém-se intacta. As melhorias aprovadas depois do Release Candidate 1.0.0 são especificadas fora do conjunto congelado, em [`Docs/Especificacao-Melhorias-Pos-MVP.md`](../../Docs/Especificacao-Melhorias-Pos-MVP.md), que estende `40` (EP-11 a EP-14, extensão opt-in do EP-01) e `30` (ENT-11). Linha de base de testes no início da adenda: 419 (208 em `IdentityService.Tests` + 211 em `IdentityService.Acceptance`), 0 falhas.
+
+| UT | Melhoria | Módulo | Contratos | Depende de | Estado |
+|---|---|---|---|---|---|
+| UT-6-01 | QW-02 `GET /api/v1/auth/me` | M-01 | EP-11 | — | Por iniciar |
+| UT-6-02 | QW-03 SDKs de verificação (`Docs/sdks/`) | Documentação | — | — | Por iniciar |
+| UT-6-03 | QW-04 OpenAPI 3.1 e Swagger UI | M-15 (novo) | EP-13, EP-14 | UT-6-01 | Por iniciar |
+| UT-6-04 | QW-01 Auto-contexto no login | M-01, M-02, M-03 | EP-01 (estendido) | UT-6-03 | Por iniciar |
+| UT-6-05 | NEW-06 Client Credentials (M2M) | M-16 (novo), M-07, M-11 | EP-12, ENT-11 | UT-6-03 | Por iniciar |
+| UT-6-06 | NEW-07 Métricas e tracing OpenTelemetry | M-00, M-07, M-14 | — | UT-6-05 | Por iniciar |
+
+Postergadas sem data: EST-02 (MFA/Passkeys) e EST-04 (auditoria com encadeamento criptográfico). Gates por UT: §8 da adenda.
