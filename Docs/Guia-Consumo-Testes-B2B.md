@@ -142,6 +142,21 @@ curl -s -X POST https://identity.matheus-alves.dev/api/v1/auth/introspect \
 
 ---
 
+## 4-B. Validar o Token no Seu Microsserviço (SDKs)
+
+Não é preciso implementar criptografia RSA: copie o ficheiro da sua stack de [`Docs/sdks/`](sdks/README.md) e instale a dependência indicada.
+
+| Stack | Ficheiro | Dependência |
+|:---|:---|:---|
+| Python / FastAPI | `b2b_auth_fastapi.py` | `pyjwt[crypto]` |
+| ASP.NET Core | `B2bAuthMiddleware.cs` | `Microsoft.AspNetCore.Authentication.JwtBearer` |
+| Node.js / Express | `auth-middleware.ts` | `jose` |
+| Go `net/http` | `jwt_validator.go` | `github.com/golang-jwt/jwt/v5` |
+
+Todos leem `IDENTITY_BASE_URL`, mantêm o JWKS em cache por 1 hora, recusam por omissão o token temporário (`view_mode: NONE`) e respondem `401 ERR-AUTH-002` ou `403 ERR-CTX-007` em `application/problem+json`. Exemplos de uso e limites (a validação offline não vê a denylist) estão no [README dos SDKs](sdks/README.md).
+
+---
+
 ## 5. Como Importar e Usar no Postman
 
 1. Abra o Postman (ou Postman Web).
