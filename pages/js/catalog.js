@@ -48,6 +48,20 @@ export const ENDPOINT_CATALOG = [
     summary: 'Expõe as chaves públicas RSA (RS256) ativas para validação de tokens nos microsserviços.'
   },
 
+  {
+    id: 'a15-openapi',
+    code: 'A15',
+    category: 'Infra / Observabilidade',
+    name: 'Contrato OpenAPI 3.1 (/openapi.json)',
+    method: 'GET',
+    path: '/openapi.json',
+    authRequired: false,
+    headers: {
+      Accept: 'application/json'
+    },
+    body: null,
+    summary: 'Documento OpenAPI 3.1 de todas as rotas, importável no Postman/Insomnia. Versão navegável em /swagger.'
+  },
   // --- AUTENTICAÇÃO & SESSÃO B2B ---
   {
     id: 'a04-login',

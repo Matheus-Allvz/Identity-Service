@@ -45,7 +45,7 @@ const state = {
   jwks: null,
   cryptoVerification: null,
   tokenTimerInterval: null,
-  selectedEndpoint: ENDPOINT_CATALOG[3], // Default: Login
+  selectedEndpoint: getEndpointById('a04-login'), // Default: Login
   requestHeaders: {
     'Content-Type': 'application/json'
   },
@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadJwks();
 
   // Initial console endpoint setup
-  selectEndpoint(ENDPOINT_CATALOG[3]); // Login
+  selectEndpoint(getEndpointById('a04-login')); // Login
 });
 
 // --- THEME MANAGEMENT ---
@@ -226,7 +226,7 @@ function renderPersonas() {
 }
 
 function fillPersonaToConsole(persona) {
-  selectEndpoint(ENDPOINT_CATALOG[3]); // Login
+  selectEndpoint(getEndpointById('a04-login')); // Login
   const bodyEditor = document.getElementById('request-body');
   if (bodyEditor) {
     bodyEditor.value = JSON.stringify(

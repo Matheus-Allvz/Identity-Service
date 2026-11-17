@@ -171,6 +171,8 @@ public partial class AuthContextMiddleware
                path.Equals("/api/v1/auth/refresh", StringComparison.OrdinalIgnoreCase) ||
                path.Equals("/api/v1/auth/introspect", StringComparison.OrdinalIgnoreCase) ||
                path.Equals("/.well-known/jwks.json", StringComparison.OrdinalIgnoreCase) ||
+               path.Equals("/openapi.json", StringComparison.OrdinalIgnoreCase) ||
+               path.Equals("/swagger", StringComparison.OrdinalIgnoreCase) ||
                path.Equals("/health/live", StringComparison.OrdinalIgnoreCase) ||
                path.Equals("/health/ready", StringComparison.OrdinalIgnoreCase);
     }

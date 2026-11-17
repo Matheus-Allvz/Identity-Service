@@ -160,10 +160,10 @@ Ambas anónimas. Com `OPENAPI_ENABLED=false` as duas rotas não são mapeadas (`
 
 ### 3.4 Tarefas
 
-- [ ] `Modules/M15Docs/openapi.json` (embebido), `ModuleRegistration.cs` (`MapM15Docs`)
-- [ ] Middlewares: rotas anónimas e isentas de validação de transporte
-- [ ] Testes: `M15DocsTests.cs` (CA-QW04.1 a .4)
-- [ ] Docs: `Alinhamento` §3.13, `Guia-Consumo` §5 (importar `openapi.json`), `catalog.js` (A14), README
+- [x] `Modules/M15Docs/openapi.json` (embebido), `ModuleRegistration.cs` (`MapM15Docs`)
+- [x] Middleware de autenticação: rotas anónimas (um `Authorization` inválido não as quebra). A validação de transporte não precisou de exceção: `GET` sem corpo já passa
+- [x] Testes: `M15DocsTests.cs` (CA-QW04.1 a .4), contra o `Program` real
+- [x] Docs: `Alinhamento` §3.13, `Guia-Consumo` §5 (importar `openapi.json`), `catalog.js` (A15)
 - [ ] **Regra permanente:** toda UT posterior que crie ou altere rota atualiza `openapi.json` (o CA-QW04.2 falha caso contrário)
 
 ---
@@ -405,7 +405,7 @@ A contagem canónica de testes é atualizada no Guia a cada UT (linha de base: 4
 | Documentação (este ficheiro) | `docs/ma/onboarding-e-matriz-melhorias` | Concluída | #16 | — |
 | QW-02 | `feat/ma/auth-me` | Concluída | #17 | 5 (`AuthMeTests`) → total 424 |
 | QW-03 | `feat/ma/sdks-verificacao` | Concluída | #18 | Nenhum no repositório (ficheiros fora da solução) |
-| QW-04 | `feat/ma/openapi-swagger` | Por iniciar | — | — |
+| QW-04 | `feat/ma/openapi-swagger` | Concluída | #19 | 4 (`M15DocsTests`) → total 428 |
 | QW-01 | `feat/ma/login-auto-contexto` | Por iniciar | — | — |
 | NEW-06 | `feat/ma/client-credentials` | Por iniciar | — | — |
 | NEW-07 | `feat/ma/opentelemetry` | Por iniciar | — | — |
