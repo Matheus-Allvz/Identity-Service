@@ -50,36 +50,14 @@ public static class SwitchContextEndpoint
         if (requestData.ViewMode == ViewMode.SINGLE)
         {
             var targetTenantId = requestData.TargetTenantId!.Value;
-            var tenantInfo = await accessQueries.ResolveTenantAsync(targetTenantId, cancellationToken);
-            if (tenantInfo == null)
-            {
-                // PRS-58: Non-existent tenant fails RG-03 -> 403 ERR-CTX-001
-                throw new ApiErrorException("ERR-CTX-001");
-            }
+            var resolved = await SingleContextResolver.ResolveAsync(
+                accessQueries, authContext.UserId!.Value, targetTenantId, requestData.TargetScope, cancellationToken);
 
-            var tenantCheck = await accessQueries.CheckTenantAsync(targetTenantId, cancellationToken);
-            if (!tenantCheck.Ok)
-            {
-                throw new ApiErrorException(tenantCheck.ErrorCode ?? "ERR-CTX-002");
-            }
-
-            var memberCheck = await accessQueries.CheckMembershipAsync(authContext.UserId!.Value, targetTenantId, cancellationToken);
-            if (!memberCheck.Ok)
-            {
-                throw new ApiErrorException(memberCheck.ErrorCode ?? "ERR-CTX-001");
-            }
-
-            var rolesCheck = await accessQueries.ResolveRolesAsync(authContext.UserId!.Value, targetTenantId, requestData.TargetScope, cancellationToken);
-            if (!rolesCheck.Ok)
-            {
-                throw new ApiErrorException(rolesCheck.ErrorCode ?? "ERR-CTX-003");
-            }
-
-            groupId = tenantInfo.GroupId;
+            groupId = resolved.GroupId;
             activeTenantId = targetTenantId;
             allowedTenants = [targetTenantId];
-            roles = rolesCheck.Value!.Roles;
-            permissions = rolesCheck.Value!.Permissions;
+            roles = resolved.Roles;
+            permissions = resolved.Permissions;
         }
         else // MACRO_GROUP
         {

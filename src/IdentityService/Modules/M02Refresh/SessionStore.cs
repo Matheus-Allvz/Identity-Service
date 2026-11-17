@@ -20,7 +20,7 @@ public class SessionStore : ISessionStore
         _timeProvider = timeProvider;
     }
 
-    public Task<NewSession> CreateFamilyAsync(Guid userId, CancellationToken cancellationToken = default)
+    public Task<NewSession> CreateFamilyAsync(Guid userId, CancellationToken cancellationToken = default, InitialSingleContext? initialContext = null)
     {
         var now = _timeProvider.GetUtcNow();
         var randomBytes = RandomNumberGenerator.GetBytes(32);
@@ -38,11 +38,11 @@ public class SessionStore : ISessionStore
             TokenHash = tokenHash,
             Status = RefreshTokenStatus.ACTIVE,
             ReplacedById = null,
-            ViewMode = ViewMode.NONE,
-            GroupId = null,
-            ActiveTenantId = null,
-            AllowedTenants = [],
-            ActiveScope = null,
+            ViewMode = initialContext == null ? ViewMode.NONE : ViewMode.SINGLE,
+            GroupId = initialContext?.GroupId,
+            ActiveTenantId = initialContext?.TenantId,
+            AllowedTenants = initialContext == null ? [] : [initialContext.TenantId],
+            ActiveScope = initialContext?.Scope,
             CreatedAt = now,
             ExpiresAt = expiresAt,
             ConsumedAt = null,

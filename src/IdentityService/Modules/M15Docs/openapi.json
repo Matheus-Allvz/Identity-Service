@@ -21,13 +21,17 @@
         "tags": ["Autenticação"],
         "operationId": "login",
         "summary": "Autenticar com e-mail e palavra-passe",
-        "description": "Valida as credenciais (Argon2id), cria a família de refresh tokens e devolve um token pré-contexto (`view_mode: NONE`). Cinco falhas consecutivas bloqueiam a conta por 15 minutos.",
+        "description": "Valida as credenciais (Argon2id), cria a família de refresh tokens e devolve um token pré-contexto (`view_mode: NONE`). Cinco falhas consecutivas bloqueiam a conta por 15 minutos.\n\nOpcionalmente ativa um contexto `SINGLE` na mesma chamada (`target_tenant_id` + `target_scope`, ou `auto_context`). Com alvo explícito inválido o login falha por inteiro e nenhuma sessão é criada. `MACRO_GROUP` continua exclusivo do `switch-context`.",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": { "$ref": "#/components/schemas/LoginRequest" },
-              "example": { "email": "admin@agrobrasil.com.br", "password": "SenhaForte@2026!" }
+              "examples": {
+                "padrao": { "summary": "Login padrão (token pré-contexto)", "value": { "email": "admin@agrobrasil.com.br", "password": "SenhaForte@2026!" } },
+                "alvo": { "summary": "Login já contextualizado", "value": { "email": "admin@agrobrasil.com.br", "password": "SenhaForte@2026!", "target_tenant_id": "01900000-0000-7000-8000-000000000010", "target_scope": "TENANT_ADMIN" } },
+                "auto": { "summary": "Auto-contexto (um único vínculo)", "value": { "email": "transportador@agrobrasil.com.br", "password": "SenhaForte@2026!", "auto_context": true } }
+              }
             }
           }
         },
@@ -35,7 +39,7 @@
           "200": { "description": "Autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LoginResponse" } } } },
           "400": { "$ref": "#/components/responses/Problem", "description": "`ERR-VAL-001` corpo malformado ou chave desconhecida" },
           "401": { "$ref": "#/components/responses/Problem", "description": "`ERR-AUTH-001` credenciais inválidas ou conta bloqueada" },
-          "403": { "$ref": "#/components/responses/Problem", "description": "`ERR-AUTH-004` utilizador suspenso" },
+          "403": { "$ref": "#/components/responses/Problem", "description": "`ERR-AUTH-004` utilizador suspenso; com alvo explícito: `ERR-CTX-001` sem vínculo, `ERR-CTX-002` tenant suspenso, `ERR-CTX-003` escopo ou papel" },
           "415": { "$ref": "#/components/responses/Problem", "description": "`ERR-REQ-004` Content-Type não suportado" },
           "422": { "$ref": "#/components/responses/Problem", "description": "`ERR-VAL-003` formato de e-mail ou política de palavra-passe" }
         }
@@ -352,8 +356,12 @@
         "required": ["email", "password"],
         "properties": {
           "email": { "type": "string", "format": "email", "minLength": 5, "maxLength": 320 },
-          "password": { "type": "string", "minLength": 12, "maxLength": 128, "description": "Maiúscula, minúscula, dígito e símbolo" }
-        }
+          "password": { "type": "string", "minLength": 12, "maxLength": 128, "description": "Maiúscula, minúscula, dígito e símbolo" },
+          "auto_context": { "type": "boolean", "description": "Opcional. Se `true` e existir exatamente um contexto com exatamente um escopo, o token já vem em `SINGLE`. Com ambiguidade, o login segue o padrão (`NONE`)" },
+          "target_tenant_id": { "type": "string", "format": "uuid", "description": "Opcional. Ativa este tenant em `SINGLE`. Exige `target_scope`" },
+          "target_scope": { "$ref": "#/components/schemas/OperationalScope", "description": "Opcional. Exige `target_tenant_id`" }
+        },
+        "dependentRequired": { "target_tenant_id": ["target_scope"], "target_scope": ["target_tenant_id"] }
       },
       "TokenPair": {
         "type": "object",
@@ -388,7 +396,8 @@
             "type": "object",
             "properties": {
               "user": { "type": "object", "properties": { "id": { "$ref": "#/components/schemas/Uuid" }, "email": { "type": "string" }, "name": { "type": "string" }, "platform_role": { "$ref": "#/components/schemas/PlatformRole" } } },
-              "available_contexts": { "type": "array", "items": { "$ref": "#/components/schemas/AvailableContext" } }
+              "available_contexts": { "type": "array", "items": { "$ref": "#/components/schemas/AvailableContext" } },
+              "context": { "$ref": "#/components/schemas/ActiveContext", "description": "Presente apenas quando o login ativou um contexto (`auto_context` ou alvo explícito)" }
             }
           }
         ]

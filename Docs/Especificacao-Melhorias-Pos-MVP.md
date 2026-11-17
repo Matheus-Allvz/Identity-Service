@@ -225,11 +225,11 @@ Sem os campos novos, a resposta é byte a byte a de hoje (`view_mode: NONE`, sem
 
 ### 4.4 Tarefas
 
-- [ ] `M03Contexto`: extrair a resolução `SINGLE` para um resolvedor partilhado, usado por EP-02 e EP-01
-- [ ] `ISessionStore.CreateFamilyAsync`: contexto inicial opcional
-- [ ] `LoginEndpoint`: parsing dos campos novos, ramo de auto-contexto, resposta
-- [ ] Testes: `M01LoginTests` (CA-QW01.1 a .7) + aceitação ponta a ponta
-- [ ] Docs: `Alinhamento` §3.4-C, `Guia-Consumo` (passo 2-B), Postman, `catalog.js`, `openapi.json`
+- [x] `M03Contexto`: resolução `SINGLE` extraída para `SingleContextResolver`, usado por EP-02 e EP-01
+- [x] `ISessionStore.CreateFamilyAsync`: contexto inicial opcional (`InitialSingleContext`)
+- [x] `LoginEndpoint`: parsing dos campos novos, ramo de auto-contexto, resposta
+- [x] Testes: `AuthLoginAutoContextTests` (CA-QW01.1 a .7; 13 casos), contra PostgreSQL e Redis reais, incluindo o refresh a herdar o contexto. Não foi criada uma classe separada no projeto de aceitação: os cenários ponta a ponta já estão cobertos aqui
+- [x] Docs: `Alinhamento` §3.4-C, `Guia-Consumo` (passo 2-B), Postman, `catalog.js` (A16), `openapi.json`
 
 ---
 
@@ -406,6 +406,6 @@ A contagem canónica de testes é atualizada no Guia a cada UT (linha de base: 4
 | QW-02 | `feat/ma/auth-me` | Concluída | #17 | 5 (`AuthMeTests`) → total 424 |
 | QW-03 | `feat/ma/sdks-verificacao` | Concluída | #18 | Nenhum no repositório (ficheiros fora da solução) |
 | QW-04 | `feat/ma/openapi-swagger` | Concluída | #19 | 4 (`M15DocsTests`) → total 428 |
-| QW-01 | `feat/ma/login-auto-contexto` | Por iniciar | — | — |
+| QW-01 | `feat/ma/login-auto-contexto` | Concluída | #20 | 13 (`AuthLoginAutoContextTests`) → total 441 |
 | NEW-06 | `feat/ma/client-credentials` | Por iniciar | — | — |
 | NEW-07 | `feat/ma/opentelemetry` | Por iniciar | — | — |

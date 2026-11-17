@@ -378,7 +378,7 @@ flowchart TD
   dotnet test --configuration Release
   ```
 - A compilação do CI usa `dotnet build --warnaserror`: avisos quebram o pipeline.
-- **Contagem Canônica Atual:** **428 testes aprovados** (217 unitários em `IdentityService.Tests` + 211 de integração em `IdentityService.Acceptance`), após a `QW-04`. Linha de base antes do ciclo pós-MVP: 419. Cada unidade de trabalho atualiza este número.
+- **Contagem Canônica Atual:** **441 testes aprovados** (230 unitários em `IdentityService.Tests` + 211 de integração em `IdentityService.Acceptance`), após a `QW-01`. Linha de base antes do ciclo pós-MVP: 419. Cada unidade de trabalho atualiza este número.
 - Os testes usam Testcontainers (PostgreSQL, Redis e Kafka): o Docker precisa de estar em execução.
 
 #### Gate 2: Obrigatoriedade de Documentação Sincronizada

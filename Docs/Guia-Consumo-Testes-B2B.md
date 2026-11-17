@@ -91,6 +91,19 @@ curl -s -X POST https://identity.matheus-alves.dev/api/v1/auth/login \
 ```
 > O retorno contém `access_token` (token temporário), `refresh_token` e a lista `available_contexts` com os tenants vinculados.
 
+### Passo 2-B (opcional): Login já Contextualizado numa Chamada
+Para scripts e testes automatizados, o login aceita o alvo do contexto e dispensa o Passo 3:
+```bash
+curl -s -X POST https://identity.matheus-alves.dev/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "admin@agrobrasil.com.br",
+    "password": "SenhaForte@2026!",
+    "target_tenant_id": "01900000-0000-7000-8000-000000000010",
+    "target_scope": "TENANT_ADMIN"
+  }' | jq .
+```
+> O `access_token` já vem com `tenant_id`, `active_scope`, `roles` e `permissions`, e a resposta inclui o objeto `context`. Quem tem um único vínculo com um único escopo (ex.: `transportador@agrobrasil.com.br`) pode enviar apenas `"auto_context": true`. Sem estes campos, o login continua a devolver o token temporário.
 ### Passo 3: Troca de Contexto para a Matriz (SINGLE - TENANT_ADMIN)
 Substitua `<TEMP_TOKEN>` pelo valor recebido no passo anterior:
 ```bash

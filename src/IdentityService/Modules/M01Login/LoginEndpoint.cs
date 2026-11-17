@@ -5,6 +5,7 @@ using IdentityService.Modules.M00Transversal.Errors;
 using IdentityService.Modules.M00Transversal.Redis;
 using IdentityService.Modules.M01Login.Interface;
 using IdentityService.Modules.M02Refresh.Interface;
+using IdentityService.Modules.M03Contexto;
 using IdentityService.Modules.M07Chaves.Interface;
 using IdentityService.Modules.M08Acessos.Interface;
 using IdentityService.Modules.M11Esquema.Persistence;
@@ -32,6 +33,7 @@ public static class LoginEndpoint
     {
         // 1. Read body and validate JSON
         var body = await ReadAndValidateJsonAsync(httpContext.Request);
+        var contextRequest = ParseContextRequest(body);
 
         var (email, password) = ValidateFormat(body);
 
@@ -113,64 +115,139 @@ public static class LoginEndpoint
         user.LockedUntil = null;
         user.UpdatedAt = now;
 
-        var newSession = await sessionStore.CreateFamilyAsync(user.Id, cancellationToken);
         var contextsResult = await accessQueries.ListContextsAsync(user.Id, cancellationToken);
         var availableContexts = contextsResult.Ok && contextsResult.Value != null
             ? contextsResult.Value
             : Array.Empty<AvailableContext>();
 
+        // QW-01: contexto SINGLE opcional. Resolve-se ANTES de criar a sessão: um alvo explícito
+        // inválido lança ERR-CTX-* e nada é persistido (RN-QW01.5).
+        ResolvedSingleContext? resolved = null;
+        OperationalScope? activeScope = null;
+        if (contextRequest.TenantId is { } targetTenantId)
+        {
+            activeScope = contextRequest.Scope!.Value;
+            resolved = await SingleContextResolver.ResolveAsync(
+                accessQueries, user.Id, targetTenantId, activeScope.Value, cancellationToken);
+        }
+        else if (contextRequest.Auto &&
+                 availableContexts.Count == 1 &&
+                 availableContexts[0].AvailableScopes.Count == 1)
+        {
+            try
+            {
+                activeScope = availableContexts[0].AvailableScopes[0];
+                resolved = await SingleContextResolver.ResolveAsync(
+                    accessQueries, user.Id, availableContexts[0].TenantId, activeScope.Value, cancellationToken);
+            }
+            catch (ApiErrorException)
+            {
+                // RN-QW01.6: sem contexto inequívoco e válido, cai no login padrão (NONE).
+                resolved = null;
+                activeScope = null;
+            }
+        }
+
+        var newSession = await sessionStore.CreateFamilyAsync(
+            user.Id,
+            cancellationToken,
+            resolved == null ? null : new InitialSingleContext(resolved.GroupId, resolved.TenantId, activeScope!.Value));
+
         var claims = new AccessTokenClaims(
             Sub: user.Id,
             FamilyId: newSession.FamilyId,
             PlatformRole: user.PlatformRole,
-            ViewMode: ViewMode.NONE,
-            GroupId: null,
-            TenantId: null,
-            AllowedTenants: Array.Empty<Guid>(),
-            ActiveScope: null,
-            Roles: Array.Empty<string>(),
-            Permissions: Array.Empty<string>(),
+            ViewMode: resolved == null ? ViewMode.NONE : ViewMode.SINGLE,
+            GroupId: resolved?.GroupId,
+            TenantId: resolved?.TenantId,
+            AllowedTenants: resolved == null ? Array.Empty<Guid>() : [resolved.TenantId],
+            ActiveScope: activeScope,
+            Roles: resolved?.Roles ?? Array.Empty<string>(),
+            Permissions: resolved?.Permissions ?? Array.Empty<string>(),
             Act: null
         );
 
         var issuedToken = tokenIssuer.Issue(claims);
 
         auditLog.Append(AuditEventType.LOGIN_SUCCESS, user.Id, null, null, null, null, null);
+        if (resolved != null)
+        {
+            auditLog.Append(
+                AuditEventType.CONTEXT_SWITCHED,
+                user.Id,
+                null,
+                resolved.TenantId,
+                resolved.GroupId,
+                null,
+                new
+                {
+                    view_mode = ViewMode.SINGLE.ToString(),
+                    active_scope = activeScope!.Value.ToString()
+                });
+        }
+
         await dbContext.SaveChangesAsync(cancellationToken);
 
         httpContext.Response.Headers.CacheControl = "no-store";
         httpContext.Response.Headers.Pragma = "no-cache";
 
-        var responsePayload = new
+        var userPayload = new
+        {
+            id = user.Id.ToString("D"),
+            email = user.Email,
+            name = user.Name,
+            platform_role = user.PlatformRole.ToString()
+        };
+        var contextsPayload = availableContexts.Select(c => new
+        {
+            group_id = c.GroupId.ToString("D"),
+            group_name = c.GroupName,
+            tenant_id = c.TenantId.ToString("D"),
+            cnpj = c.Cnpj,
+            legal_name = c.LegalName,
+            branch_type = c.BranchType.ToString(),
+            is_owner = c.IsOwner,
+            can_view_group = c.CanViewGroup,
+            available_scopes = c.AvailableScopes.Select(s => s.ToString()).ToArray(),
+            roles = c.Roles
+        }).ToArray();
+
+        if (resolved == null)
+        {
+            // RN-QW01.1: resposta idêntica à anterior à QW-01 (sem a chave "context").
+            return Results.Ok(new
+            {
+                access_token = issuedToken.AccessToken,
+                token_type = "Bearer",
+                expires_in = 900,
+                refresh_token = newSession.RefreshToken,
+                refresh_expires_in = 604800,
+                user = userPayload,
+                available_contexts = contextsPayload
+            });
+        }
+
+        return Results.Ok(new
         {
             access_token = issuedToken.AccessToken,
             token_type = "Bearer",
             expires_in = 900,
             refresh_token = newSession.RefreshToken,
             refresh_expires_in = 604800,
-            user = new
+            user = userPayload,
+            available_contexts = contextsPayload,
+            context = new
             {
-                id = user.Id.ToString("D"),
-                email = user.Email,
-                name = user.Name,
-                platform_role = user.PlatformRole.ToString()
-            },
-            available_contexts = availableContexts.Select(c => new
-            {
-                group_id = c.GroupId.ToString("D"),
-                group_name = c.GroupName,
-                tenant_id = c.TenantId.ToString("D"),
-                cnpj = c.Cnpj,
-                legal_name = c.LegalName,
-                branch_type = c.BranchType.ToString(),
-                is_owner = c.IsOwner,
-                can_view_group = c.CanViewGroup,
-                available_scopes = c.AvailableScopes.Select(s => s.ToString()).ToArray(),
-                roles = c.Roles
-            }).ToArray()
-        };
-
-        return Results.Ok(responsePayload);
+                sub = user.Id.ToString("D"),
+                group_id = resolved.GroupId.ToString("D"),
+                tenant_id = resolved.TenantId.ToString("D"),
+                allowed_tenants = new[] { resolved.TenantId.ToString("D") },
+                view_mode = ViewMode.SINGLE.ToString(),
+                active_scope = activeScope!.Value.ToString(),
+                roles = issuedToken.Claims.Roles,
+                permissions = issuedToken.Claims.Permissions
+            }
+        });
     }
 
     private static async Task<JsonElement> ReadAndValidateJsonAsync(HttpRequest request)
@@ -209,7 +286,18 @@ public static class LoginEndpoint
                 throw new ApiErrorException("ERR-VAL-001", "Pedido inválido ou malformado");
             }
 
-            if (prop.Name is not ("email" or "password"))
+            // QW-01: auto_context (boolean), target_tenant_id e target_scope (strings) são opcionais.
+            if (prop.Name is "auto_context")
+            {
+                if (prop.Value.ValueKind is not (JsonValueKind.True or JsonValueKind.False))
+                {
+                    throw new ApiErrorException("ERR-VAL-001", "Pedido inválido ou malformado");
+                }
+
+                continue;
+            }
+
+            if (prop.Name is not ("email" or "password" or "target_tenant_id" or "target_scope"))
             {
                 throw new ApiErrorException("ERR-VAL-001", "Pedido inválido ou malformado");
             }
@@ -231,6 +319,30 @@ public static class LoginEndpoint
         }
 
         return root;
+    }
+
+    // RN-QW01.2: alvo explícito vem completo (tenant + escopo) ou não vem.
+    private static (bool Auto, Guid? TenantId, OperationalScope? Scope) ParseContextRequest(JsonElement root)
+    {
+        var auto = root.TryGetProperty("auto_context", out var autoProp) && autoProp.ValueKind == JsonValueKind.True;
+        var hasTenant = root.TryGetProperty("target_tenant_id", out var tenantProp);
+        var hasScope = root.TryGetProperty("target_scope", out var scopeProp);
+
+        if (!hasTenant && !hasScope)
+        {
+            return (auto, null, null);
+        }
+
+        var scopeStr = hasScope ? scopeProp.GetString()! : string.Empty;
+        if (!hasTenant || !hasScope ||
+            !Guid.TryParseExact(tenantProp.GetString(), "D", out var tenantId) ||
+            scopeStr.Length == 0 || !char.IsLetter(scopeStr[0]) ||
+            !Enum.TryParse<OperationalScope>(scopeStr, false, out var scope))
+        {
+            throw new ApiErrorException("ERR-VAL-001", "Pedido inválido ou malformado");
+        }
+
+        return (auto, tenantId, scope);
     }
 
     private static (string Email, string Password) ValidateFormat(JsonElement root)

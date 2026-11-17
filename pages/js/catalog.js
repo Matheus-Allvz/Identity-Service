@@ -81,6 +81,24 @@ export const ENDPOINT_CATALOG = [
     summary: 'Autentica com Argon2id, retorna tempToken (view_mode: NONE) e available_contexts.'
   },
   {
+    id: 'a16-login-auto-context',
+    code: 'A16',
+    category: 'Autenticação & Sessão B2B',
+    name: 'Login com Contexto (/api/v1/auth/login)',
+    method: 'POST',
+    path: '/api/v1/auth/login',
+    authRequired: false,
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: {
+      email: 'admin@agrobrasil.com.br',
+      password: 'SenhaForte@2026!',
+      target_tenant_id: '01900000-0000-7000-8000-000000000010',
+      target_scope: 'TENANT_ADMIN'
+    },
+    summary: 'Login e ativação de contexto SINGLE numa só chamada (opt-in). Alternativa: auto_context: true para quem tem um único vínculo.'
+  },  {
     id: 'a05-switch-context',
     code: 'A05',
     category: 'Autenticação & Sessão B2B',
