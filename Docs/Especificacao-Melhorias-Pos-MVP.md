@@ -119,9 +119,11 @@ Convenções herdadas e inegociáveis em todas as UT: RS256 com emissor único, 
 
 ### 2.4 Tarefas
 
-- [ ] Quatro ficheiros + README em `Docs/sdks/`
-- [ ] `Alinhamento` §3.3: apontar para `Docs/sdks/` como caminho recomendado
-- [ ] `Guia-Consumo` §7: secção "Validar o token no seu serviço"
+- [x] Quatro ficheiros + README em `Docs/sdks/`
+- [x] `Alinhamento` §3.3: apontar para `Docs/sdks/` como caminho recomendado
+- [x] `Guia-Consumo` §4-B: secção "Validar o token no seu microsserviço"
+
+Estado da verificação (CA-QW03.2): Python com autoteste embutido a passar; C# compilado em .NET 10 com avisos como erros e exercitado contra um JWKS local; TypeScript e Go **revistos mas não compilados** (sem `tsc` nem `go` no ambiente de construção) — o README instrui quem copia a correr `tsc --noEmit` e `go vet`.
 
 ---
 
@@ -402,7 +404,7 @@ A contagem canónica de testes é atualizada no Guia a cada UT (linha de base: 4
 |---|---|---|---|---|
 | Documentação (este ficheiro) | `docs/ma/onboarding-e-matriz-melhorias` | Concluída | #16 | — |
 | QW-02 | `feat/ma/auth-me` | Concluída | #17 | 5 (`AuthMeTests`) → total 424 |
-| QW-03 | `feat/ma/sdks-verificacao` | Por iniciar | — | — |
+| QW-03 | `feat/ma/sdks-verificacao` | Concluída | #18 | Nenhum no repositório (ficheiros fora da solução) |
 | QW-04 | `feat/ma/openapi-swagger` | Por iniciar | — | — |
 | QW-01 | `feat/ma/login-auto-contexto` | Por iniciar | — | — |
 | NEW-06 | `feat/ma/client-credentials` | Por iniciar | — | — |

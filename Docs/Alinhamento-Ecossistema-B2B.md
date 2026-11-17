@@ -184,6 +184,8 @@ REDIS_CONNECTION_STRING=redis:6379
 
 Para erradicar a vulnerabilidade de tokens forjados (**ADR-012** do Grupo 2), todos os microsserviços do ecossistema devem validar o JWT utilizando a chave pública disponibilizada em `GET /.well-known/jwks.json`.
 
+> **Caminho recomendado (QW-03):** use os validadores prontos em [`Docs/sdks/`](sdks/README.md) — `b2b_auth_fastapi.py` (Python/FastAPI), `B2bAuthMiddleware.cs` (ASP.NET Core), `auth-middleware.ts` (Node/Express) e `jwt_validator.go` (Go). Cada um é um ficheiro único que valida RS256 + `iss` + `aud` + `exp` com cache de JWKS, expõe o contexto tipado e guardas de permissão e escopo, e responde erros em RFC 9457 com os códigos reais do catálogo (`ERR-AUTH-002` e `ERR-CTX-007`). O exemplo abaixo fica como referência histórica do raciocínio; em caso de divergência, vale o SDK.
+
 Abaixo apresenta-se a implementação em Python com `PyJWKClient` / `PyJWT`, pronta para ser incorporada ao arquivo `services/common/auth.py` do boilerplate oficial:
 
 ```python
