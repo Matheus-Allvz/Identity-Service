@@ -303,6 +303,47 @@
           ]
         },
         {
+          "name": "Login com Auto-Contexto - Transportadora (SINGLE numa chamada)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{carrierEmail}}\",\n  \"password\": \"{{defaultPassword}}\",\n  \"auto_context\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "login"]
+            },
+            "description": "Opt-in: com auto_context=true e um único vínculo com um único escopo, o access_token já vem contextualizado (SINGLE) e a resposta traz o objeto context. Alternativa explícita: target_tenant_id + target_scope. Sem os campos novos, o login mantém o comportamento padrão (view_mode NONE)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code é 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "pm.test(\"Token já vem contextualizado em SINGLE / CARRIER\", function () {",
+                  "    pm.expect(json.context.view_mode).to.eql(\"SINGLE\");",
+                  "    pm.expect(json.context.active_scope).to.eql(\"CARRIER\");",
+                  "    pm.expect(json.context.tenant_id).to.eql(pm.collectionVariables.get(\"carrierTenantId\"));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "name": "Login - Falha de Credenciais (401)",
           "request": {
             "method": "POST",

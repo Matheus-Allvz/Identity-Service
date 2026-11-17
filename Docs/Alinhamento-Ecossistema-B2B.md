@@ -316,6 +316,30 @@ Para suportar empresas com múltiplos perfis simultâneos sem inconsistências d
 
 ---
 
+#### C. Login já contextualizado (opt-in, QW-01)
+
+Clientes automatizados (suítes de QA, scripts de integração, frontends de tenant único) podem obter o token contextualizado **numa única chamada**. O `POST /api/v1/auth/login` aceita três campos opcionais:
+
+| Campo | Tipo | Efeito |
+| :--- | :--- | :--- |
+| `target_tenant_id` + `target_scope` | UUID + escopo | Ativa esse tenant e escopo em `SINGLE`. Os dois vêm juntos ou nenhum |
+| `auto_context` | boolean | Se `true` e o utilizador tiver exatamente um vínculo com exatamente um escopo, ativa-o. Com ambiguidade, **não é erro**: o login devolve o token padrão (`NONE`) |
+
+```json
+{
+  "email": "admin@agrobrasil.com.br",
+  "password": "SenhaForte@2026!",
+  "target_tenant_id": "01900000-0000-7000-8000-000000000010",
+  "target_scope": "TENANT_ADMIN"
+}
+```
+
+- **Resposta:** a mesma do login, com o `access_token` já em `view_mode: SINGLE` e um objeto `context` de forma idêntica ao do `switch-context`. O refresh token herda o contexto.
+- **Retrocompatibilidade:** sem os campos novos, pedido e resposta são exatamente os de antes (`view_mode: NONE`, sem `context`). Nenhum cliente existente precisa de mudar.
+- **Segurança:** as verificações são as mesmas do `switch-context` (vínculo, estado do tenant, escopo e papéis) e os erros também (`403 ERR-CTX-001`, `ERR-CTX-002`, `ERR-CTX-003`). As credenciais são sempre validadas primeiro. Com alvo explícito inválido o login falha por inteiro e nenhuma sessão é criada.
+- **Limite:** `MACRO_GROUP` continua exclusivo do `switch-context`.
+
+---
 ### 3.5. D-ECO-05: Contrato de Eventos Kafka e Assinatura `context_jws` (Resolução P-12)
 
 #### A. Provisionamento de Tópicos em `scripts/init_topics.sh` (`portal-b2b-kit-infra`)
