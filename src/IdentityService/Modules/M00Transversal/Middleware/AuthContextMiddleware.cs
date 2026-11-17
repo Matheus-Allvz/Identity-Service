@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using IdentityService.Modules.M00Transversal.Auth;
 using IdentityService.Modules.M00Transversal.Errors;
 using IdentityService.Modules.M00Transversal.Redis;
+using IdentityService.Modules.M00Transversal.Telemetry;
 using IdentityService.Modules.M11Esquema.Persistence.Enums;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
@@ -99,6 +100,7 @@ public partial class AuthContextMiddleware
             // RG-06 denylist:jti check
             if (await denylist.IsJtiRevokedAsync(parsedClaims.Jti))
             {
+                IdentityTelemetry.DenylistHit("jti");
                 throw new ApiErrorException("ERR-AUTH-002", "Token de acesso ausente, inválido, expirado ou revogado");
             }
 
@@ -106,6 +108,7 @@ public partial class AuthContextMiddleware
             var userRevokedAt = await denylist.GetUserRevokedAtAsync(parsedClaims.UserId);
             if (userRevokedAt.HasValue && parsedClaims.Iat <= userRevokedAt.Value)
             {
+                IdentityTelemetry.DenylistHit("user");
                 throw new ApiErrorException("ERR-AUTH-004", "Utilizador suspenso ou revogado globalmente");
             }
 
@@ -114,6 +117,7 @@ public partial class AuthContextMiddleware
                 var actorRevokedAt = await denylist.GetUserRevokedAtAsync(parsedClaims.ActorUserId.Value);
                 if (actorRevokedAt.HasValue && parsedClaims.Iat <= actorRevokedAt.Value)
                 {
+                    IdentityTelemetry.DenylistHit("user");
                     throw new ApiErrorException("ERR-AUTH-004", "Utilizador suspenso ou revogado globalmente");
                 }
             }
@@ -124,6 +128,7 @@ public partial class AuthContextMiddleware
                 var blocked = await denylist.GetBlockedTenantsAsync(parsedClaims.AllowedTenants);
                 if (blocked.Count > 0)
                 {
+                    IdentityTelemetry.DenylistHit("tenant");
                     throw new ApiErrorException("ERR-CTX-002", "Tenant ou Grupo Económico suspenso");
                 }
             }

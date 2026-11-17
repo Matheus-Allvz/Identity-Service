@@ -1,5 +1,6 @@
 using System.Text.Json;
 using IdentityService.Modules.M00Transversal.Auth;
+using IdentityService.Modules.M00Transversal.Telemetry;
 using IdentityService.Modules.M07Chaves.Interface;
 using IdentityService.Modules.M11Esquema.Persistence.Enums;
 using Microsoft.IdentityModel.JsonWebTokens;
@@ -164,6 +165,10 @@ public class TokenIssuer : ITokenIssuer
         var credentials = new SigningCredentials(key, SecurityAlgorithms.RsaSha256);
         var handler = new JsonWebTokenHandler();
         var accessToken = handler.CreateToken(payloadJson, credentials);
+
+        IdentityTelemetry.TokenIssued(
+            claims.ServiceClientId != null ? "service" : claims.Act != null ? "impersonation" : "user",
+            claims.ViewMode.ToString());
 
         return new IssuedToken(accessToken, jti, iat, exp, normalizedClaims);
     }

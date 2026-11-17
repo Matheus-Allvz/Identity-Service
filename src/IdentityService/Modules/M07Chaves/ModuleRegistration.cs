@@ -1,4 +1,5 @@
 using IdentityService.Modules.M00Transversal.Auth;
+using IdentityService.Modules.M00Transversal.Telemetry;
 using IdentityService.Modules.M07Chaves.Interface;
 
 namespace IdentityService.Modules.M07Chaves;
@@ -15,6 +16,8 @@ public static class ModuleRegistration
     {
         endpoints.MapGet("/.well-known/jwks.json", (ISigningKey signingKey, HttpContext context) =>
         {
+            IdentityTelemetry.JwksRequested();
+
             var keyId = signingKey.KeyId;
             var modulus = signingKey.Modulus;
             var exponent = signingKey.Exponent;

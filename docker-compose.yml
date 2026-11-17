@@ -4,9 +4,15 @@ networks:
   identity-net:
     name: identity-net
     external: true
+  observability-net:
+    name: observability-net
+    external: true
 
 x-app-environment: &app-environment
   ASPNETCORE_ENVIRONMENT: Production
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+  OTEL_TRACES_SAMPLER: parentbased_traceidratio
+  OTEL_TRACES_SAMPLER_ARG: "0.1"
   DB_CONNECTION_STRING: Host=postgres;Port=5432;Database=identity;Username=identity;Password=identity-test
   REDIS_CONNECTION_STRING: redis:6379
   KAFKA_BOOTSTRAP_SERVERS: kafka:9092
@@ -53,6 +59,7 @@ services:
       - "127.0.0.1:8081:8080"
     networks:
       - identity-net
+      - observability-net
     environment:
       <<: *app-environment
     healthcheck:
@@ -72,6 +79,7 @@ services:
       - "127.0.0.1:8082:8080"
     networks:
       - identity-net
+      - observability-net
     environment:
       <<: *app-environment
     healthcheck:
