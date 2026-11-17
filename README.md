@@ -98,7 +98,8 @@ Identity-Service/
     ├── Alinhamento-Ecossistema-B2B.md                 # Alinhamento e contratos com Equipe 9, Grupo 2 e Grupo 8
     ├── Apresentacao-Processo-e-Template.md            # Versão inicial da apresentação
     ├── Arquitetura Base do Projeto.pdf                # Arquitetura visual original
-    └── Ideia Base.md                                  # Requisitos preliminares de negócio
+    ├── Ideia Base.md                                  # Requisitos preliminares de negócio
+    └── Observabilidade.md                             # Métricas e traces OpenTelemetry (ativação, catálogo, consultas)
 ```
 
 ---

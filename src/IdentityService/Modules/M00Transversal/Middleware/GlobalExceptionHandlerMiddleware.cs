@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using IdentityService.Modules.M00Transversal.Auth;
 using IdentityService.Modules.M00Transversal.Errors;
+using IdentityService.Modules.M00Transversal.Telemetry;
 using Npgsql;
 using StackExchange.Redis;
 
@@ -123,6 +124,8 @@ public class GlobalExceptionHandlerMiddleware
     {
         var (status, title) = ErrorCatalog.GetInfo(errorCode);
         var detail = customDetail ?? title;
+
+        IdentityTelemetry.Problem(errorCode, status);
 
         context.Response.StatusCode = status;
         context.Response.ContentType = "application/problem+json; charset=utf-8";

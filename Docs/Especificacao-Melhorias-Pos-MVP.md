@@ -317,11 +317,11 @@ Claims do token de serviço: as mesmas de um token `SINGLE` (`iss`, `aud`, `jti`
 
 ### 6.1 Desenho
 
-- **Instrumentação:** `System.Diagnostics.Metrics.Meter` e `ActivitySource`, ambos com o nome `IdentityService`, num único ponto (`M00Transversal/Telemetry`).
+- **Instrumentação:** `System.Diagnostics.Metrics.Meter` com o nome `IdentityService`, num único ponto (`M00Transversal/Telemetry`). Não há `ActivitySource` próprio: os traces vêm da instrumentação do ASP.NET Core e do Npgsql.
 - **Exportação:** OTLP (gRPC) para um OpenTelemetry Collector, ativada **apenas** quando `OTEL_EXPORTER_OTLP_ENDPOINT` está definida. Sem a variável não há exportador nem custo (caso dos testes e do desenvolvimento local).
 - **Sinais:** métricas e traces. Os logs continuam em stdout (recolhidos pela plataforma).
-- **Recurso:** `service.name = identity-service` (sobreponível por `OTEL_SERVICE_NAME`), `service.version`, `deployment.environment`.
-- **Amostragem de traces:** `parentbased_traceidratio`, razão por `OTEL_TRACES_SAMPLER_ARG` (omissão `0.1`).
+- **Recurso:** `service.name = identity-service` (fixo no código; `OTEL_SERVICE_NAME` não o altera) e `service.version`. Atributos adicionais, como `deployment.environment`, entram por `OTEL_RESOURCE_ATTRIBUTES`.
+- **Amostragem de traces:** definida só por variáveis de ambiente (`OTEL_TRACES_SAMPLER`, `OTEL_TRACES_SAMPLER_ARG`). O código não fixa valor por omissão; o `docker-compose.yml` define `parentbased_traceidratio` com razão `0.1`.
 
 ### 6.2 Catálogo de métricas
 
@@ -341,7 +341,7 @@ Taxa de 401/403 = `identity.problems` filtrado por `status`. Cardinalidade limit
 ### 6.3 Tracing
 
 - Um span de servidor por pedido HTTP (ASP.NET Core), com o atributo `correlation.id` igual ao `X-Correlation-Id`.
-- Spans de cliente para PostgreSQL (Npgsql) e chamadas HTTP de saída.
+- Spans de cliente para PostgreSQL (Npgsql). O serviço não faz chamadas HTTP de saída, por isso não há instrumentação de `HttpClient`.
 - `/health/*` excluídos de traces.
 
 ### 6.4 Regras
@@ -354,20 +354,20 @@ Taxa de 401/403 = `identity.problems` filtrado por `status`. Cardinalidade limit
 
 | CA | Verificação |
 |---|---|
-| CA-NEW07.1 | `MeterListener` em teste: um login bem-sucedido incrementa `identity.tokens.issued{kind=user}` |
+| CA-NEW07.1 | `MeterListener` em teste: emitir tokens pelo `TokenIssuer` incrementa `identity.tokens.issued` com `kind` = `user`, `impersonation` e `service` |
 | CA-NEW07.2 | Pedido sem token a rota protegida incrementa `identity.problems{code=ERR-AUTH-002,status=401}` |
 | CA-NEW07.3 | `jti` revogado incrementa `identity.denylist.hits{kind=jti}` |
-| CA-NEW07.4 | Aplicação arranca e responde sem `OTEL_EXPORTER_OTLP_ENDPOINT` (suíte inteira verde) |
+| CA-NEW07.4 | Aplicação arranca e responde sem `OTEL_EXPORTER_OTLP_ENDPOINT` (suíte inteira verde) e também com o endpoint a apontar para um collector inacessível: o JWKS devolve 200 e `identity.jwks.requests` incrementa |
 | CA-NEW07.5 | Em homologação, com o endpoint configurado, as séries `identity_*` aparecem no backend de métricas e há traces do serviço |
 
 ### 6.6 Tarefas
 
-- [ ] Pacotes OpenTelemetry (hosting, ASP.NET Core, runtime, OTLP) + `Npgsql.OpenTelemetry`
-- [ ] `M00Transversal/Telemetry/IdentityTelemetry.cs` e registo em `AddM00Transversal`
-- [ ] Pontos de instrumentação do §6.2; `correlation.id` no span
-- [ ] `docker-compose.yml`: variáveis `OTEL_*` e rede do collector
-- [ ] Testes: `TelemetryTests.cs` (CA-NEW07.1 a .4)
-- [ ] Docs: `Docs/Observabilidade.md` (catálogo, consultas, painel), `Arquitetura-Alta-Disponibilidade` (nota), README
+- [x] Pacotes OpenTelemetry (hosting, ASP.NET Core, runtime, OTLP) + `Npgsql.OpenTelemetry`
+- [x] `M00Transversal/Telemetry/IdentityTelemetry.cs` e registo em `AddM00Transversal`
+- [x] Pontos de instrumentação do §6.2; `correlation.id` no span
+- [x] `docker-compose.yml`: variáveis `OTEL_*` e rede do collector
+- [x] Testes: `TelemetryTests.cs` (CA-NEW07.1 a .4)
+- [x] Docs: `Docs/Observabilidade.md` (catálogo, consultas, alertas sugeridos) e README
 
 ---
 
@@ -408,4 +408,4 @@ A contagem canónica de testes é atualizada no Guia a cada UT (linha de base: 4
 | QW-04 | `feat/ma/openapi-swagger` | Concluída | #19 | 4 (`M15DocsTests`) → total 428 |
 | QW-01 | `feat/ma/login-auto-contexto` | Concluída | #20 | 13 (`AuthLoginAutoContextTests`) → total 441 |
 | NEW-06 | `feat/ma/client-credentials` | Concluída | #21 | 17 (`M16ContasServicoTests`) → total 458 |
-| NEW-07 | `feat/ma/opentelemetry` | Por iniciar | — | — |
+| NEW-07 | `feat/ma/opentelemetry` | Concluída | #22 | 4 (`TelemetryTests`) → total 462 |

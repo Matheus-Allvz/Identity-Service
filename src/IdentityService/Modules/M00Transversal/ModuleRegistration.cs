@@ -2,6 +2,7 @@ using IdentityService.Modules.M00Transversal.Audit;
 using IdentityService.Modules.M00Transversal.Auth;
 using IdentityService.Modules.M00Transversal.Middleware;
 using IdentityService.Modules.M00Transversal.Redis;
+using IdentityService.Modules.M00Transversal.Telemetry;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using StackExchange.Redis;
 
@@ -25,6 +26,8 @@ public static class ModuleRegistration
         }
 
         services.AddScoped<IDenylist, DenylistService>();
+
+        services.AddIdentityTelemetry(configuration);
 
         return services;
     }

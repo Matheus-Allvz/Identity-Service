@@ -20,6 +20,7 @@ public class CorrelationAndIpMiddleware
     {
         var correlationId = ResolveCorrelationId(context, timeProvider);
         context.Response.Headers["X-Correlation-Id"] = correlationId.ToString("D");
+        System.Diagnostics.Activity.Current?.SetTag("correlation.id", correlationId.ToString("D"));
 
         var clientIp = ResolveClientIp(context);
 

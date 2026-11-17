@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using Confluent.Kafka;
+using IdentityService.Modules.M00Transversal.Telemetry;
 using IdentityService.Modules.M11Esquema.Persistence;
 using IdentityService.Modules.M11Esquema.Persistence.Entities;
 using IdentityService.Modules.M11Esquema.Persistence.Enums;
@@ -135,6 +136,7 @@ public class OutboxPublisherWorker : BackgroundService
                     message.Status = OutboxStatus.PUBLISHED;
                     message.ProcessedAt = now;
                     publishedCount++;
+                    IdentityTelemetry.OutboxPublished(message.Topic);
                 }
                 catch (Exception ex)
                 {
@@ -142,6 +144,7 @@ public class OutboxPublisherWorker : BackgroundService
 
                     // RN-169: Ciclo de retentativas
                     var nextRetry = message.RetryCount + 1;
+                    IdentityTelemetry.OutboxFailed(message.Topic, final: nextRetry >= 5);
                     if (nextRetry >= 5)
                     {
                         message.Status = OutboxStatus.FAILED;
