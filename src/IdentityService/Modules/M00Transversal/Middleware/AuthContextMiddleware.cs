@@ -198,7 +198,8 @@ public partial class AuthContextMiddleware
             return true;
 
         // Also if route is protected prefix
-        if (path.StartsWith("/api/v1/auth/switch-context", StringComparison.OrdinalIgnoreCase) ||
+        if (path.Equals("/api/v1/auth/me", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("/api/v1/auth/switch-context", StringComparison.OrdinalIgnoreCase) ||
             path.StartsWith("/api/v1/auth/logout", StringComparison.OrdinalIgnoreCase) ||
             path.StartsWith("/api/v1/auth/impersonate", StringComparison.OrdinalIgnoreCase) ||
             path.StartsWith("/api/v1/tenants", StringComparison.OrdinalIgnoreCase) ||

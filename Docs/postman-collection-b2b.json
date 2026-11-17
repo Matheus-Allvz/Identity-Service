@@ -477,6 +477,51 @@
       ]
     },
     {
+      "name": "3.1 Inspeção de Identidade (Me)",
+      "item": [
+        {
+          "name": "Inspecionar Contexto Ativo - Admin Matriz",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminBearerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "me"]
+            },
+            "description": "Devolve as claims do token apresentado (sub, tenant_id, active_scope, roles, permissions, act) sem necessidade de decodificar o JWT no cliente. Aceita também o token temporário (view_mode NONE)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code é 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "pm.test(\"Contexto ativo é SINGLE / TENANT_ADMIN na Matriz\", function () {",
+                  "    pm.expect(json.view_mode).to.eql(\"SINGLE\");",
+                  "    pm.expect(json.active_scope).to.eql(\"TENANT_ADMIN\");",
+                  "    pm.expect(json.tenant_id).to.eql(pm.collectionVariables.get(\"matrizTenantId\"));",
+                  "});",
+                  "pm.test(\"Resposta não é armazenável em cache\", function () {",
+                  "    pm.expect(pm.response.headers.get(\"Cache-Control\")).to.include(\"no-store\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "4. Renovação de Sessão (Refresh)",
       "item": [
         {

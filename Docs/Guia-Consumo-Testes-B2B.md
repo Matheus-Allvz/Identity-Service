@@ -105,6 +105,13 @@ curl -s -X POST https://identity.matheus-alves.dev/api/v1/auth/switch-context \
 ```
 > O retorno contém o `access_token` final com claims de `tenant_id`, `active_scope`, `roles` e `permissions`.
 
+### Passo 3-B: Conferir o Contexto Ativo (`/auth/me`)
+Substitua `<BEARER_TOKEN>` pelo token recebido no passo anterior:
+```bash
+curl -s https://identity.matheus-alves.dev/api/v1/auth/me \
+  -H "Authorization: Bearer <BEARER_TOKEN>" | jq .
+```
+> Devolve `sub`, `view_mode`, `tenant_id`, `active_scope`, `roles`, `permissions` e `act`, exatamente como estão no token. Dispensa decodificar o JWT no cliente. Sem token responde `401 ERR-AUTH-002`.
 ### Passo 4: Renovação de Token (Refresh Token Rotation)
 Substitua `<REFRESH_TOKEN>` pelo refresh token ativo:
 ```bash
@@ -148,10 +155,11 @@ curl -s -X POST https://identity.matheus-alves.dev/api/v1/auth/introspect \
    1. `1. JWKS (Chaves Públicas)`
    2. `2. Autenticação (Login)` -> Requisição 1 (Admin Matriz)
    3. `3. Troca de Contexto` -> Requisição 1 (Matriz SINGLE - TENANT_ADMIN)
-   4. `4. Renovação de Sessão (Refresh)` -> Requisição 1 (Renovação Válida)
-   5. `5. Governança de Tenants` -> Criar e Alterar Status
-   6. `6. Governança de Usuários` -> Suspender e Reativar
-   7. `7. Encerramento de Sessão (Logout)` -> Logout Ativo
+   4. `3.1 Inspeção de Identidade (Me)` -> Contexto ativo do Admin
+   5. `4. Renovação de Sessão (Refresh)` -> Requisição 1 (Renovação Válida)
+   6. `5. Governança de Tenants` -> Criar e Alterar Status
+   7. `6. Governança de Usuários` -> Suspender e Reativar
+   8. `7. Encerramento de Sessão (Logout)` -> Logout Ativo
 
 ---
 

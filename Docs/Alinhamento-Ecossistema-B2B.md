@@ -450,6 +450,36 @@ Para atender à orientação pedagógica da disciplina e à dinâmica de mercado
 
 ---
 
+### 3.12. D-ECO-12: Inspeção de Identidade (`GET /api/v1/auth/me`)
+
+Para que frontends e microsserviços confirmem o contexto ativo sem decodificar Base64Url no cliente, o `Identity-Service` expõe uma rota de leitura pura, protegida por Bearer token:
+- **URL:** `GET /api/v1/auth/me` (já coberta pelo prefixo `/api/v1/auth/` do gateway).
+- **Entrada:** apenas `Authorization: Bearer <access_token>`. Aceita o token temporário (`view_mode: NONE`), o contextualizado e o de impersonation.
+- **Saída (`200`, `Cache-Control: no-store`):**
+
+```json
+{
+  "sub": "01900000-0000-7000-8000-000000000101",
+  "platform_role": "NONE",
+  "view_mode": "SINGLE",
+  "group_id": "01900000-0000-7000-8000-000000000001",
+  "tenant_id": "01900000-0000-7000-8000-000000000010",
+  "allowed_tenants": ["01900000-0000-7000-8000-000000000010"],
+  "active_scope": "TENANT_ADMIN",
+  "roles": ["GROUP_MANAGER"],
+  "permissions": ["mapa:visualizar", "membro:listar", "membro:vincular", "tenant:criar", "tenant:listar", "usuario:suspender"],
+  "act": null,
+  "jti": "019a4d3e-0000-7000-8000-000000000001",
+  "iat": 1794866400,
+  "exp": 1794867300
+}
+```
+
+- **Erros:** `401 ERR-AUTH-002` (token ausente, inválido, expirado ou revogado), `403 ERR-AUTH-004` (utilizador suspenso), `403 ERR-CTX-002` (tenant bloqueado).
+- **Diferença para o `introspect`:** `/auth/me` responde sobre o **próprio** token apresentado e passa pelas mesmas verificações de denylist das rotas protegidas; o `introspect` recebe um token de terceiros no corpo e é só para diagnóstico.
+- **Diretriz de Uso:** adequado a frontends e a verificações pontuais. Microsserviços sob carga continuam a validar o token localmente via JWKS; não chame `/auth/me` a cada pedido.
+
+---
 ## 4. Guia de Ação Rápida para as Equipes Parceiras
 
 ### 4.1. Equipe 9 (`portal-b2b-kit-infra`)

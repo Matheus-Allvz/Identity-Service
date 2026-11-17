@@ -17,7 +17,7 @@ Ordem de construção: **da menor para a maior complexidade**. Cada melhoria é 
 
 Fora de âmbito (postergado para depois do MVP, sem alteração): EST-02 (MFA/Passkeys) e EST-04 (auditoria com encadeamento criptográfico).
 
-Convenções herdadas e inegociáveis em todas as UT: RS256 com emissor único, erros RFC 9457 (`type`, `title`, `status`, `code`, `detail`, `correlationId`), RLS do PostgreSQL, denylist Redis fail-closed, `Cache-Control: no-store` em respostas com tokens ou identidade, `dotnet build --warnaserror` limpo.
+Convenções herdadas e inegociáveis em todas as UT: RS256 com emissor único, erros RFC 9457 (`type`, `title`, `status`, `code`, `detail`, `correlation_id`), RLS do PostgreSQL, denylist Redis fail-closed, `Cache-Control: no-store` em respostas com tokens ou identidade, `dotnet build --warnaserror` limpo.
 
 ---
 
@@ -44,7 +44,7 @@ Convenções herdadas e inegociáveis em todas as UT: RS256 com emissor único, 
   "allowed_tenants": ["01900000-0000-7000-8000-000000000010"],
   "active_scope": "TENANT_ADMIN",
   "roles": ["GROUP_MANAGER"],
-  "permissions": ["membros:gerir", "tenants:criar"],
+  "permissions": ["mapa:visualizar", "membro:listar", "membro:vincular", "tenant:criar", "tenant:listar", "usuario:suspender"],
   "act": null,
   "jti": "019a4d3e-…",
   "iat": 1794866400,
@@ -79,10 +79,10 @@ Convenções herdadas e inegociáveis em todas as UT: RS256 com emissor único, 
 
 ### 1.4 Tarefas
 
-- [ ] `Modules/M01Login/MeEndpoint.cs` + `MapGet` em `MapM01Login`
-- [ ] `AuthContextMiddleware.IsTokenRequiredEndpoint`: incluir `/api/v1/auth/me`
-- [ ] Testes: `tests/IdentityService.Tests/AuthMeTests.cs` (CA-QW02.1 a .5)
-- [ ] Docs: `Alinhamento` §3.12, `Guia-Consumo` passo 7, Postman (pasta 8), `pages/js/catalog.js` (A13)
+- [x] `Modules/M01Login/MeEndpoint.cs` + `MapGet` em `MapM01Login`
+- [x] `AuthContextMiddleware.IsTokenRequiredEndpoint`: incluir `/api/v1/auth/me`
+- [x] Testes: `tests/IdentityService.Tests/AuthMeTests.cs` (CA-QW02.1 a .5)
+- [x] Docs: `Alinhamento` §3.12, `Guia-Consumo` passo 3-B, Postman (pasta 3.1), `pages/js/catalog.js` (A14)
 
 ---
 
@@ -400,8 +400,8 @@ A contagem canónica de testes é atualizada no Guia a cada UT (linha de base: 4
 
 | UT | Branch | Estado | PR | Testes novos |
 |---|---|---|---|---|
-| Documentação (este ficheiro) | `docs/ma/onboarding-e-matriz-melhorias` | Em curso | — | — |
-| QW-02 | `feat/ma/auth-me` | Por iniciar | — | — |
+| Documentação (este ficheiro) | `docs/ma/onboarding-e-matriz-melhorias` | Concluída | #16 | — |
+| QW-02 | `feat/ma/auth-me` | Concluída | #17 | 5 (`AuthMeTests`) → total 424 |
 | QW-03 | `feat/ma/sdks-verificacao` | Por iniciar | — | — |
 | QW-04 | `feat/ma/openapi-swagger` | Por iniciar | — | — |
 | QW-01 | `feat/ma/login-auto-contexto` | Por iniciar | — | — |
