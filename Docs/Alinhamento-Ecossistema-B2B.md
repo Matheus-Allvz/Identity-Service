@@ -482,6 +482,16 @@ Para que frontends e microsserviços confirmem o contexto ativo sem decodificar 
 - **Diretriz de Uso:** adequado a frontends e a verificações pontuais. Microsserviços sob carga continuam a validar o token localmente via JWKS; não chame `/auth/me` a cada pedido.
 
 ---
+### 3.13. D-ECO-13: Contrato OpenAPI 3.1 e Swagger UI
+
+O contrato HTTP completo do `Identity-Service` está publicado em formato de máquina e navegável:
+- **`GET /openapi.json`** — documento **OpenAPI 3.1.0** com todas as rotas, schemas de pedido e resposta, o schema `Problem` (RFC 9457) e os códigos `ERR-*` de cada operação. Importável com um clique no Postman e no Insomnia.
+- **`GET /swagger`** — Swagger UI sobre o mesmo documento, com botão *Authorize* para colar o Bearer token.
+- Ambas as rotas são anónimas. Podem ser desligadas num ambiente com `OPENAPI_ENABLED=false`.
+- **Garantia de fidelidade:** um teste automatizado compara o conjunto `{método, path}` do documento com as rotas realmente mapeadas na aplicação e falha em qualquer divergência. O documento não fica desatualizado em silêncio.
+- **Gateway:** as duas rotas ficam fora do prefixo `/api/v1/`. Só precisam de regra no gateway se a equipa quiser expô-las por ele; para consulta, basta o endereço público do serviço.
+
+---
 ## 4. Guia de Ação Rápida para as Equipes Parceiras
 
 ### 4.1. Equipe 9 (`portal-b2b-kit-infra`)

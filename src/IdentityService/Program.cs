@@ -15,6 +15,7 @@ using IdentityService.Modules.M11Esquema;
 using IdentityService.Modules.M12EstadoTenant;
 using IdentityService.Modules.M13Isolamento;
 using IdentityService.Modules.M14Eventos;
+using IdentityService.Modules.M15Docs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -93,6 +94,7 @@ app.MapM07Chaves();
 app.MapM09Logout();
 app.MapM10EstadoUsuario();
 app.MapM12EstadoTenant();
+app.MapM15Docs(app.Configuration);
 
 // Probes de Saúde
 app.MapGet("/health/live", () => Results.Ok(new { status = "UP" }));

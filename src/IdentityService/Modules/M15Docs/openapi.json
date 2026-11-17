@@ -1,0 +1,457 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Identity-Service B2B API",
+    "version": "1.1.0",
+    "summary": "Autenticação, sessão, contexto multi-tenant e governança de identidades da plataforma B2B.",
+    "description": "Emissor único de tokens JWT **RS256** da plataforma. Erros seguem a RFC 9457 (`application/problem+json`) com o campo `code` (`ERR-*`) para decisão programática e `correlation_id` para rastreio.\n\nFluxo típico: `POST /api/v1/auth/login` devolve um token pré-contexto (`view_mode: NONE`) e a lista `available_contexts`; `POST /api/v1/auth/switch-context` ativa um tenant e um escopo; os microsserviços validam o token offline com as chaves de `GET /.well-known/jwks.json`."
+  },
+  "servers": [
+    { "url": "https://identity.matheus-alves.dev", "description": "Homologação" },
+    { "url": "http://localhost:8080", "description": "Local" }
+  ],
+  "tags": [
+    { "name": "Autenticação", "description": "Login, sessão, contexto e inspeção de tokens" },
+    { "name": "Governança", "description": "Tenants, membros e estado de utilizadores" },
+    { "name": "Infraestrutura", "description": "Chaves públicas e probes de saúde" }
+  ],
+  "paths": {
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": ["Autenticação"],
+        "operationId": "login",
+        "summary": "Autenticar com e-mail e palavra-passe",
+        "description": "Valida as credenciais (Argon2id), cria a família de refresh tokens e devolve um token pré-contexto (`view_mode: NONE`). Cinco falhas consecutivas bloqueiam a conta por 15 minutos.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LoginRequest" },
+              "example": { "email": "admin@agrobrasil.com.br", "password": "SenhaForte@2026!" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LoginResponse" } } } },
+          "400": { "$ref": "#/components/responses/Problem", "description": "`ERR-VAL-001` corpo malformado ou chave desconhecida" },
+          "401": { "$ref": "#/components/responses/Problem", "description": "`ERR-AUTH-001` credenciais inválidas ou conta bloqueada" },
+          "403": { "$ref": "#/components/responses/Problem", "description": "`ERR-AUTH-004` utilizador suspenso" },
+          "415": { "$ref": "#/components/responses/Problem", "description": "`ERR-REQ-004` Content-Type não suportado" },
+          "422": { "$ref": "#/components/responses/Problem", "description": "`ERR-VAL-003` formato de e-mail ou política de palavra-passe" }
+        }
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "tags": ["Autenticação"],
+        "operationId": "getMe",
+        "summary": "Inspecionar o contexto do token apresentado",
+        "description": "Projeção das claims já validadas (assinatura, expiração e denylist). Não consulta a base de dados. Aceita tokens pré-contexto, contextualizados e de impersonation.",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Contexto ativo", "headers": { "Cache-Control": { "schema": { "type": "string", "const": "no-store" } } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MeResponse" } } } },
+          "401": { "$ref": "#/components/responses/Problem", "description": "`ERR-AUTH-002` token ausente, inválido, expirado ou revogado" },
+          "403": { "$ref": "#/components/responses/Problem", "description": "`ERR-AUTH-004` utilizador suspenso; `ERR-CTX-002` tenant bloqueado" }
+        }
+      }
+    },
+    "/api/v1/auth/switch-context": {
+      "post": {
+        "tags": ["Autenticação"],
+        "operationId": "switchContext",
+        "summary": "Ativar tenant e escopo (SINGLE ou MACRO_GROUP)",
+        "description": "Emite um novo access token contextualizado e revoga o `jti` anterior. Tokens de impersonation não podem trocar de contexto.",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SwitchContextRequest" },
+              "examples": {
+                "single": { "summary": "Um tenant", "value": { "view_mode": "SINGLE", "target_scope": "TENANT_ADMIN", "target_tenant_id": "01900000-0000-7000-8000-000000000010" } },
+                "macro": { "summary": "Visão de grupo", "value": { "view_mode": "MACRO_GROUP", "target_scope": "BUYER", "target_group_id": "01900000-0000-7000-8000-000000000001", "target_tenants": ["01900000-0000-7000-8000-000000000010", "01900000-0000-7000-8000-000000000020"] } }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Contexto ativado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SwitchContextResponse" } } } },
+          "400": { "$ref": "#/components/responses/Problem", "description": "`ERR-VAL-001`" },
+          "401": { "$ref": "#/components/responses/Problem", "description": "`ERR-AUTH-002`" },
+          "403": { "$ref": "#/components/responses/Problem", "description": "`ERR-CTX-001` sem vínculo; `ERR-CTX-002` tenant ou grupo suspenso; `ERR-CTX-003` escopo ou papel; `ERR-CTX-004` regras de visão macro; `ERR-CTX-007` token de impersonation; `ERR-AUTH-004`" }
+        }
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "tags": ["Autenticação"],
+        "operationId": "refresh",
+        "summary": "Rodar o refresh token",
+        "description": "Consome o refresh token e devolve um par novo, mantendo o contexto ativo. A reutilização de um token já consumido revoga a família inteira.",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "type": "object", "additionalProperties": false, "required": ["refresh_token"], "properties": { "refresh_token": { "type": "string" } } } } }
+        },
+        "responses": {
+          "200": { "description": "Par renovado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TokenPair" } } } },
+          "400": { "$ref": "#/components/responses/Problem", "description": "`ERR-VAL-001`" },
+          "401": { "$ref": "#/components/responses/Problem", "description": "`ERR-AUTH-005` inválido, revogado ou expirado; `ERR-AUTH-006` reuso detetado" },
+          "403": { "$ref": "#/components/responses/Problem", "description": "`ERR-AUTH-004`; `ERR-CTX-001` a `ERR-CTX-004` na revalidação do contexto" }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "tags": ["Autenticação"],
+        "operationId": "logout",
+        "summary": "Encerrar a sessão",
+        "description": "Coloca o `jti` na denylist e revoga a família de refresh tokens.",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "204": { "description": "Sessão encerrada" },
+          "400": { "$ref": "#/components/responses/Problem", "description": "`ERR-VAL-001`" },
+          "401": { "$ref": "#/components/responses/Problem", "description": "`ERR-AUTH-002`" }
+        }
+      }
+    },
+    "/api/v1/auth/impersonate": {
+      "post": {
+        "tags": ["Autenticação"],
+        "operationId": "impersonate",
+        "summary": "Emitir token de delegação (RFC 8693)",
+        "description": "Restrito a `SUPPORT_AGENT` e `PLATFORM_ADMIN`. O token leva a claim `act` e não tem refresh.",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object", "additionalProperties": false,
+                "required": ["target_user_id", "target_tenant_id", "target_scope", "ticket_id"],
+                "properties": {
+                  "target_user_id": { "$ref": "#/components/schemas/Uuid" },
+                  "target_tenant_id": { "$ref": "#/components/schemas/Uuid" },
+                  "target_scope": { "$ref": "#/components/schemas/OperationalScope" },
+                  "ticket_id": { "type": "string", "pattern": "^[A-Z]{2,10}-[0-9]{1,10}$", "examples": ["SUP-123"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Token de delegação", "content": { "application/json": { "schema": { "type": "object", "properties": { "access_token": { "type": "string" }, "token_type": { "const": "Bearer" }, "expires_in": { "type": "integer", "const": 900 }, "impersonation_context": { "type": "object" } } } } } },
+          "400": { "$ref": "#/components/responses/Problem", "description": "`ERR-VAL-001`" },
+          "401": { "$ref": "#/components/responses/Problem", "description": "`ERR-AUTH-002`" },
+          "403": { "$ref": "#/components/responses/Problem", "description": "`ERR-AUTH-010` não autorizado; `ERR-AUTH-004`; `ERR-CTX-001` a `ERR-CTX-003`" },
+          "404": { "$ref": "#/components/responses/Problem", "description": "`ERR-CTX-008` utilizador ou tenant inexistente" },
+          "422": { "$ref": "#/components/responses/Problem", "description": "`ERR-VAL-004` código de chamado inválido" }
+        }
+      }
+    },
+    "/api/v1/auth/introspect": {
+      "post": {
+        "tags": ["Autenticação"],
+        "operationId": "introspect",
+        "summary": "Diagnóstico de token (RFC 7662)",
+        "description": "**Só para diagnóstico em desenvolvimento.** Em produção os serviços validam o token localmente via JWKS. Responde sempre `200`; tokens inválidos devolvem `{ \"active\": false }`.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "type": "object", "required": ["token"], "properties": { "token": { "type": "string" } } } },
+            "application/x-www-form-urlencoded": { "schema": { "type": "object", "required": ["token"], "properties": { "token": { "type": "string" } } } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Estado do token",
+            "headers": { "X-B2B-Notice": { "schema": { "type": "string" } } },
+            "content": { "application/json": { "schema": { "type": "object", "required": ["active"], "properties": { "active": { "type": "boolean" }, "sub": { "type": "string" }, "tenant_id": { "type": ["string", "null"] }, "group_id": { "type": ["string", "null"] }, "active_scope": { "type": ["string", "null"] }, "view_mode": { "type": "string" }, "roles": { "type": "array", "items": { "type": "string" } }, "permissions": { "type": "array", "items": { "type": "string" } }, "exp": { "type": "integer" }, "iat": { "type": "integer" }, "warning": { "type": "string" } } } } }
+          },
+          "415": { "$ref": "#/components/responses/Problem", "description": "`ERR-REQ-004`" }
+        }
+      }
+    },
+    "/api/v1/tenants": {
+      "post": {
+        "tags": ["Governança"],
+        "operationId": "createTenant",
+        "summary": "Criar tenant num grupo económico",
+        "description": "Exige `PLATFORM_ADMIN` ou a permissão `tenant:criar` no grupo. Publica o evento `empresa_cadastrada`.",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object", "additionalProperties": false,
+                "required": ["group_id", "cnpj", "legal_name", "branch_type", "geo_lat", "geo_lng", "scopes"],
+                "properties": {
+                  "group_id": { "$ref": "#/components/schemas/Uuid" },
+                  "cnpj": { "type": "string", "pattern": "^[0-9]{14}$" },
+                  "legal_name": { "type": "string", "minLength": 2, "maxLength": 200 },
+                  "branch_type": { "enum": ["HQ", "BRANCH"] },
+                  "geo_lat": { "type": "number", "minimum": -90, "maximum": 90 },
+                  "geo_lng": { "type": "number", "minimum": -180, "maximum": 180 },
+                  "scopes": { "type": "array", "minItems": 1, "items": { "$ref": "#/components/schemas/OperationalScope" } }
+                }
+              },
+              "example": { "group_id": "01900000-0000-7000-8000-000000000001", "cnpj": "99000002000186", "legal_name": "AgroBrasil Armazéns e Silos S.A.", "branch_type": "BRANCH", "geo_lat": -16.686891, "geo_lng": -49.264789, "scopes": ["BUYER", "SUPPLIER"] }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Tenant criado", "headers": { "Location": { "schema": { "type": "string" } } }, "content": { "application/json": { "schema": { "type": "object", "properties": { "id": { "$ref": "#/components/schemas/Uuid" }, "group_id": { "$ref": "#/components/schemas/Uuid" }, "cnpj": { "type": "string" }, "legal_name": { "type": "string" }, "branch_type": { "type": "string" }, "geo_lat": { "type": "number" }, "geo_lng": { "type": "number" }, "status": { "const": "ACTIVE" }, "scopes": { "type": "array", "items": { "type": "string" } }, "created_at": { "type": "string", "format": "date-time" } } } } } },
+          "400": { "$ref": "#/components/responses/Problem", "description": "`ERR-VAL-001`" },
+          "401": { "$ref": "#/components/responses/Problem", "description": "`ERR-AUTH-002`" },
+          "403": { "$ref": "#/components/responses/Problem", "description": "`ERR-CTX-007` permissão insuficiente; `ERR-CTX-002` grupo suspenso" },
+          "404": { "$ref": "#/components/responses/Problem", "description": "`ERR-CTX-008` grupo inexistente" },
+          "409": { "$ref": "#/components/responses/Problem", "description": "`ERR-CTX-005` CNPJ já registado" },
+          "422": { "$ref": "#/components/responses/Problem", "description": "`ERR-VAL-002` CNPJ ou geolocalização inválidos" }
+        }
+      }
+    },
+    "/api/v1/tenants/{tenant_id}/members": {
+      "post": {
+        "tags": ["Governança"],
+        "operationId": "addMember",
+        "summary": "Vincular utilizador a um tenant com papéis",
+        "description": "Exige `PLATFORM_ADMIN` ou a permissão `membro:vincular` no tenant.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/TenantId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object", "additionalProperties": false,
+                "required": ["user_id", "is_owner", "can_view_group", "role_ids"],
+                "properties": {
+                  "user_id": { "$ref": "#/components/schemas/Uuid" },
+                  "is_owner": { "type": "boolean" },
+                  "can_view_group": { "type": "boolean" },
+                  "role_ids": { "type": "array", "minItems": 1, "items": { "$ref": "#/components/schemas/Uuid" } }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Membro vinculado", "headers": { "Location": { "schema": { "type": "string" } } }, "content": { "application/json": { "schema": { "type": "object", "properties": { "member_id": { "$ref": "#/components/schemas/Uuid" }, "tenant_id": { "$ref": "#/components/schemas/Uuid" }, "user_id": { "$ref": "#/components/schemas/Uuid" }, "is_owner": { "type": "boolean" }, "can_view_group": { "type": "boolean" }, "status": { "const": "ACTIVE" }, "roles": { "type": "array", "items": { "type": "string" } }, "created_at": { "type": "string", "format": "date-time" } } } } } },
+          "400": { "$ref": "#/components/responses/Problem", "description": "`ERR-VAL-001`" },
+          "401": { "$ref": "#/components/responses/Problem", "description": "`ERR-AUTH-002`" },
+          "403": { "$ref": "#/components/responses/Problem", "description": "`ERR-CTX-007`" },
+          "404": { "$ref": "#/components/responses/Problem", "description": "`ERR-CTX-008` tenant, utilizador ou papel inexistente" },
+          "409": { "$ref": "#/components/responses/Problem", "description": "`ERR-CTX-005` vínculo já existe" },
+          "422": { "$ref": "#/components/responses/Problem", "description": "`ERR-CTX-006` papel incompatível com os escopos do tenant" }
+        }
+      }
+    },
+    "/api/v1/tenants/{tenant_id}/status": {
+      "patch": {
+        "tags": ["Governança"],
+        "operationId": "setTenantStatus",
+        "summary": "Suspender ou reativar um tenant",
+        "description": "A suspensão bloqueia o tenant na denylist, revoga as sessões e publica `tenant_bloqueado`.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/TenantId" }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/StatusChangeRequest" }, "example": { "status": "SUSPENDED", "reason": "Auditoria preventiva." } } } },
+        "responses": {
+          "200": { "description": "Estado alterado", "content": { "application/json": { "schema": { "type": "object", "properties": { "tenant_id": { "$ref": "#/components/schemas/Uuid" }, "status": { "$ref": "#/components/schemas/EntityStatus" }, "reason": { "type": "string" }, "updated_at": { "type": "string", "format": "date-time" } } } } } },
+          "400": { "$ref": "#/components/responses/Problem", "description": "`ERR-VAL-001`" },
+          "401": { "$ref": "#/components/responses/Problem", "description": "`ERR-AUTH-002`" },
+          "403": { "$ref": "#/components/responses/Problem", "description": "`ERR-CTX-007`" },
+          "404": { "$ref": "#/components/responses/Problem", "description": "`ERR-CTX-008`" }
+        }
+      }
+    },
+    "/api/v1/users/{user_id}/status": {
+      "patch": {
+        "tags": ["Governança"],
+        "operationId": "setUserStatus",
+        "summary": "Suspender ou reativar um utilizador",
+        "description": "`PLATFORM_ADMIN` altera a conta (`scope: GLOBAL`); quem tem `usuario:suspender` altera os vínculos no seu grupo (`scope: GROUP`).",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "user_id", "in": "path", "required": true, "schema": { "$ref": "#/components/schemas/Uuid" } }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/StatusChangeRequest" } } } },
+        "responses": {
+          "200": { "description": "Estado alterado", "content": { "application/json": { "schema": { "type": "object", "properties": { "user_id": { "$ref": "#/components/schemas/Uuid" }, "status": { "$ref": "#/components/schemas/EntityStatus" }, "reason": { "type": "string" }, "scope": { "enum": ["GLOBAL", "GROUP"] }, "group_id": { "type": ["string", "null"] }, "updated_at": { "type": "string", "format": "date-time" } } } } } },
+          "400": { "$ref": "#/components/responses/Problem", "description": "`ERR-VAL-001`" },
+          "401": { "$ref": "#/components/responses/Problem", "description": "`ERR-AUTH-002`" },
+          "403": { "$ref": "#/components/responses/Problem", "description": "`ERR-CTX-007`" },
+          "404": { "$ref": "#/components/responses/Problem", "description": "`ERR-CTX-008`" }
+        }
+      }
+    },
+    "/.well-known/jwks.json": {
+      "get": {
+        "tags": ["Infraestrutura"],
+        "operationId": "getJwks",
+        "summary": "Chaves públicas RSA para validação offline",
+        "description": "Servido com `Cache-Control: public, max-age=3600, stale-while-revalidate=86400`. Os consumidores devem manter cache local.",
+        "responses": {
+          "200": { "description": "JWK Set", "content": { "application/json": { "schema": { "type": "object", "properties": { "keys": { "type": "array", "items": { "type": "object", "properties": { "kty": { "const": "RSA" }, "use": { "const": "sig" }, "alg": { "const": "RS256" }, "kid": { "type": "string" }, "n": { "type": "string" }, "e": { "type": "string" } } } } } } } } }
+        }
+      }
+    },
+    "/health/live": {
+      "get": {
+        "tags": ["Infraestrutura"],
+        "operationId": "healthLive",
+        "summary": "Liveness",
+        "responses": { "200": { "description": "Processo ativo", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Health" } } } } }
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "tags": ["Infraestrutura"],
+        "operationId": "healthReady",
+        "summary": "Readiness (PostgreSQL e Redis)",
+        "responses": {
+          "200": { "description": "Dependências disponíveis", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Health" } } } },
+          "503": { "description": "Alguma dependência indisponível", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Health" } } } }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": { "type": "http", "scheme": "bearer", "bearerFormat": "JWT", "description": "Access token RS256 emitido por este serviço." }
+    },
+    "parameters": {
+      "TenantId": { "name": "tenant_id", "in": "path", "required": true, "schema": { "$ref": "#/components/schemas/Uuid" } }
+    },
+    "responses": {
+      "Problem": {
+        "description": "Erro no formato RFC 9457",
+        "headers": { "X-Correlation-Id": { "schema": { "$ref": "#/components/schemas/Uuid" } } },
+        "content": { "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } } }
+      }
+    },
+    "schemas": {
+      "Uuid": { "type": "string", "format": "uuid", "examples": ["01900000-0000-7000-8000-000000000010"] },
+      "OperationalScope": { "enum": ["BUYER", "SUPPLIER", "CARRIER", "TENANT_ADMIN"] },
+      "ViewMode": { "enum": ["NONE", "SINGLE", "MACRO_GROUP"] },
+      "PlatformRole": { "enum": ["NONE", "SUPPORT_AGENT", "PLATFORM_ADMIN"] },
+      "EntityStatus": { "enum": ["ACTIVE", "SUSPENDED"] },
+      "Problem": {
+        "type": "object",
+        "required": ["type", "title", "status", "code", "detail", "correlation_id"],
+        "properties": {
+          "type": { "type": "string", "format": "uri" },
+          "title": { "type": "string" },
+          "status": { "type": "integer" },
+          "code": { "type": "string", "pattern": "^ERR-[A-Z]+-[0-9]{3}$", "description": "Código estável para decisão programática" },
+          "detail": { "type": "string" },
+          "correlation_id": { "$ref": "#/components/schemas/Uuid" }
+        },
+        "example": { "type": "https://identity.b2b.local/errors/ERR-AUTH-002", "title": "Token de acesso ausente, inválido, expirado ou revogado", "status": 401, "code": "ERR-AUTH-002", "detail": "Token de acesso ausente, inválido, expirado ou revogado", "correlation_id": "0194eb82-7000-7000-8000-000000000001" }
+      },
+      "Health": { "type": "object", "properties": { "status": { "enum": ["UP", "DOWN"] }, "checks": { "type": "object", "additionalProperties": { "type": "string" } } } },
+      "LoginRequest": {
+        "type": "object", "additionalProperties": false,
+        "required": ["email", "password"],
+        "properties": {
+          "email": { "type": "string", "format": "email", "minLength": 5, "maxLength": 320 },
+          "password": { "type": "string", "minLength": 12, "maxLength": 128, "description": "Maiúscula, minúscula, dígito e símbolo" }
+        }
+      },
+      "TokenPair": {
+        "type": "object",
+        "required": ["access_token", "token_type", "expires_in", "refresh_token", "refresh_expires_in"],
+        "properties": {
+          "access_token": { "type": "string", "description": "JWT RS256" },
+          "token_type": { "const": "Bearer" },
+          "expires_in": { "type": "integer", "const": 900 },
+          "refresh_token": { "type": "string" },
+          "refresh_expires_in": { "type": "integer", "const": 604800 }
+        }
+      },
+      "AvailableContext": {
+        "type": "object",
+        "properties": {
+          "group_id": { "$ref": "#/components/schemas/Uuid" },
+          "group_name": { "type": "string" },
+          "tenant_id": { "$ref": "#/components/schemas/Uuid" },
+          "cnpj": { "type": "string" },
+          "legal_name": { "type": "string" },
+          "branch_type": { "enum": ["HQ", "BRANCH"] },
+          "is_owner": { "type": "boolean" },
+          "can_view_group": { "type": "boolean" },
+          "available_scopes": { "type": "array", "items": { "$ref": "#/components/schemas/OperationalScope" } },
+          "roles": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "LoginResponse": {
+        "allOf": [
+          { "$ref": "#/components/schemas/TokenPair" },
+          {
+            "type": "object",
+            "properties": {
+              "user": { "type": "object", "properties": { "id": { "$ref": "#/components/schemas/Uuid" }, "email": { "type": "string" }, "name": { "type": "string" }, "platform_role": { "$ref": "#/components/schemas/PlatformRole" } } },
+              "available_contexts": { "type": "array", "items": { "$ref": "#/components/schemas/AvailableContext" } }
+            }
+          }
+        ]
+      },
+      "ActiveContext": {
+        "type": "object",
+        "properties": {
+          "sub": { "$ref": "#/components/schemas/Uuid" },
+          "group_id": { "$ref": "#/components/schemas/Uuid" },
+          "tenant_id": { "type": ["string", "null"], "format": "uuid" },
+          "allowed_tenants": { "type": "array", "items": { "$ref": "#/components/schemas/Uuid" } },
+          "view_mode": { "$ref": "#/components/schemas/ViewMode" },
+          "active_scope": { "$ref": "#/components/schemas/OperationalScope" },
+          "roles": { "type": "array", "items": { "type": "string" } },
+          "permissions": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "SwitchContextRequest": {
+        "type": "object", "additionalProperties": false,
+        "required": ["view_mode", "target_scope"],
+        "properties": {
+          "view_mode": { "enum": ["SINGLE", "MACRO_GROUP"] },
+          "target_scope": { "$ref": "#/components/schemas/OperationalScope" },
+          "target_tenant_id": { "type": ["string", "null"], "format": "uuid", "description": "Obrigatório em SINGLE" },
+          "target_group_id": { "type": ["string", "null"], "format": "uuid", "description": "Obrigatório em MACRO_GROUP" },
+          "target_tenants": { "type": ["array", "null"], "maxItems": 50, "items": { "$ref": "#/components/schemas/Uuid" }, "description": "Obrigatório em MACRO_GROUP" }
+        }
+      },
+      "SwitchContextResponse": {
+        "type": "object",
+        "properties": {
+          "access_token": { "type": "string" },
+          "token_type": { "const": "Bearer" },
+          "expires_in": { "type": "integer", "const": 900 },
+          "context": { "$ref": "#/components/schemas/ActiveContext" }
+        }
+      },
+      "MeResponse": {
+        "type": "object",
+        "properties": {
+          "sub": { "$ref": "#/components/schemas/Uuid" },
+          "platform_role": { "$ref": "#/components/schemas/PlatformRole" },
+          "view_mode": { "$ref": "#/components/schemas/ViewMode" },
+          "group_id": { "type": ["string", "null"], "format": "uuid" },
+          "tenant_id": { "type": ["string", "null"], "format": "uuid" },
+          "allowed_tenants": { "type": "array", "items": { "$ref": "#/components/schemas/Uuid" } },
+          "active_scope": { "oneOf": [{ "$ref": "#/components/schemas/OperationalScope" }, { "type": "null" }] },
+          "roles": { "type": "array", "items": { "type": "string" } },
+          "permissions": { "type": "array", "items": { "type": "string" } },
+          "act": { "type": ["object", "null"], "properties": { "sub": { "$ref": "#/components/schemas/Uuid" }, "ticket_id": { "type": "string" } }, "description": "Presente em tokens de impersonation" },
+          "jti": { "type": "string" },
+          "iat": { "type": "integer" },
+          "exp": { "type": "integer" }
+        }
+      },
+      "StatusChangeRequest": {
+        "type": "object", "additionalProperties": false,
+        "required": ["status", "reason"],
+        "properties": {
+          "status": { "$ref": "#/components/schemas/EntityStatus" },
+          "reason": { "type": "string", "minLength": 5, "maxLength": 255 }
+        }
+      }
+    }
+  }
+}

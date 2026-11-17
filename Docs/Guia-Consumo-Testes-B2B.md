@@ -159,6 +159,8 @@ Todos leem `IDENTITY_BASE_URL`, mantêm o JWKS em cache por 1 hora, recusam por 
 
 ## 5. Como Importar e Usar no Postman
 
+> **Alternativa pelo contrato OpenAPI:** no Postman ou no Insomnia, use *Import* → *Link* com `https://identity.matheus-alves.dev/openapi.json` para gerar todas as requisições a partir do contrato. Para explorar no navegador, abra `https://identity.matheus-alves.dev/swagger`. A coleção abaixo continua a ser a referência para os cenários encadeados e os testes automatizados.
+
 1. Abra o Postman (ou Postman Web).
 2. Clique no botão **Import** (canto superior esquerdo).
 3. Selecione o arquivo `Docs/postman-collection-b2b.json` localizado neste repositório.
