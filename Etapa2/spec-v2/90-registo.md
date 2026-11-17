@@ -479,7 +479,7 @@ A especificação congelada no Gate 4 (`spec.sha256`) mantém-se intacta. As mel
 | UT-6-02 | QW-03 SDKs de verificação (`Docs/sdks/`) | Documentação | — | — | Concluída (PR #18; TS e Go não compilados) |
 | UT-6-03 | QW-04 OpenAPI 3.1 e Swagger UI | M-15 (novo) | EP-13, EP-14 | UT-6-01 | Concluída (PR #19; 428 testes) |
 | UT-6-04 | QW-01 Auto-contexto no login | M-01, M-02, M-03 | EP-01 (estendido) | UT-6-03 | Concluída (PR #20; 441 testes) |
-| UT-6-05 | NEW-06 Client Credentials (M2M) | M-16 (novo), M-07, M-11 | EP-12, ENT-11 | UT-6-03 | Por iniciar |
+| UT-6-05 | NEW-06 Client Credentials (M2M) | M-16 (novo), M-07, M-11 | EP-12, ENT-11 | UT-6-03 | Concluída (PR #21; 458 testes; migração `AddServiceAccount`) |
 | UT-6-06 | NEW-07 Métricas e tracing OpenTelemetry | M-00, M-07, M-14 | — | UT-6-05 | Por iniciar |
 
 Postergadas sem data: EST-02 (MFA/Passkeys) e EST-04 (auditoria com encadeamento criptográfico). Gates por UT: §8 da adenda.

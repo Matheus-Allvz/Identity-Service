@@ -23,6 +23,7 @@ public class IdentityDbContext : DbContext
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<AuthAuditLog> AuthAuditLogs => Set<AuthAuditLog>();
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
+    public DbSet<ServiceAccount> ServiceAccounts => Set<ServiceAccount>();
 
     public IdentityDbContext(
         DbContextOptions<IdentityDbContext> options,
@@ -354,7 +355,7 @@ public class IdentityDbContext : DbContext
 
             entity.ToTable(t =>
             {
-                t.HasCheckConstraint("ck_auth_audit_log_event_type", "event_type IN ('LOGIN_SUCCESS','LOGIN_FAILED','USER_LOCKED','CONTEXT_SWITCHED','TOKEN_REFRESHED','TOKEN_REUSE_DETECTED','LOGOUT','IMPERSONATION_STARTED','TENANT_CREATED','MEMBER_ADDED','TENANT_STATUS_CHANGED','USER_STATUS_CHANGED')");
+                t.HasCheckConstraint("ck_auth_audit_log_event_type", "event_type IN ('LOGIN_SUCCESS','LOGIN_FAILED','USER_LOCKED','CONTEXT_SWITCHED','TOKEN_REFRESHED','TOKEN_REUSE_DETECTED','LOGOUT','IMPERSONATION_STARTED','TENANT_CREATED','MEMBER_ADDED','TENANT_STATUS_CHANGED','USER_STATUS_CHANGED','SERVICE_TOKEN_ISSUED')");
                 t.HasCheckConstraint("ck_auth_audit_log_ticket_id", "ticket_id IS NULL OR ticket_id ~ '^[A-Z]{2,10}-[0-9]{1,10}$'");
                 t.HasCheckConstraint("ck_auth_audit_log_ip_address", "char_length(ip_address) BETWEEN 2 AND 45");
                 t.HasCheckConstraint("ck_auth_audit_log_metadata", "jsonb_typeof(metadata) = 'object'");
@@ -392,6 +393,41 @@ public class IdentityDbContext : DbContext
             });
         });
 
+        // ENT-11 service_account (NEW-06)
+        modelBuilder.Entity<ServiceAccount>(entity =>
+        {
+            entity.ToTable("service_account");
+            entity.HasKey(e => e.Id).HasName("pk_service_account");
+            entity.Property(e => e.ClientId).HasMaxLength(64).IsRequired();
+            entity.Property(e => e.ClientSecretHash).HasMaxLength(255).IsRequired();
+            entity.Property(e => e.TenantId).IsRequired();
+            entity.Property(e => e.RoleId).IsRequired();
+            entity.Property(e => e.Status).HasConversion<string>().HasMaxLength(16).HasDefaultValue(EntityStatus.ACTIVE).IsRequired();
+            entity.Property(e => e.CreatedAt).HasColumnType("timestamptz").IsRequired();
+            entity.Property(e => e.UpdatedAt).HasColumnType("timestamptz").IsRequired();
+
+            entity.HasOne(e => e.Tenant)
+                .WithMany()
+                .HasForeignKey(e => e.TenantId)
+                .HasConstraintName("fk_service_account_tenant_id")
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Role)
+                .WithMany()
+                .HasForeignKey(e => e.RoleId)
+                .HasConstraintName("fk_service_account_role_id")
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(e => e.ClientId).IsUnique().HasDatabaseName("uq_service_account_client_id");
+            entity.HasIndex(e => e.TenantId).HasDatabaseName("ix_service_account_tenant_id");
+
+            entity.ToTable(t =>
+            {
+                t.HasCheckConstraint("ck_service_account_client_id", "client_id ~ '^[a-z0-9][a-z0-9-]{2,63}$'");
+                t.HasCheckConstraint("ck_service_account_client_secret_hash", "starts_with(client_secret_hash, '$argon2id$v=19$m=19456,t=2,p=1$')");
+                t.HasCheckConstraint("ck_service_account_status", "status IN ('ACTIVE','SUSPENDED')");
+            });
+        });
         // Layer 2 Isolation Filters
         _tenantIsolation?.ApplyQueryFilters(modelBuilder, this);
     }

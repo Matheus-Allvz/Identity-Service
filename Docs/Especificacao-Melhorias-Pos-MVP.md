@@ -302,12 +302,12 @@ Claims do token de serviço: as mesmas de um token `SINGLE` (`iss`, `aud`, `jti`
 
 ### 5.5 Tarefas
 
-- [ ] Entidade `ServiceAccount`, mapeamento, migração `AddServiceAccount` (tabela, RLS, grant, check de auditoria)
-- [ ] `AccessTokenClaims`/`TokenIssuer`: variante de serviço (`client_id`, `token_use`, sem `fid`)
-- [ ] `Modules/M16ContasServico/TokenEndpoint.cs` + registo; middlewares (rota anónima, form-urlencoded)
-- [ ] `seed-demo.sql`: duas contas de demonstração
-- [ ] Testes: `M16ContasServicoTests.cs` (CA-NEW06.1 a .9) + aceitação
-- [ ] Docs: `Alinhamento` §3.14, `Guia-Consumo`, Postman, `catalog.js`, `openapi.json`, SDKs (campo `token_use`)
+- [x] Entidade `ServiceAccount`, mapeamento, migração `AddServiceAccount` (tabela, RLS, grant só de leitura, check de auditoria)
+- [x] `AccessTokenClaims`/`TokenIssuer`: variante de serviço (`client_id`, `token_use`, sem `fid`), com invariante própria
+- [x] `Modules/M16ContasServico/TokenEndpoint.cs` + registo; middlewares (rota anónima, form-urlencoded)
+- [x] `seed-demo.sql`: `order-service` e `catalog-service`
+- [x] Testes: `M16ContasServicoTests.cs` (CA-NEW06.1 a .9, invariante do emissor e aplicação do seed; 17 casos), contra PostgreSQL e Redis reais
+- [x] Docs: `Alinhamento` §3.14, `Guia-Consumo` (passo 7), Postman (pasta 3.2), `catalog.js` (A17), `openapi.json`, README dos SDKs (`token_use`, `client_id`)
 
 ---
 
@@ -407,5 +407,5 @@ A contagem canónica de testes é atualizada no Guia a cada UT (linha de base: 4
 | QW-03 | `feat/ma/sdks-verificacao` | Concluída | #18 | Nenhum no repositório (ficheiros fora da solução) |
 | QW-04 | `feat/ma/openapi-swagger` | Concluída | #19 | 4 (`M15DocsTests`) → total 428 |
 | QW-01 | `feat/ma/login-auto-contexto` | Concluída | #20 | 13 (`AuthLoginAutoContextTests`) → total 441 |
-| NEW-06 | `feat/ma/client-credentials` | Por iniciar | — | — |
+| NEW-06 | `feat/ma/client-credentials` | Concluída | #21 | 17 (`M16ContasServicoTests`) → total 458 |
 | NEW-07 | `feat/ma/opentelemetry` | Por iniciar | — | — |

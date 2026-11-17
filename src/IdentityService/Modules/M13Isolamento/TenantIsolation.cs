@@ -22,6 +22,9 @@ public class TenantIsolation : ITenantIsolation
 
         modelBuilder.Entity<MemberRole>()
             .HasQueryFilter(e => context.AuthContext.BypassTenantFilter || context.TenantIsolationBypass || context.AuthContext.AllowedTenants.Contains(e.TenantId));
+
+        modelBuilder.Entity<ServiceAccount>()
+            .HasQueryFilter(e => context.AuthContext.BypassTenantFilter || context.TenantIsolationBypass || context.AuthContext.AllowedTenants.Contains(e.TenantId));
     }
 
     public IReadOnlyList<IInterceptor> CreateInterceptors(IServiceProvider requestServices)

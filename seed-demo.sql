@@ -160,3 +160,19 @@ ON CONFLICT (tenant_member_id, role_id) DO NOTHING;
 UPDATE role
 SET permissions = array_cat(permissions, '{produtos:criar}'::text[])
 WHERE name = 'BUYER_OPERATOR' AND NOT (permissions @> '{produtos:criar}');
+
+-- 8. Contas de Serviço de Demonstração (NEW-06, Client Credentials)
+-- client_secret de demonstração = mesma senha padrão das personas (hash Argon2id acima).
+-- Em ambientes reais, gere um segredo aleatório de 32 bytes por conta e guarde apenas o hash.
+INSERT INTO service_account (id, client_id, client_secret_hash, tenant_id, role_id, status, created_at, updated_at)
+VALUES
+    -- order-service atua como comprador da Matriz
+    ('01900000-0000-7000-8000-000000000401', 'order-service', '$argon2id$v=19$m=19456,t=2,p=1$7m2IQEyIfIzFPA0zM1SDWg==$7Z8NHKBD22ZikghTgYpEIHOR2kfHNYnJTr6wniv5InM=', '01900000-0000-7000-8000-000000000010', '01900000-0000-7000-8000-000000000001', 'ACTIVE', '2026-01-01T00:00:00Z', '2026-01-01T00:00:00Z'),
+    -- catalog-service atua como fornecedor da Matriz
+    ('01900000-0000-7000-8000-000000000402', 'catalog-service', '$argon2id$v=19$m=19456,t=2,p=1$7m2IQEyIfIzFPA0zM1SDWg==$7Z8NHKBD22ZikghTgYpEIHOR2kfHNYnJTr6wniv5InM=', '01900000-0000-7000-8000-000000000010', '01900000-0000-7000-8000-000000000002', 'ACTIVE', '2026-01-01T00:00:00Z', '2026-01-01T00:00:00Z')
+ON CONFLICT (client_id) DO UPDATE SET
+    client_secret_hash = EXCLUDED.client_secret_hash,
+    tenant_id = EXCLUDED.tenant_id,
+    role_id = EXCLUDED.role_id,
+    status = EXCLUDED.status,
+    updated_at = NOW();

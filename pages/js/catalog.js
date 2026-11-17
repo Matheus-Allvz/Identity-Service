@@ -180,6 +180,24 @@ export const ENDPOINT_CATALOG = [
     body: null,
     summary: 'Devolve o contexto ativo do token (tenant, escopo, papéis, permissões) sem decodificar o JWT no cliente.'
   },
+  {
+    id: 'a17-service-token',
+    code: 'A17',
+    category: 'Autenticação & Sessão B2B',
+    name: 'Token de Serviço M2M (/api/v1/auth/token)',
+    method: 'POST',
+    path: '/api/v1/auth/token',
+    authRequired: false,
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: {
+      grant_type: 'client_credentials',
+      client_id: 'order-service',
+      client_secret: 'SenhaForte@2026!'
+    },
+    summary: 'Client Credentials (RFC 6749 §4.4): emite JWT RS256 para um serviço, com token_use=service e sem refresh token.'
+  },
   // --- GOVERNANÇA DE TENANTS & MEMBROS ---
   {
     id: 'a09-create-tenant',
