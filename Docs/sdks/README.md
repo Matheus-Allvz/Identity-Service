@@ -83,6 +83,10 @@ mux.Handle("/ofertas", auth(b2bauth.RequireScope("SUPPLIER")(b2bauth.RequirePerm
 | `permissions` | string[] | Permissões no formato `<recurso>:<acao>` |
 | `fid` | UUID | Família da sessão (ausente em impersonation) |
 | `act` | `{sub, ticket_id}` | Só em impersonation (RFC 8693): `act.sub` é o agente de suporte |
+| `token_use` | string | `service` em tokens de serviço (Client Credentials); ausente em tokens de utilizador |
+| `client_id` | string | Só em tokens de serviço: identificador da conta de serviço (o `sub` é o id dela) |
+
+Tokens de serviço não têm `fid` nem `act`. Os helpers validam-nos como qualquer outro token; para tratar serviços de forma diferente, leia a claim `token_use` no payload.
 
 Em visão `MACRO_GROUP`, filtre os dados por `allowed_tenants`, não por `tenant_id` (que é `null`).
 

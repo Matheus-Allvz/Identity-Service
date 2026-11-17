@@ -13,4 +13,6 @@ public record AccessTokenClaims(
     OperationalScope? ActiveScope,
     IReadOnlyList<string> Roles,
     IReadOnlyList<string> Permissions,
-    ActorClaim? Act = null);
+    ActorClaim? Act = null,
+    // NEW-06: preenchido apenas em tokens de serviço (client credentials); emite client_id e token_use=service.
+    string? ServiceClientId = null);

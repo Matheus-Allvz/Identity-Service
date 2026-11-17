@@ -155,6 +155,17 @@ curl -s -X POST https://identity.matheus-alves.dev/api/v1/auth/introspect \
 
 ---
 
+### Passo 7: Token de Serviço (Máquina a Máquina)
+Para chamadas entre serviços ou rotinas sem utilizador, use Client Credentials:
+```bash
+curl -s -X POST https://identity.matheus-alves.dev/api/v1/auth/token \
+  -d grant_type=client_credentials \
+  -d client_id=order-service \
+  -d client_secret='SenhaForte@2026!' | jq .
+```
+> Devolve `access_token` (900 s), sem refresh token. O JWT traz `token_use: "service"` e `client_id`, além de `tenant_id`, `active_scope`, `roles` e `permissions` do papel da conta. Contas de demonstração: `order-service` (comprador da Matriz) e `catalog-service` (fornecedor da Matriz).
+
+---
 ## 4-B. Validar o Token no Seu Microsserviço (SDKs)
 
 Não é preciso implementar criptografia RSA: copie o ficheiro da sua stack de [`Docs/sdks/`](sdks/README.md) e instale a dependência indicada.

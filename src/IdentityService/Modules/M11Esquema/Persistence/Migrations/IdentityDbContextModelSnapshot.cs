@@ -94,7 +94,7 @@ namespace IdentityService.Modules.M11Esquema.Persistence.Migrations
 
                     b.ToTable("auth_audit_log", null, t =>
                         {
-                            t.HasCheckConstraint("ck_auth_audit_log_event_type", "event_type IN ('LOGIN_SUCCESS','LOGIN_FAILED','USER_LOCKED','CONTEXT_SWITCHED','TOKEN_REFRESHED','TOKEN_REUSE_DETECTED','LOGOUT','IMPERSONATION_STARTED','TENANT_CREATED','MEMBER_ADDED','TENANT_STATUS_CHANGED','USER_STATUS_CHANGED')");
+                            t.HasCheckConstraint("ck_auth_audit_log_event_type", "event_type IN ('LOGIN_SUCCESS','LOGIN_FAILED','USER_LOCKED','CONTEXT_SWITCHED','TOKEN_REFRESHED','TOKEN_REUSE_DETECTED','LOGOUT','IMPERSONATION_STARTED','TENANT_CREATED','MEMBER_ADDED','TENANT_STATUS_CHANGED','USER_STATUS_CHANGED','SERVICE_TOKEN_ISSUED')");
 
                             t.HasCheckConstraint("ck_auth_audit_log_ip_address", "char_length(ip_address) BETWEEN 2 AND 45");
 
@@ -432,6 +432,72 @@ namespace IdentityService.Modules.M11Esquema.Persistence.Migrations
                             t.HasCheckConstraint("ck_role_permissions", "cardinality(permissions) >= 1 AND array_to_string(permissions, ',') ~ '^[a-z_]+:[a-z_]+(,[a-z_]+:[a-z_]+)*$' AND char_length(array_to_string(permissions, ',')) - char_length(replace(array_to_string(permissions, ','), ',', '')) = cardinality(permissions) - 1");
 
                             t.HasCheckConstraint("ck_role_scope", "scope IN ('BUYER','SUPPLIER','CARRIER','TENANT_ADMIN')");
+                        });
+                });
+
+            modelBuilder.Entity("IdentityService.Modules.M11Esquema.Persistence.Entities.ServiceAccount", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("ClientId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("client_id");
+
+                    b.Property<string>("ClientSecretHash")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("client_secret_hash");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("role_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasDefaultValue("ACTIVE")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_service_account");
+
+                    b.HasIndex("ClientId")
+                        .IsUnique()
+                        .HasDatabaseName("uq_service_account_client_id");
+
+                    b.HasIndex("RoleId")
+                        .HasDatabaseName("ix_service_account_role_id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("ix_service_account_tenant_id");
+
+                    b.ToTable("service_account", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_service_account_client_id", "client_id ~ '^[a-z0-9][a-z0-9-]{2,63}$'");
+
+                            t.HasCheckConstraint("ck_service_account_client_secret_hash", "starts_with(client_secret_hash, '$argon2id$v=19$m=19456,t=2,p=1$')");
+
+                            t.HasCheckConstraint("ck_service_account_status", "status IN ('ACTIVE','SUSPENDED')");
                         });
                 });
 
@@ -801,6 +867,27 @@ namespace IdentityService.Modules.M11Esquema.Persistence.Migrations
                     b.Navigation("ReplacedBy");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("IdentityService.Modules.M11Esquema.Persistence.Entities.ServiceAccount", b =>
+                {
+                    b.HasOne("IdentityService.Modules.M11Esquema.Persistence.Entities.Role", "Role")
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_service_account_role_id");
+
+                    b.HasOne("IdentityService.Modules.M11Esquema.Persistence.Entities.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_service_account_tenant_id");
+
+                    b.Navigation("Role");
+
+                    b.Navigation("Tenant");
                 });
 
             modelBuilder.Entity("IdentityService.Modules.M11Esquema.Persistence.Entities.Tenant", b =>

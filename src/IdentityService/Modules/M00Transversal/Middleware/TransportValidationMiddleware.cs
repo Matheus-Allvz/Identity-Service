@@ -65,7 +65,9 @@ public class TransportValidationMiddleware
             if (totalRead > 0)
             {
                 var contentType = context.Request.ContentType;
-                var isIntrospect = path.Equals("/api/v1/auth/introspect", StringComparison.OrdinalIgnoreCase);
+                // introspect (RFC 7662) e token (RFC 6749 §4.4) aceitam também form-urlencoded.
+                var isIntrospect = path.Equals("/api/v1/auth/introspect", StringComparison.OrdinalIgnoreCase) ||
+                                   path.Equals("/api/v1/auth/token", StringComparison.OrdinalIgnoreCase);
                 var isMatch = isIntrospect
                     ? (!string.IsNullOrWhiteSpace(contentType) && IntrospectContentTypeRegex.IsMatch(contentType.Trim()))
                     : (!string.IsNullOrWhiteSpace(contentType) && ContentTypeRegex.IsMatch(contentType.Trim()));

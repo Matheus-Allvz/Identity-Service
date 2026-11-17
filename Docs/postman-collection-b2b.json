@@ -563,6 +563,57 @@
       ]
     },
     {
+      "name": "3.2 Token de Serviço (Client Credentials)",
+      "item": [
+        {
+          "name": "Emitir Token M2M - order-service",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "grant_type", "value": "client_credentials" },
+                { "key": "client_id", "value": "order-service" },
+                { "key": "client_secret", "value": "{{defaultPassword}}" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/token",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "token"]
+            },
+            "description": "OAuth 2.0 Client Credentials (RFC 6749 §4.4) para chamadas serviço a serviço, workers e rotinas batch. Aceita também JSON e Authorization: Basic. O token leva token_use=service e client_id, não tem refresh token e não é aceite pelos endpoints protegidos do próprio Identity."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code é 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "pm.test(\"Devolve Bearer de 900s sem refresh token\", function () {",
+                  "    pm.expect(json.token_type).to.eql(\"Bearer\");",
+                  "    pm.expect(json.expires_in).to.eql(900);",
+                  "    pm.expect(json).to.not.have.property(\"refresh_token\");",
+                  "});",
+                  "var claims = JSON.parse(atob(json.access_token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));",
+                  "pm.test(\"Token identifica o serviço\", function () {",
+                  "    pm.expect(claims.token_use).to.eql(\"service\");",
+                  "    pm.expect(claims.client_id).to.eql(\"order-service\");",
+                  "    pm.expect(claims.tenant_id).to.eql(pm.collectionVariables.get(\"matrizTenantId\"));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "4. Renovação de Sessão (Refresh)",
       "item": [
         {

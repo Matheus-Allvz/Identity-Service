@@ -68,7 +68,15 @@ public class TokenIssuer : ITokenIssuer
         }
 
         // RN-96: Validate impersonation invariants
-        if (claims.Act != null)
+        if (claims.ServiceClientId != null)
+        {
+            // NEW-06: token de serviço não tem sessão (fid) nem delegação (act) e atua sempre num único tenant.
+            if (claims.FamilyId != null || claims.Act != null || claims.ViewMode != ViewMode.SINGLE)
+            {
+                throw new ArgumentException("Service tokens must be SINGLE and omit family_id and act.");
+            }
+        }
+        else if (claims.Act != null)
         {
             if (claims.FamilyId != null)
             {
@@ -108,7 +116,8 @@ public class TokenIssuer : ITokenIssuer
             claims.ActiveScope,
             sortedRoles,
             sortedPermissions,
-            claims.Act);
+            claims.Act,
+            claims.ServiceClientId);
 
         var issuer = _configuration["JWT_ISSUER"] ?? "identity-service";
         var audience = _configuration["JWT_AUDIENCE"] ?? "b2b-platform";
@@ -131,7 +140,12 @@ public class TokenIssuer : ITokenIssuer
             ["permissions"] = sortedPermissions.ToArray()
         };
 
-        if (claims.Act != null)
+        if (claims.ServiceClientId != null)
+        {
+            payloadDict["client_id"] = claims.ServiceClientId;
+            payloadDict["token_use"] = "service";
+        }
+        else if (claims.Act != null)
         {
             payloadDict["act"] = new Dictionary<string, object?>
             {

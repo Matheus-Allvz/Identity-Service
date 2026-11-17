@@ -516,6 +516,32 @@ O contrato HTTP completo do `Identity-Service` está publicado em formato de má
 - **Gateway:** as duas rotas ficam fora do prefixo `/api/v1/`. Só precisam de regra no gateway se a equipa quiser expô-las por ele; para consulta, basta o endereço público do serviço.
 
 ---
+### 3.14. D-ECO-14: Autenticação Máquina a Máquina (`POST /api/v1/auth/token`)
+
+Chamadas sem utilizador humano (um serviço a chamar outro, workers assíncronos, rotinas batch) usam o fluxo **OAuth 2.0 Client Credentials** (RFC 6749 §4.4). Cada serviço tem uma **conta de serviço** com `client_id`, segredo, um tenant e um papel.
+
+```bash
+curl -s -X POST https://identity.matheus-alves.dev/api/v1/auth/token \
+  -d grant_type=client_credentials \
+  -d client_id=order-service \
+  -d client_secret='<segredo>'
+```
+
+```json
+{ "access_token": "<JWT RS256>", "token_type": "Bearer", "expires_in": 900 }
+```
+
+- **Formas de envio:** `application/x-www-form-urlencoded` (padrão OAuth) ou `application/json`; credenciais no corpo ou em `Authorization: Basic base64(client_id:client_secret)`.
+- **Sem refresh token:** o serviço guarda o token em memória e pede outro pouco antes dos 900 s. Não peça um token por requisição.
+- **Claims:** as mesmas de um token `SINGLE` (`tenant_id`, `group_id`, `allowed_tenants`, `active_scope`, `roles`, `permissions`), com `sub` = id da conta de serviço, **mais** `client_id` e `token_use: "service"`, e **sem** `fid` nem `act`.
+- **Validação nos consumidores:** nada muda. O token é RS256 com os mesmos `iss`, `aud` e JWKS, por isso os SDKs de [`Docs/sdks/`](sdks/README.md) já o aceitam. Para distinguir humano de serviço, leia `token_use` (ausente = utilizador).
+- **Autorização:** o serviço recebe exatamente as permissões do papel configurado na conta. Não há permissão implícita por ser serviço.
+- **Erros (RFC 9457, não o formato `{"error": ...}` do OAuth):** `400 ERR-VAL-001` (`grant_type` inválido ou credenciais ausentes), `401 ERR-AUTH-001` (cliente desconhecido, segredo errado ou conta suspensa, indistinguíveis), `403 ERR-CTX-002` (tenant suspenso), `403 ERR-CTX-003` (escopo inativo).
+- **Limite deliberado:** o token de serviço **não** é aceite pelos endpoints protegidos do próprio `Identity-Service` (gestão de tenants, membros, troca de contexto). Serve para os microsserviços de negócio.
+- **Revogação:** suspender a conta impede novas emissões e os tokens já emitidos expiram em até 15 minutos; suspender o tenant bloqueia de imediato pela denylist.
+- **Provisionamento:** as contas são criadas administrativamente. No ambiente de demonstração existem `order-service` (papel `BUYER_OPERATOR` na Matriz) e `catalog-service` (papel `SUPPLIER_SALES` na Matriz), com o segredo igual à senha padrão das personas. Para uma conta do seu serviço, peça à equipa de identidade informando tenant e papel.
+
+---
 ## 4. Guia de Ação Rápida para as Equipes Parceiras
 
 ### 4.1. Equipe 9 (`portal-b2b-kit-infra`)
