@@ -18,6 +18,7 @@ public static class ModuleRegistration
     {
         app.MapPost("/api/v1/auth/login", LoginEndpoint.HandleAsync);
         app.MapPost("/api/v1/auth/introspect", IntrospectEndpoint.HandleAsync).AllowAnonymous();
+        app.MapGet("/api/v1/auth/me", MeEndpoint.Handle);
         return app;
     }
 }

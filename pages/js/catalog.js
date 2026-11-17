@@ -134,6 +134,20 @@ export const ENDPOINT_CATALOG = [
     summary: 'Emite token temporário sob supervisão de suporte com claim act.'
   },
 
+  {
+    id: 'a14-me',
+    code: 'A14',
+    category: 'Autenticação & Sessão B2B',
+    name: 'Inspecionar Identidade (/api/v1/auth/me)',
+    method: 'GET',
+    path: '/api/v1/auth/me',
+    authRequired: true,
+    headers: {
+      Authorization: 'Bearer {{token}}'
+    },
+    body: null,
+    summary: 'Devolve o contexto ativo do token (tenant, escopo, papéis, permissões) sem decodificar o JWT no cliente.'
+  },
   // --- GOVERNANÇA DE TENANTS & MEMBROS ---
   {
     id: 'a09-create-tenant',
