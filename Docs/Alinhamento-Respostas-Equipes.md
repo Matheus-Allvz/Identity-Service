@@ -216,7 +216,7 @@ sequenceDiagram
 ## 3. Respostas Técnicas para as Outras Equipes
 
 ### 3.1 Grupo 2 (`davicalvarenga/Sistema-MicServ-SD` — Produtos e Fornecimentos)
-**Referência:** Issue #2 (`Integração com autenticação`), Issue #13 (`Empresa com vários perfis / P-31`), Issue #27 (`Escopo de criação de produtos`), Issue #28 (`Contrato de eventos Kafka`), Issue #29 (`Enum branch_type`) e Issue #31 (`Códigos de erro e SDK`).
+**Referência:** Issues #2, #13, #23, #27, #28, #29, #30, #31, #32, #33, #34 e #35.
 
 #### A. Como validar o token JWT RS256 (Substituição de HS256) e Códigos Oficiais de Erro (Issue #31)
 O uso de HS256 exigia compartilhar o segredo `JWT_SECRET_KEY` entre todos os serviços, violando a integridade do sistema. O Identity-Service emite tokens assinados com **RS256** (RSA-2048) e disponibiliza as chaves públicas em `/.well-known/jwks.json`.
@@ -363,6 +363,55 @@ Todos os metadados de governança, correlação e integridade são enviados nos 
 Se o microsserviço consumidor (ex: `fornecimentos-service`, `demanda-service`) utiliza classes internas que esperam um envelope com campos como `eventId`, `eventType` e `payload`:
 - **Opção 1 (Recomendada - Deserialização Direta):** Desserializar o JSON do body diretamente na classe/DTO do Tenant (`event_id`, `tenant_id`, `cnpj`, `legal_name`, `branch_type`, `scopes`, etc.), eliminando a camada intermediária de envelope.
 - **Opção 2 (Adaptação para Envelope):** Caso a arquitetura do consumidor exija manter a estrutura de envelope, mapear os dados lendo os atributos de rastreabilidade diretamente dos **Kafka Headers** (`headers["event_id"]`, `headers["correlation_id"]`) e associar o corpo recebido ao campo `payload` do envelope.
+
+#### D. Matriz Canônica de Respostas Técnicas Formais às Issues #23 a #35 (Homologação Inter-Serviços)
+
+Em resposta à bateria de alinhamentos e revisões técnicas abertas pelo Grupo 2 no repositório `davicalvarenga/Sistema-MicServ-SD`, consolidamos abaixo as resoluções técnicas formais, decisões de arquitetura e orientações de interoperabilidade do `Identity-Service`:
+
+##### 1. Issue #23: Confirmação de `iss`, `aud`, JWKS e Acesso ao Repositório
+- **Claims Canônicas:** Confirmamos que os valores emitidos nos tokens JWT pelo Identity-Service são estritamente `iss = "identity-service"` e `aud = "b2b-platform"`.
+- **Token Pré-Contexto no Login:** Confirmamos que o token emitido no `POST /api/v1/auth/login` (quando não utilizado o auto-contexto) carrega `tenant_id = null`, `active_scope = null` e `view_mode = "NONE"`. Elogiamos e validamos integralmente a postura técnica do `Produtos-Service` em recusar requisições de negócio com esse token retornando `HTTP 403 Forbidden` (`CONTEXTO_NAO_SELECIONADO`), pois nenhuma operação comercial ou de catálogo pode ser admitida sem a definição explícita do tenant e escopo de atuação do usuário.
+- **Repositório Público:** O repositório oficial do serviço é [`https://github.com/Matheus-Allvz/Identity-Service`](https://github.com/Matheus-Allvz/Identity-Service), encontrando-se 100% público e acessível para consulta de código-fonte, contratos e documentações.
+- **Disponibilidade do JWKS:** A rota `GET /.well-known/jwks.json` está plenamente operacional, servindo o conjunto de chaves públicas ativas com o identificador `kid: key-2026-01` e cabeçalho `Cache-Control: public, max-age=3600`, viabilizando cache público em gateways e validações offline de altíssimo desempenho.
+
+##### 2. Issue #27: Restrição de Cadastro de Produtos Estritamente a `SUPPLIER`
+- **Validação da Regra de Negócio:** Agradecemos profundamente a atenção aos detalhes e conferência dos contratos inter-serviços. Confirmamos que a regra implementada pelo `Produtos-Service` é a correta: **apenas o escopo `SUPPLIER` possui prerrogativa para cadastrar, alterar e excluir produtos**. O papel `BUYER_OPERATOR` opera estritamente como comprador, possuindo acesso exclusivo de consulta ao catálogo e à vitrine de ofertas para criação de demandas e participação em leilões.
+- **Retificação Realizada:** A decisão D-ECO-11 em `Docs/Alinhamento-Ecossistema-B2B.md` e a carga demonstrativa `seed-demo.sql` foram formalmente retificadas no **PR #23 (commit `3cc4cce`)**, removendo em definitivo a permissão `produtos:criar` do perfil `BUYER_OPERATOR`.
+
+##### 3. Issue #28: Arquitetura de Eventos Kafka e Formato de `empresa_cadastrada`
+- **Padrão Transactional Outbox:** O Identity-Service adota arquitetura de mensageria baseada em Outbox Transacional com separação estrita de camadas. Todos os metadados de governança, correlação e auditoria criptográfica (`event_id`, `tenant_id`, `group_id`, `initiator_user_id`, `correlation_id`, `context_jws`) trafegam nos **Kafka Headers** nativos. O corpo da mensagem (`body`) trafega em JSON com nomenclatura `snake_case`, espelhando o schema relacional do banco de dados e otimizando a serialização.
+- **Interoperabilidade:** O formato foi formalmente documentado na seção 3.5 do `Docs/Alinhamento-Ecossistema-B2B.md` (PR #23). Para consumidores que utilizam classes internas acopladas a envelopes padrão de kit (`eventId`, `eventType`, `payload`), recomendamos deserializar o payload diretamente dos dados de domínio ou extrair os metadados a partir dos headers nativos da mensagem Kafka.
+
+##### 4. Issue #29: Enum `branch_type` (`HQ` vs `HEADQUARTERS`)
+- **Valor Canônico:** Confirmamos que os valores válidos e canônicos no banco de dados e no evento `empresa_cadastrada` são estritamente **`HQ`** (Matriz) e **`BRANCH`** (Filial), conforme definido na entidade e no enum `BranchType.cs`.
+- **Retificação Documental:** O exemplo de payload na documentação que continha `HEADQUARTERS` foi corrigido para `"branch_type": "HQ"` no **PR #23 (commit `3cc4cce`)**.
+
+##### 5. Issue #30: Formato do Corpo de Erro (RFC 9457 vs Padrão do Kit)
+- **Adoção do Padrão Internacional RFC 9457:** O Identity-Service padronizou suas respostas de erro sob a norma **RFC 9457 (`application/problem+json`)** da IETF, expondo os atributos estruturados `type`, `title`, `status`, `code`, `detail` e `correlation_id`.
+- **Compatibilidade e Convergência:** Compreendemos a adoção do padrão do kit (`codigo` e `correlationId`) pelos demais serviços. Para assegurar interoperabilidade sem exigir retrabalho abrupto de contratos, recomendamos que os componentes clientes/gateways adotem tolerância ou fallback transparente em seus deserializadores. Mantemo-nos totalmente à disposição para colaborar com a equipe de Infraestrutura e QA na unificação formal dos contratos de erro da plataforma.
+
+##### 6. Issue #31: Códigos de Erro no Exemplo FastAPI e SDK Oficial
+- **Alinhamento com o Catálogo:** Agradecemos o apontamento técnico. Os códigos de erro exibidos no exemplo da seção 3.1 foram retificados para os códigos oficiais da plataforma: `ERR-AUTH-002` (401 Unauthorized / Token ausente, inválido, expirado ou revogado) e `ERR-CTX-007` (403 Forbidden / Violação de isolamento de contexto ou escopo insuficiente).
+- **Disponibilidade do SDK:** O SDK oficial pronto para uso, devidamente validado e testado, encontra-se disponível em [`Docs/sdks/b2b_auth_fastapi.py`](sdks/b2b_auth_fastapi.py), contendo todas as tipagens, verificadores e mapeamentos RFC 9457 prontos para integração.
+
+##### 7. Issue #32: Tolerância de Relógio na Validação do JWT (Clock Skew / Leeway)
+- **Justificativa da Recomendação:** A sugestão de `leeway=60` no SDK foi concebida como salvaguarda operacional em ambientes distribuídos heterogêneos para evitar o descarte prematuro de tokens legítimos por milissegundos de dessincronização entre contêineres Docker.
+- **Validação do Modelo Estrito:** Apoiamos integralmente a decisão do Grupo 2: caso os nós e contêineres do ambiente possuam sincronização de relógio rigorosa via NTP, manter `leeway=0` é seguro, restritivo e perfeitamente aceito pelo Identity-Service.
+
+##### 8. Issue #33: Tratamento de Tokens com Visão de Grupo Econômico (`MACRO_GROUP`)
+- **Validação da Proposta Técnica:** Parabenizamos o Grupo 2 pela proposta arquitetural, a qual consideramos excelente e totalmente aderente ao modelo multi-tenant:
+  - **Consultas (Catálogo e Vitrine):** Devem aceitar tokens em visão `MACRO_GROUP`, permitindo à holding consolidar a visualização de produtos e ofertas de todas as empresas do grupo.
+  - **Mutações (Cadastro e Alteração de Produtos e Ofertas):** Devem recusar tokens em visão `MACRO_GROUP` com `403 Forbidden` (código semântico sugerido: `CONTEXTO_DE_GRUPO_NAO_PERMITIDO` ou `ERR-CTX-007`), orientando o usuário a realizar o `switch-context` para uma filial específica (`SINGLE`), já que cada produto ou fornecimento exige responsabilidade fiscal, estoque e CNPJ proprietário estrito.
+
+##### 9. Issue #34: Revogação Imediata de Tokens e Modelo de Validação Descentralizado
+- **Tradeoff de Arquitetura:** A validação offline de tokens via chaves públicas (JWKS) foi intencionalmente priorizada para garantir **latência submilisegundo e zero dependência de rede inter-serviços**. Por projeto, tokens JWT possuem tempo de vida curto (TTL máximo de 15 minutos).
+- **Estratégias de Revogação Imediata:** Para situações emergenciais que demandem bloqueio antes do término natural do TTL:
+  1. **Consumo de Eventos de Bloqueio (Recomendado):** Os serviços podem subscrever o tópico Kafka `tenant_bloqueado` (ou `usuario_bloqueado`) emitido pelo Identity-Service, atualizando uma tabela local em memória de entidades suspensas.
+  2. **Introspecção Síncrona via Redis (Alta Criticidade):** Para rotas de extrema sensibilidade financeira, os microsserviços podem invocar o endpoint síncrono `POST /api/v1/auth/introspect` (RFC 7662), que consulta em tempo real a denylist atômica do Redis no Identity-Service.
+
+##### 10. Issue #35: Prevenção de Auto-Negociação (Self-Dealing) e Propagação de `grupoId`
+- **Apoio à Inclusão de `grupoId`:** Apoiamos com entusiasmo a proposta do Grupo 2 de incluir o campo `grupoId` (extraído da claim `group_id` do token do fornecedor) no evento `fornecimento_criado` e persistência correspondente.
+- **Separação de Responsabilidades:** Concordamos integralmente que as regras de matching, validação de regras antitruste e trava transacional de auto-negociação (impedindo que empresas do mesmo grupo econômico comprem e vendam entre si) pertencem estritamente aos microsserviços de Negociação, Leilão e Mercado, cabendo ao Identity-Service e ao Produtos-Service fornecer a rastreabilidade cadastral e a propagação confiável dos identificadores de grupo.
 
 ---
 
