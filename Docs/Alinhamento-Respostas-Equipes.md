@@ -322,27 +322,41 @@ Na vida real, uma empresa agrícola é fornecedora, compradora e contratante de 
      - Exemplo em fornecedores (`SUPPLIER_SALES` ou `SUPPLIER_OPERATOR`): `["produtos:criar", "fornecimento:publicar"]`.
      - Exemplo em compradores (`BUYER_OPERATOR`): `["demanda:criar", "demanda:listar", "leilao:participar", "pedido:visualizar"]`. Conforme acordado na **Issue #27**, o endpoint `POST /api/v1/produtos` é restrito a `["SUPPLIER"]`, de modo que compradores não possuem a permissão `produtos:criar`.
 
-#### C. Contrato do Evento Kafka `empresa_cadastrada` emitido pelo Outbox (Issues #28 e #29)
+#### C. Contrato do Evento Kafka `empresa_cadastrada` emitido pelo Outbox (Arquitetura Híbrida - Issues #28 e #29)
 
-O `Identity-Service` publica eventos através do padrão Transactional Outbox (`EventOutbox.cs`), gravando transacionalmente com o cadastro da empresa e despachando para o tópico `empresa_cadastrada`.
+O `Identity-Service` publica eventos através do padrão Transactional Outbox (`EventOutbox.cs`), gravando transacionalmente com o cadastro da empresa e despachando para o tópico `empresa_cadastrada` utilizando a **Arquitetura Híbrida de Máxima Interoperabilidade**:
 
 **Chave da Mensagem (Kafka Key):** String do `tenant_id` (UUID formatado com hífens).
 
-**Corpo da Mensagem (Payload JSON direto em snake_case):**
-Diferente de um modelo com envelope embutido no corpo, o `Identity-Service` emite o payload da entidade diretamente no corpo da mensagem em formato `snake_case`, em conformidade com o padrão de alta performance do ecossistema:
+**Corpo da Mensagem (Payload JSON - Envelope Híbrido com camelCase e Fallback Direto):**
+Para conciliar o padrão oficial do Kit de Infraestrutura da turma (`camelCase`) com a simplicidade de consumo direto, o payload é emitido no envelope canônico com o objeto `payload`, contendo também espelhamento dos campos na raiz para compatibilidade total:
 ```json
 {
-  "event_id": "01900000-0000-7000-9000-000000000001",
+  "eventId": "01900000-0000-7000-9000-000000000001",
+  "eventType": "empresa_cadastrada",
+  "eventVersion": "1.0",
+  "timestamp": "2026-11-09T20:00:00Z",
+  "source": "identity-service",
+  "correlationId": "01900000-0000-7000-9000-000000000099",
+  "aggregateId": "01900000-0000-7000-8000-000000000010",
+  "payload": {
+    "tenantId": "01900000-0000-7000-8000-000000000010",
+    "groupId": "01900000-0000-7000-8000-000000000001",
+    "cnpj": "11222333000181",
+    "legalName": "AgroBrasil Matriz e Exportadora S.A.",
+    "branchType": "HQ",
+    "geoLat": -15.794229,
+    "geoLng": -47.882166,
+    "status": "ACTIVE",
+    "scopes": ["BUYER", "SUPPLIER", "TENANT_ADMIN"],
+    "createdAt": "2026-11-09T20:00:00Z"
+  },
   "tenant_id": "01900000-0000-7000-8000-000000000010",
   "group_id": "01900000-0000-7000-8000-000000000001",
   "cnpj": "11222333000181",
   "legal_name": "AgroBrasil Matriz e Exportadora S.A.",
   "branch_type": "HQ",
-  "geo_lat": -15.794229,
-  "geo_lng": -47.882166,
-  "status": "ACTIVE",
-  "scopes": ["BUYER", "SUPPLIER", "TENANT_ADMIN"],
-  "created_at": "2026-11-09T20:00:00Z"
+  "status": "ACTIVE"
 }
 ```
 
@@ -359,10 +373,9 @@ Todos os metadados de governança, correlação e integridade são enviados nos 
 - `correlation_id`: Identificador de correlação ponta a ponta (`X-Correlation-Id`).
 - `context_jws`: Assinatura criptográfica JWS compacta (RS256) emitida pelo Identity-Service com claims de contexto, verificável via JWKS.
 
-**Orientação para Consumidores que Adotam Padrão Envelope (Issue #28):**
-Se o microsserviço consumidor (ex: `fornecimentos-service`, `demanda-service`) utiliza classes internas que esperam um envelope com campos como `eventId`, `eventType` e `payload`:
-- **Opção 1 (Recomendada - Deserialização Direta):** Desserializar o JSON do body diretamente na classe/DTO do Tenant (`event_id`, `tenant_id`, `cnpj`, `legal_name`, `branch_type`, `scopes`, etc.), eliminando a camada intermediária de envelope.
-- **Opção 2 (Adaptação para Envelope):** Caso a arquitetura do consumidor exija manter a estrutura de envelope, mapear os dados lendo os atributos de rastreabilidade diretamente dos **Kafka Headers** (`headers["event_id"]`, `headers["correlation_id"]`) e associar o corpo recebido ao campo `payload` do envelope.
+**Orientação para Consumidores:**
+- **Consumo via Kit da Turma:** Acesse diretamente `msg.value["payload"]["tenantId"]` ou mapeie o DTO do kit.
+- **Consumo Direto:** Leia as propriedades do objeto diretamente sem necessidade de tratar o envelope.
 
 #### D. Matriz Canônica de Respostas Técnicas Formais às Issues #23 a #35 (Homologação Inter-Serviços)
 

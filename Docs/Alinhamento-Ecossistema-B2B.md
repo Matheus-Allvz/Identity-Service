@@ -358,26 +358,40 @@ rpk topic create usuario_bloqueado -p 3 -r 3
 rpk topic create sessao_comprometida -p 3 -r 3
 ```
 
-#### B. Contrato Canônico de `EV-01: empresa_cadastrada` (Resolução das Issues #28 e #29 do Grupo 2)
-Quando uma nova empresa/filial é cadastrada via `POST /api/v1/tenants`, o evento publicado em `empresa_cadastrada` é gravado transacionalmente na tabela `outbox_message` pelo `EventOutbox.cs` e despachado ao barramento Kafka, atendendo integralmente à demanda de dados do `fornecimentos-service` e `demanda-service`:
+#### B. Contrato Canônico Híbrido de `EV-01: empresa_cadastrada` (Resolução das Issues #28 e #29 do Grupo 2)
+Quando uma nova empresa/filial é cadastrada via `POST /api/v1/tenants`, o evento publicado em `empresa_cadastrada` é gravado transacionalmente na tabela `outbox_message` pelo `EventOutbox.cs` e despachado ao barramento Kafka utilizando a **Arquitetura Híbrida de Máxima Interoperabilidade**:
 
 **Chave da Mensagem (Kafka Key):** String do `tenant_id` em formato UUID canônico com hífens (ex.: `"0194eb82-7000-7000-a000-000000000001"`).
 
-**Corpo da Mensagem (Payload JSON - snake_case direto):**
-O corpo da mensagem transporta diretamente a entidade do evento serializada em JSON `snake_case`, sem envelopes artificiais aninhados:
+**Corpo da Mensagem (Payload JSON - Envelope Híbrido):**
+O corpo da mensagem implementa o envelope canônico do Kit de Infraestrutura da turma (`camelCase`) contendo o objeto `payload`, além de manter compatibilidade direta com consumidores que leem propriedades no nível raiz:
 ```json
 {
-  "event_id": "0194eb82-7000-7000-b000-000000000001",
+  "eventId": "0194eb82-7000-7000-b000-000000000001",
+  "eventType": "empresa_cadastrada",
+  "eventVersion": "1.0",
+  "timestamp": "2026-11-18T12:00:00Z",
+  "source": "identity-service",
+  "correlationId": "0194eb82-7000-7000-9000-000000000099",
+  "aggregateId": "0194eb82-7000-7000-a000-000000000001",
+  "payload": {
+    "tenantId": "0194eb82-7000-7000-a000-000000000001",
+    "groupId": "0194eb82-7000-7000-9000-000000000001",
+    "cnpj": "11222333000181",
+    "legalName": "AgroBrasil Insumos e Fornecimentos S.A.",
+    "branchType": "HQ",
+    "geoLat": -12.971400,
+    "geoLng": -38.501400,
+    "status": "ACTIVE",
+    "scopes": ["BUYER", "SUPPLIER", "TENANT_ADMIN"],
+    "createdAt": "2026-11-18T12:00:00Z"
+  },
   "tenant_id": "0194eb82-7000-7000-a000-000000000001",
   "group_id": "0194eb82-7000-7000-9000-000000000001",
   "cnpj": "11222333000181",
   "legal_name": "AgroBrasil Insumos e Fornecimentos S.A.",
   "branch_type": "HQ",
-  "geo_lat": -12.971400,
-  "geo_lng": -38.501400,
-  "status": "ACTIVE",
-  "scopes": ["BUYER", "SUPPLIER", "TENANT_ADMIN"],
-  "created_at": "2026-11-02T14:30:00Z"
+  "status": "ACTIVE"
 }
 ```
 
@@ -385,9 +399,20 @@ O corpo da mensagem transporta diretamente a entidade do evento serializada em J
 > O valor emitido para matriz é estritamente `"HQ"` (e `"BRANCH"` para filial), alinhando 1:1 com o enum C# `BranchType.cs` (`HQ`, `BRANCH`) e com a constraint relacional do banco (`CHECK (branch_type IN ('HQ', 'BRANCH'))`). A denominação `"HEADQUARTERS"` não é utilizada.
 
 **Cabeçalhos da Mensagem (Kafka Headers de Rastreabilidade e Governança):**
-Os metadados de auditoria e segurança são transportados nos cabeçalhos nativos do Kafka:
-- `event_id`: Identificador único do evento (UUIDv7 gerado na persistência do outbox).
+Concomitantemente ao envelope JSON, os metadados de auditoria e segurança são transportados nos cabeçalhos nativos do Kafka:
+- `event_id`: Identificador único do evento (UUIDv7).
 - `tenant_id`: ID da empresa/tenant criada.
+- `group_id`: ID da holding/grupo econômico.
+- `initiator_user_id`: ID do usuário autenticado que originou a criação.
+- `actor_user_id`: ID do operador em caso de suporte/impersonation (ou ausente).
+- `acting_scope`: Escopo operacional do autor (`TENANT_ADMIN` ou `PLATFORM_ADMIN`).
+- `correlation_id`: Identificador de correlação (`X-Correlation-Id`).
+- `context_jws`: Assinatura criptográfica JWS RS256 de não-repúdio verificável via JWKS.
+
+**Como Consumir (Interoperabilidade Total):**
+- **Microsserviços que usam o Kit da Turma:** Leem diretamente `msg.value["payload"]["tenantId"]` ou mapeiam no DTO do kit com `camelCase`.
+- **Microsserviços que usam Desserialização Plana:** Podem ler as propriedades diretas (`tenant_id`, `status`).
+- **Roteadores e Tracing:** Acessam os cabeçalhos Kafka (`headers["correlation_id"]`, `headers["context_jws"]`) sem custo de parsing do corpo.
 - `group_id`: ID do grupo econômico associado.
 - `initiator_user_id`: ID do usuário que solicitou o cadastro.
 - `actor_user_id`: ID do operador que realizou a ação (em caso de impersonation).
