@@ -155,13 +155,7 @@ VALUES
     ('01900000-0000-7000-8000-000000000306', '01900000-0000-7000-8000-000000000010', '01900000-0000-7000-8000-000000000206', '01900000-0000-7000-8000-000000000004', '2026-01-01T00:00:00Z')
 ON CONFLICT (tenant_member_id, role_id) DO NOTHING;
 
--- 7. Afinação de Permissões das Personas de Demonstração (D-ECO-11)
--- Garante que BUYER_OPERATOR receba a permissão produtos:criar para cadastro de commodities
-UPDATE role
-SET permissions = array_cat(permissions, '{produtos:criar}'::text[])
-WHERE name = 'BUYER_OPERATOR' AND NOT (permissions @> '{produtos:criar}');
-
--- 8. Contas de Serviço de Demonstração (NEW-06, Client Credentials)
+-- 7. Contas de Serviço de Demonstração (NEW-06, Client Credentials)
 -- client_secret de demonstração = mesma senha padrão das personas (hash Argon2id acima).
 -- Em ambientes reais, gere um segredo aleatório de 32 bytes por conta e guarde apenas o hash.
 INSERT INTO service_account (id, client_id, client_secret_hash, tenant_id, role_id, status, created_at, updated_at)

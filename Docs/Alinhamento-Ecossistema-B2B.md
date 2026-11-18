@@ -249,14 +249,14 @@ def get_current_token_payload(credentials: HTTPAuthorizationCredentials = Securi
         logger.warning("Token de acesso expirado.")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail={"code": "ERR-AUTH-005", "message": "Token de acesso expirado."},
+            detail={"code": "ERR-AUTH-002", "message": "Token de acesso expirado."},
             headers={"WWW-Authenticate": "Bearer error=\"invalid_token\", error_description=\"Token has expired\""}
         )
     except (PyJWKClientError, InvalidTokenError) as err:
         logger.error(f"Falha na validação do token JWT: {str(err)}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail={"code": "ERR-AUTH-001", "message": "Token inválido ou assinatura não reconhecida."},
+            detail={"code": "ERR-AUTH-002", "message": "Token ausente, inválido ou assinatura não reconhecida."},
             headers={"WWW-Authenticate": "Bearer error=\"invalid_token\""}
         )
 
@@ -271,11 +271,14 @@ def require_scope(allowed_scopes: List[str]):
             logger.warning(f"Acesso negado: escopo ativo '{active_scope}' não está em {allowed_scopes}")
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail={"code": "ERR-AUTH-010", "message": f"Escopo ativo '{active_scope}' não autorizado para este recurso."}
+                detail={"code": "ERR-CTX-007", "message": f"Escopo ativo '{active_scope}' não autorizado para este recurso."}
             )
         return payload
     return scope_checker
 ```
+
+> [!NOTE]
+> **SDK Oficial Pronto:** Para evitar código duplicado em cada serviço, utilize o SDK oficial pronto e testado em [`Docs/sdks/b2b_auth_fastapi.py`](sdks/b2b_auth_fastapi.py), que já encapsula a tipagem do contexto (`AuthContext`), validações de escopo e os códigos de erro canônicos da RFC 9457 (`ERR-AUTH-002` e `ERR-CTX-007`).
 
 ---
 
@@ -355,12 +358,13 @@ rpk topic create usuario_bloqueado -p 3 -r 3
 rpk topic create sessao_comprometida -p 3 -r 3
 ```
 
-#### B. Contrato Canônico de `EV-01: empresa_cadastrada` (Resolução da Pendência P-12 do Grupo 2)
-Quando uma nova empresa/filial é cadastrada via `POST /api/v1/tenants`, o evento publicado em `empresa_cadastrada` atende integralmente à demanda de dados do `fornecimentos-service` e `demanda-service`:
+#### B. Contrato Canônico de `EV-01: empresa_cadastrada` (Resolução das Issues #28 e #29 do Grupo 2)
+Quando uma nova empresa/filial é cadastrada via `POST /api/v1/tenants`, o evento publicado em `empresa_cadastrada` é gravado transacionalmente na tabela `outbox_message` pelo `EventOutbox.cs` e despachado ao barramento Kafka, atendendo integralmente à demanda de dados do `fornecimentos-service` e `demanda-service`:
 
-**Chave da Mensagem (Kafka Key):** String do `tenant_id` (ex.: `"0194eb82-7000-7000-a000-000000000001"`).
+**Chave da Mensagem (Kafka Key):** String do `tenant_id` em formato UUID canônico com hífens (ex.: `"0194eb82-7000-7000-a000-000000000001"`).
 
-**Corpo da Mensagem (Payload JSON):**
+**Corpo da Mensagem (Payload JSON - snake_case direto):**
+O corpo da mensagem transporta diretamente a entidade do evento serializada em JSON `snake_case`, sem envelopes artificiais aninhados:
 ```json
 {
   "event_id": "0194eb82-7000-7000-b000-000000000001",
@@ -368,7 +372,7 @@ Quando uma nova empresa/filial é cadastrada via `POST /api/v1/tenants`, o event
   "group_id": "0194eb82-7000-7000-9000-000000000001",
   "cnpj": "11222333000181",
   "legal_name": "AgroBrasil Insumos e Fornecimentos S.A.",
-  "branch_type": "HEADQUARTERS",
+  "branch_type": "HQ",
   "geo_lat": -12.971400,
   "geo_lng": -38.501400,
   "status": "ACTIVE",
@@ -377,15 +381,24 @@ Quando uma nova empresa/filial é cadastrada via `POST /api/v1/tenants`, o event
 }
 ```
 
-**Cabeçalhos da Mensagem (Kafka Headers):**
-- `event_id`: Identificador único do evento (UUID).
+> **Alinhamento do Enum `branch_type` (Issue #29):**
+> O valor emitido para matriz é estritamente `"HQ"` (e `"BRANCH"` para filial), alinhando 1:1 com o enum C# `BranchType.cs` (`HQ`, `BRANCH`) e com a constraint relacional do banco (`CHECK (branch_type IN ('HQ', 'BRANCH'))`). A denominação `"HEADQUARTERS"` não é utilizada.
+
+**Cabeçalhos da Mensagem (Kafka Headers de Rastreabilidade e Governança):**
+Os metadados de auditoria e segurança são transportados nos cabeçalhos nativos do Kafka:
+- `event_id`: Identificador único do evento (UUIDv7 gerado na persistência do outbox).
 - `tenant_id`: ID da empresa/tenant criada.
-- `group_id`: ID do grupo econômico.
+- `group_id`: ID do grupo econômico associado.
 - `initiator_user_id`: ID do usuário que solicitou o cadastro.
-- `actor_user_id`: ID do operador que realizou a ação.
+- `actor_user_id`: ID do operador que realizou a ação (em caso de impersonation).
 - `acting_scope`: Escopo em que a ação ocorreu (`TENANT_ADMIN` ou `PLATFORM_ADMIN`).
-- `correlation_id`: Identificador de correlação ponta a ponta da transação HTTP original.
+- `correlation_id`: Identificador de correlação ponta a ponta da transação HTTP original (`X-Correlation-Id`).
 - `context_jws`: **Assinatura criptográfica JWS compacta (RS256)** gerada pelo `Identity-Service`, contendo os claims de contexto do evento. Os consumidores podem validar o `context_jws` com a chave pública do JWKS para garantir que a mensagem foi genuinamente emitida pelo serviço de identidade e não foi adulterada no barramento.
+
+**Orientação para Consumidores que Utilizam Padrão Envelope (Issue #28):**
+O `Identity-Service` publica o payload de negócio diretamente no corpo da mensagem Kafka (modelo *flat payload*), mantendo metadados de transporte nos headers nativos do Kafka. Consumidores que adotam um modelo interno baseado em envelope genérico (ex.: `{"eventId": ..., "payload": {...}}`):
+1. **Consumo Direto (Recomendado):** Deserializar o corpo da mensagem diretamente na classe/modelo representativo do Tenant (`event_id`, `tenant_id`, `cnpj`, etc.).
+2. **Adaptação de Envelope:** Caso o framework consumidor exija um envelope de eventos, preencha o envelope atribuindo a mensagem deserializada ao campo `payload` e lendo os metadados de rastreabilidade (`eventId`, `correlationId`) diretamente dos cabeçalhos do Kafka (`headers["event_id"]`, `headers["correlation_id"]`).
 
 ---
 
@@ -468,11 +481,17 @@ Para auxiliar as equipes parceiras na depuração de JWTs durante o desenvolvime
 
 ---
 
-### 3.11. D-ECO-11: Permissões de Negócio nas Personas de Seed (Comprador Cadastrando Produtos)
+### 3.11. D-ECO-11: Escopo e Permissões de Negócio para Gestão de Produtos (Exclusividade de SUPPLIER - Issue #27)
 
-Para atender à orientação pedagógica da disciplina e à dinâmica de mercado B2B, a persona Compradora (`comprador@agrobrasil.com.br`) recebe explicitamente no papel `BUYER_OPERATOR` a permissão:
-- `produtos:criar`: Permite ao comprador cadastrar especificações de commodities no catálogo para posterior abertura de demandas de compra.
-- O endpoint `POST /api/v1/produtos` do Grupo 2 homologa os escopos `["SUPPLIER", "BUYER", "TENANT_ADMIN"]`.
+Conforme alinhamento e acordo com o Grupo 2 (Produtos e Fornecimentos / `davicalvarenga/Sistema-MicServ-SD`):
+- O endpoint `POST /api/v1/produtos` aceita **exclusivamente o escopo `["SUPPLIER"]`** para operações de cadastro, alteração e exclusão de produtos no catálogo.
+- O papel `BUYER_OPERATOR` possui estritamente o escopo operacional `BUYER` e acessa apenas consultas de catálogo e vitrine (operações de leitura).
+- A permissão `produtos:criar` foi removida do papel `BUYER_OPERATOR`. Ele mantém exclusivamente as suas permissões canônicas originais do schema:
+  - `demanda:criar`: Abertura de demandas de cotação e compra.
+  - `demanda:listar`: Listagem e consulta de demandas.
+  - `leilao:participar`: Participação em leilões reversos.
+  - `pedido:visualizar`: Visualização de pedidos de compra.
+- Operações de escrita em produtos (`produtos:criar`, etc.) são privativas de fornecedores, constando apenas em papéis sob o escopo `SUPPLIER` (ex.: `SUPPLIER_SALES`, `SUPPLIER_OPERATOR`).
 
 ---
 

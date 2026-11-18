@@ -216,10 +216,14 @@ sequenceDiagram
 ## 3. Respostas Técnicas para as Outras Equipes
 
 ### 3.1 Grupo 2 (`davicalvarenga/Sistema-MicServ-SD` — Produtos e Fornecimentos)
-**Referência:** Issue #2 (`Integração com autenticação`) e Issue #13 (`Empresa com vários perfis / P-31`).
+**Referência:** Issue #2 (`Integração com autenticação`), Issue #13 (`Empresa com vários perfis / P-31`), Issue #27 (`Escopo de criação de produtos`), Issue #28 (`Contrato de eventos Kafka`), Issue #29 (`Enum branch_type`) e Issue #31 (`Códigos de erro e SDK`).
 
-#### A. Como validar o token JWT RS256 (Substituição de HS256)
+#### A. Como validar o token JWT RS256 (Substituição de HS256) e Códigos Oficiais de Erro (Issue #31)
 O uso de HS256 exigia compartilhar o segredo `JWT_SECRET_KEY` entre todos os serviços, violando a integridade do sistema. O Identity-Service emite tokens assinados com **RS256** (RSA-2048) e disponibiliza as chaves públicas em `/.well-known/jwks.json`.
+
+Conforme o catálogo canônico de erros da RFC 9457 adotado pela plataforma:
+- **HTTP 401 Unauthorized:** Retorna o código oficial `ERR-AUTH-002` ("Token de acesso ausente, inválido, expirado ou revogado") em caso de ausência de cabeçalho, token malformado, chave não reconhecida ou assinatura expirada.
+- **HTTP 403 Forbidden:** Retorna o código oficial `ERR-CTX-007` ("Violação de isolamento de contexto ou permissão insuficiente") quando o escopo ativo ou permissão do usuário não autoriza o acesso ao recurso.
 
 **Solução Pronta em Python/FastAPI (`services/common/auth.py`):**
 ```python
@@ -227,7 +231,7 @@ import os
 import logging
 from typing import Any, Dict, List
 import jwt
-from jwt import PyJWKClient, InvalidTokenError
+from jwt import PyJWKClient, InvalidTokenError, PyJWKClientError
 from fastapi import HTTPException, Security, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
@@ -251,7 +255,7 @@ security = HTTPBearer()
 def get_current_token_payload(credentials: HTTPAuthorizationCredentials = Security(security)) -> Dict[str, Any]:
     """
     Decodifica e valida o Access Token RS256 do cabeçalho Authorization: Bearer.
-    Lança HTTPException 401 caso o token esteja adulterado ou expirado.
+    Lança HTTPException 401 (ERR-AUTH-002) caso o token esteja ausente, adulterado ou expirado.
     """
     token = credentials.credentials
     try:
@@ -271,16 +275,17 @@ def get_current_token_payload(credentials: HTTPAuthorizationCredentials = Securi
         )
         return payload
     except jwt.ExpiredSignatureError:
+        logger.warning("Token de acesso expirado.")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail={"code": "ERR-AUTH-005", "message": "Token de acesso expirado."},
+            detail={"code": "ERR-AUTH-002", "message": "Token de acesso expirado."},
             headers={"WWW-Authenticate": 'Bearer error="invalid_token", error_description="Token has expired"'}
         )
     except (PyJWKClientError, InvalidTokenError) as err:
         logger.warning(f"Falha na validação do token JWT: {err}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail={"code": "ERR-AUTH-001", "message": "Token inválido ou assinatura não reconhecida."},
+            detail={"code": "ERR-AUTH-002", "message": "Token ausente, inválido ou assinatura não reconhecida."},
             headers={"WWW-Authenticate": 'Bearer error="invalid_token"'}
         )
 
@@ -294,13 +299,16 @@ def require_scope(allowed_scopes: List[str]):
         if active_scope not in allowed_scopes:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail={"code": "ERR-AUTH-010", "message": f"Escopo ativo '{active_scope}' não autorizado para este recurso."}
+                detail={"code": "ERR-CTX-007", "message": f"Escopo ativo '{active_scope}' não autorizado para este recurso."}
             )
         return payload
     return scope_checker
 ```
 
-#### B. Mapeamento de Claims e Resolução da Questão P-31 (Múltiplos Perfis)
+> [!NOTE]
+> **SDK Oficial e Completo:** Um SDK pronto para produção, com tipagem estrita (`AuthContext`), suporte completo ao catálogo de erros RFC 9457 (`ERR-AUTH-002` para 401 e `ERR-CTX-007` para 403), verificador de permissões (`require_permission`), decoradores e tratamento de `view_mode` já está disponível no repositório em [`Docs/sdks/b2b_auth_fastapi.py`](sdks/b2b_auth_fastapi.py). Recomendamos importar e utilizar diretamente o arquivo do SDK em vez de reimplementar a lógica manualmente.
+
+#### B. Mapeamento de Claims e Resolução da Questão P-31 (Múltiplos Perfis) e Issue #27 (Escopo de Produtos)
 Na vida real, uma empresa agrícola é fornecedora, compradora e contratante de frete simultaneamente. No Identity-Service:
 1. O cadastro permite múltiplos escopos por CNPJ na tabela `tenant_scope`.
 2. No login, o usuário recebe a lista de empresas e escopos disponíveis.
@@ -309,32 +317,52 @@ Na vida real, uma empresa agrícola é fornecedora, compradora e contratante de 
    - `sub`: ID do usuário autenticado.
    - `tenant_id`: ID da empresa ativa (ex: `01900000-0000-7000-8000-000000000010`).
    - `active_scope`: Escopo ativo (`SUPPLIER`, `BUYER`, `CARRIER`, `TENANT_ADMIN`).
-   - `roles`: Papéis atribuídos (ex: `["SUPPLIER_SALES"]`).
-   - `permissions`: Permissões granulares (ex: `["produtos:criar", "fornecimento:publicar"]`).
+   - `roles`: Papéis atribuídos (ex: `["SUPPLIER_SALES"]` para fornecedor; ou `["BUYER_OPERATOR"]` para comprador).
+   - `permissions`: Permissões granulares do escopo ativo:
+     - Exemplo em fornecedores (`SUPPLIER_SALES` ou `SUPPLIER_OPERATOR`): `["produtos:criar", "fornecimento:publicar"]`.
+     - Exemplo em compradores (`BUYER_OPERATOR`): `["demanda:criar", "demanda:listar", "leilao:participar", "pedido:visualizar"]`. Conforme acordado na **Issue #27**, o endpoint `POST /api/v1/produtos` é restrito a `["SUPPLIER"]`, de modo que compradores não possuem a permissão `produtos:criar`.
 
-#### C. Payload do Evento Kafka `empresa_cadastrada` (Tópico `empresa_cadastrada`)
+#### C. Contrato do Evento Kafka `empresa_cadastrada` emitido pelo Outbox (Issues #28 e #29)
+
+O `Identity-Service` publica eventos através do padrão Transactional Outbox (`EventOutbox.cs`), gravando transacionalmente com o cadastro da empresa e despachando para o tópico `empresa_cadastrada`.
+
+**Chave da Mensagem (Kafka Key):** String do `tenant_id` (UUID formatado com hífens).
+
+**Corpo da Mensagem (Payload JSON direto em snake_case):**
+Diferente de um modelo com envelope embutido no corpo, o `Identity-Service` emite o payload da entidade diretamente no corpo da mensagem em formato `snake_case`, em conformidade com o padrão de alta performance do ecossistema:
 ```json
 {
-  "eventId": "01900000-0000-7000-9000-000000000001",
-  "eventType": "empresa_cadastrada",
-  "eventVersion": "1.0",
-  "timestamp": "2026-11-09T20:00:00Z",
-  "source": "identity-service",
-  "correlationId": "01900000-0000-7000-9000-000000000099",
-  "aggregateId": "01900000-0000-7000-8000-000000000010",
-  "payload": {
-    "tenant_id": "01900000-0000-7000-8000-000000000010",
-    "group_id": "01900000-0000-7000-8000-000000000001",
-    "cnpj": "11222333000181",
-    "legal_name": "AgroBrasil Matriz e Exportadora S.A.",
-    "branch_type": "HQ",
-    "geo_lat": -15.794229,
-    "geo_lng": -47.882166,
-    "status": "ACTIVE",
-    "scopes": ["BUYER", "SUPPLIER", "TENANT_ADMIN"]
-  }
+  "event_id": "01900000-0000-7000-9000-000000000001",
+  "tenant_id": "01900000-0000-7000-8000-000000000010",
+  "group_id": "01900000-0000-7000-8000-000000000001",
+  "cnpj": "11222333000181",
+  "legal_name": "AgroBrasil Matriz e Exportadora S.A.",
+  "branch_type": "HQ",
+  "geo_lat": -15.794229,
+  "geo_lng": -47.882166,
+  "status": "ACTIVE",
+  "scopes": ["BUYER", "SUPPLIER", "TENANT_ADMIN"],
+  "created_at": "2026-11-09T20:00:00Z"
 }
 ```
+
+> **Enum `branch_type` (Issue #29):** O campo `branch_type` assume os valores canônicos `"HQ"` (matriz) e `"BRANCH"` (filial), de acordo com o enum `BranchType.cs` e a constraint relacional do banco. A denominação `"HEADQUARTERS"` não é utilizada.
+
+**Cabeçalhos da Mensagem (Kafka Headers de Rastreabilidade):**
+Todos os metadados de governança, correlação e integridade são enviados nos cabeçalhos nativos do Kafka:
+- `event_id`: UUIDv7 único do evento.
+- `tenant_id`: UUID do tenant cadastrado.
+- `group_id`: UUID do grupo econômico.
+- `initiator_user_id`: UUID do usuário que executou a operação.
+- `actor_user_id`: UUID do operador em casos de suporte/impersonation (opcional).
+- `acting_scope`: Escopo operacional da ação (`TENANT_ADMIN` ou `PLATFORM_ADMIN`).
+- `correlation_id`: Identificador de correlação ponta a ponta (`X-Correlation-Id`).
+- `context_jws`: Assinatura criptográfica JWS compacta (RS256) emitida pelo Identity-Service com claims de contexto, verificável via JWKS.
+
+**Orientação para Consumidores que Adotam Padrão Envelope (Issue #28):**
+Se o microsserviço consumidor (ex: `fornecimentos-service`, `demanda-service`) utiliza classes internas que esperam um envelope com campos como `eventId`, `eventType` e `payload`:
+- **Opção 1 (Recomendada - Deserialização Direta):** Desserializar o JSON do body diretamente na classe/DTO do Tenant (`event_id`, `tenant_id`, `cnpj`, `legal_name`, `branch_type`, `scopes`, etc.), eliminando a camada intermediária de envelope.
+- **Opção 2 (Adaptação para Envelope):** Caso a arquitetura do consumidor exija manter a estrutura de envelope, mapear os dados lendo os atributos de rastreabilidade diretamente dos **Kafka Headers** (`headers["event_id"]`, `headers["correlation_id"]`) e associar o corpo recebido ao campo `payload` do envelope.
 
 ---
 
