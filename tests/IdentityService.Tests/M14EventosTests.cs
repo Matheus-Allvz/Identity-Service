@@ -186,6 +186,22 @@ public class M14EventosTests
         var iatClaim = long.Parse(jwt.GetClaim("iat").Value);
         var expClaim = long.Parse(jwt.GetClaim("exp").Value);
         Assert.Equal(iatClaim + 300, expClaim);
+
+        // Validar Envelope Híbrido: Kit padrão (camelCase) + raiz para interoperabilidade
+        using var jsonDoc = JsonDocument.Parse(consumeResult.Message.Value);
+        var root = jsonDoc.RootElement;
+        Assert.Equal(eventId.ToString("D"), root.GetProperty("eventId").GetString());
+        Assert.Equal("empresa_cadastrada", root.GetProperty("eventType").GetString());
+        Assert.Equal("1.0", root.GetProperty("eventVersion").GetString());
+        Assert.Equal("identity-service", root.GetProperty("source").GetString());
+        Assert.Equal(tenantId.ToString("D"), root.GetProperty("aggregateId").GetString());
+        Assert.True(root.TryGetProperty("payload", out var payloadElem));
+        Assert.Equal(tenantId.ToString("D"), payloadElem.GetProperty("tenantId").GetString());
+        Assert.Equal(groupId.ToString("D"), payloadElem.GetProperty("groupId").GetString());
+        Assert.Equal("HQ", payloadElem.GetProperty("branchType").GetString());
+        Assert.Equal("Empresa Cadastrada Teste", payloadElem.GetProperty("legalName").GetString());
+        Assert.Equal(tenantId.ToString("D"), root.GetProperty("tenant_id").GetString());
+        Assert.Equal("HQ", root.GetProperty("branch_type").GetString());
     }
 
     [Fact(Timeout = 60000)]

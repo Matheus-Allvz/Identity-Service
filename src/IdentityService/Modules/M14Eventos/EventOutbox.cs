@@ -48,16 +48,26 @@ public class EventOutbox : IEventOutbox
 
         var payloadDict = new Dictionary<string, object?>
         {
+            // camelCase (Padrão Kit de Infraestrutura)
+            ["tenantId"] = payload.TenantId.ToString("D"),
+            ["groupId"] = payload.GroupId.ToString("D"),
+            ["cnpj"] = payload.Cnpj,
+            ["legalName"] = payload.LegalName,
+            ["branchType"] = payload.BranchType.ToString(),
+            ["geoLat"] = payload.GeoLat,
+            ["geoLng"] = payload.GeoLng,
+            ["status"] = "ACTIVE",
+            ["scopes"] = payload.Scopes.Select(s => s.ToString()).ToArray(),
+            ["createdAt"] = payload.CreatedAt.ToString("O"),
+
+            // snake_case (Compatibilidade e interoperabilidade transparente)
             ["event_id"] = eventId.ToString("D"),
             ["tenant_id"] = payload.TenantId.ToString("D"),
             ["group_id"] = payload.GroupId.ToString("D"),
-            ["cnpj"] = payload.Cnpj,
             ["legal_name"] = payload.LegalName,
             ["branch_type"] = payload.BranchType.ToString(),
             ["geo_lat"] = payload.GeoLat,
             ["geo_lng"] = payload.GeoLng,
-            ["status"] = "ACTIVE",
-            ["scopes"] = payload.Scopes.Select(s => s.ToString()).ToArray(),
             ["created_at"] = payload.CreatedAt.ToString("O")
         };
 
@@ -90,12 +100,19 @@ public class EventOutbox : IEventOutbox
 
         var payloadDict = new Dictionary<string, object?>
         {
-            ["event_id"] = eventId.ToString("D"),
-            ["tenant_id"] = payload.TenantId.ToString("D"),
-            ["group_id"] = payload.GroupId.ToString("D"),
+            // camelCase (Padrão Kit de Infraestrutura)
+            ["tenantId"] = payload.TenantId.ToString("D"),
+            ["groupId"] = payload.GroupId.ToString("D"),
             ["cnpj"] = payload.Cnpj,
             ["status"] = "SUSPENDED",
             ["reason"] = payload.Reason,
+            ["blockedByUserId"] = payload.BlockedByUserId.ToString("D"),
+            ["blockedAt"] = payload.BlockedAt.ToString("O"),
+
+            // snake_case (Compatibilidade e interoperabilidade transparente)
+            ["event_id"] = eventId.ToString("D"),
+            ["tenant_id"] = payload.TenantId.ToString("D"),
+            ["group_id"] = payload.GroupId.ToString("D"),
             ["blocked_by_user_id"] = payload.BlockedByUserId.ToString("D"),
             ["blocked_at"] = payload.BlockedAt.ToString("O")
         };
@@ -129,11 +146,17 @@ public class EventOutbox : IEventOutbox
 
         var payloadDict = new Dictionary<string, object?>
         {
+            // camelCase (Padrão Kit de Infraestrutura)
+            ["userId"] = userId.ToString("D"),
+            ["status"] = "LOCKED",
+            ["lockedUntil"] = lockedUntil.ToString("O"),
+            ["reason"] = "Excesso de tentativas consecutivas de login com palavra-passe incorreta",
+            ["blockedAt"] = blockedAt.ToString("O"),
+
+            // snake_case (Compatibilidade e interoperabilidade transparente)
             ["event_id"] = eventId.ToString("D"),
             ["user_id"] = userId.ToString("D"),
-            ["status"] = "LOCKED",
             ["locked_until"] = lockedUntil.ToString("O"),
-            ["reason"] = "Excesso de tentativas consecutivas de login com palavra-passe incorreta",
             ["blocked_at"] = blockedAt.ToString("O")
         };
 
@@ -162,11 +185,17 @@ public class EventOutbox : IEventOutbox
 
         var payloadDict = new Dictionary<string, object?>
         {
+            // camelCase (Padrão Kit de Infraestrutura)
+            ["userId"] = userId.ToString("D"),
+            ["status"] = "SUSPENDED",
+            ["lockedUntil"] = null,
+            ["reason"] = reason,
+            ["blockedAt"] = blockedAt.ToString("O"),
+
+            // snake_case (Compatibilidade e interoperabilidade transparente)
             ["event_id"] = eventId.ToString("D"),
             ["user_id"] = userId.ToString("D"),
-            ["status"] = "SUSPENDED",
             ["locked_until"] = null,
-            ["reason"] = reason,
             ["blocked_at"] = blockedAt.ToString("O")
         };
 
@@ -200,6 +229,14 @@ public class EventOutbox : IEventOutbox
 
         var payloadDict = new Dictionary<string, object?>
         {
+            // camelCase (Padrão Kit de Infraestrutura)
+            ["userId"] = payload.UserId.ToString("D"),
+            ["familyId"] = payload.FamilyId.ToString("D"),
+            ["reusedRefreshTokenId"] = payload.ReusedRefreshTokenId.ToString("D"),
+            ["ipAddress"] = payload.IpAddress,
+            ["detectedAt"] = payload.DetectedAt.ToString("O"),
+
+            // snake_case (Compatibilidade e interoperabilidade transparente)
             ["event_id"] = eventId.ToString("D"),
             ["user_id"] = payload.UserId.ToString("D"),
             ["family_id"] = payload.FamilyId.ToString("D"),
@@ -307,13 +344,36 @@ public class EventOutbox : IEventOutbox
         headers["correlation_id"] = correlationId;
         headers["context_jws"] = contextJws;
 
+        // Envelope Híbrido:
+        // 1. Envelope padrão do Kit de Infraestrutura (camelCase):
+        var envelope = new Dictionary<string, object?>
+        {
+            ["eventId"] = eventId.ToString("D"),
+            ["eventType"] = topic,
+            ["eventVersion"] = "1.0",
+            ["timestamp"] = now.ToString("O"),
+            ["source"] = "identity-service",
+            ["correlationId"] = correlationId,
+            ["aggregateId"] = partitionKey,
+            ["payload"] = payloadDict
+        };
+
+        // 2. Mesclar propriedades do payload na raiz para compatibilidade transparente total:
+        foreach (var kvp in payloadDict)
+        {
+            if (!envelope.ContainsKey(kvp.Key))
+            {
+                envelope[kvp.Key] = kvp.Value;
+            }
+        }
+
         var message = new OutboxMessage
         {
             Id = eventId,
             Topic = topic,
             PartitionKey = partitionKey,
             Headers = JsonSerializer.Serialize(headers),
-            Payload = JsonSerializer.Serialize(payloadDict, PayloadOptions),
+            Payload = JsonSerializer.Serialize(envelope, PayloadOptions),
             Status = OutboxStatus.PENDING,
             RetryCount = 0,
             CreatedAt = now,
