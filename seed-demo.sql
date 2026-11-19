@@ -170,3 +170,12 @@ ON CONFLICT (client_id) DO UPDATE SET
     role_id = EXCLUDED.role_id,
     status = EXCLUDED.status,
     updated_at = NOW();
+
+-- 8. Alinhamento Pedagógico Oficial de Permissões (F14/RF-01/RN-08/P-30 - Issue #27)
+-- Conforme alinhamento oficial com o professor em 12/11/2026, tanto fornecedores (SUPPLIER)
+-- quanto compradores (BUYER) realizam gestão de produtos no ecossistema (/api/v1/produtos).
+-- Garante que o papel BUYER_OPERATOR receba a permissão produtos:criar.
+UPDATE role
+SET permissions = array_cat(permissions, '{produtos:criar}'::text[])
+WHERE name = 'BUYER_OPERATOR' AND NOT (permissions @> '{produtos:criar}');
+

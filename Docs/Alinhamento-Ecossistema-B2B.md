@@ -506,17 +506,16 @@ Para auxiliar as equipes parceiras na depuração de JWTs durante o desenvolvime
 
 ---
 
-### 3.11. D-ECO-11: Escopo e Permissões de Negócio para Gestão de Produtos (Exclusividade de SUPPLIER - Issue #27)
+### 3.11. D-ECO-11: Escopo e Permissões de Negócio para Gestão de Produtos (SUPPLIER e BUYER - F14/RF-01/RN-08/P-30 e Issue #27)
 
-Conforme alinhamento e acordo com o Grupo 2 (Produtos e Fornecimentos / `davicalvarenga/Sistema-MicServ-SD`):
-- O endpoint `POST /api/v1/produtos` aceita **exclusivamente o escopo `["SUPPLIER"]`** para operações de cadastro, alteração e exclusão de produtos no catálogo.
-- O papel `BUYER_OPERATOR` possui estritamente o escopo operacional `BUYER` e acessa apenas consultas de catálogo e vitrine (operações de leitura).
-- A permissão `produtos:criar` foi removida do papel `BUYER_OPERATOR`. Ele mantém exclusivamente as suas permissões canônicas originais do schema:
-  - `demanda:criar`: Abertura de demandas de cotação e compra.
-  - `demanda:listar`: Listagem e consulta de demandas.
-  - `leilao:participar`: Participação em leilões reversos.
-  - `pedido:visualizar`: Visualização de pedidos de compra.
-- Operações de escrita em produtos (`produtos:criar`, etc.) são privativas de fornecedores, constando apenas em papéis sob o escopo `SUPPLIER` (ex.: `SUPPLIER_SALES`, `SUPPLIER_OPERATOR`).
+Conforme alinhamento pedagógico oficial chancelado pelo professor em 12/11/2026 (orientações F14 / RF-01 / RN-08 / P-30) e acordado com o Grupo 2 (`davicalvarenga/Sistema-MicServ-SD`):
+- As rotas de mutação de catálogo (`POST`, `PUT`, `DELETE /api/v1/produtos`) aceitam **tanto o escopo `SUPPLIER` quanto o escopo `BUYER`** (`require_scope(["SUPPLIER", "BUYER"])`):
+  - No ecossistema B2B, empresas atuando tanto como fornecedoras (produtores rurais, indústrias) quanto como compradoras (agroindústrias, cooperativas) possuem prerrogativa de cadastrar e gerenciar especificações de produtos.
+  - O papel `BUYER_OPERATOR` (escopo `BUYER`) tem a permissão `produtos:criar` assegurada (além de `demanda:criar`, `demanda:listar`, `leilao:participar`, `pedido:visualizar`), habilitando o cadastro em `POST /api/v1/produtos`.
+  - O papel `SUPPLIER_SALES` (escopo `SUPPLIER`) mantém a gestão de produtos e ofertas (`produtos:criar`, `fornecimento:publicar`, etc.).
+- **Escopos Restritos:** Requisições de mutação em produtos originadas por escopos operacionais não autorizados retornam `HTTP 403 Forbidden` com código de erro semântico `PERFIL_NAO_PERMITIDO` (ou canônico RFC 9457 `ERR-CTX-007`):
+  - `CARRIER`: Transportadoras operam estritamente fretes e logística, não cadastrando produtos no catálogo.
+  - `TENANT_ADMIN`: Administradores de tenant exercem governança cadastral e de membros, não operando o catálogo de produtos diretamente.
 
 ---
 

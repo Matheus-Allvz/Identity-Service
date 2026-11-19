@@ -320,7 +320,7 @@ Na vida real, uma empresa agrícola é fornecedora, compradora e contratante de 
    - `roles`: Papéis atribuídos (ex: `["SUPPLIER_SALES"]` para fornecedor; ou `["BUYER_OPERATOR"]` para comprador).
    - `permissions`: Permissões granulares do escopo ativo:
      - Exemplo em fornecedores (`SUPPLIER_SALES` ou `SUPPLIER_OPERATOR`): `["produtos:criar", "fornecimento:publicar"]`.
-     - Exemplo em compradores (`BUYER_OPERATOR`): `["demanda:criar", "demanda:listar", "leilao:participar", "pedido:visualizar"]`. Conforme acordado na **Issue #27**, o endpoint `POST /api/v1/produtos` é restrito a `["SUPPLIER"]`, de modo que compradores não possuem a permissão `produtos:criar`.
+     - Exemplo em compradores (`BUYER_OPERATOR`): `["demanda:criar", "demanda:listar", "leilao:participar", "pedido:visualizar", "produtos:criar"]`. Conforme alinhamento oficial do professor em 12/11/2026 (orientações F14 / P-30) e retificação da **Issue #27**, o endpoint `POST /api/v1/produtos` aceita tanto `["SUPPLIER"]` quanto `["BUYER"]` (`require_scope(["SUPPLIER", "BUYER"])`), enquanto `CARRIER` e `TENANT_ADMIN` são rejeitados com `403` (`PERFIL_NAO_PERMITIDO`).
 
 #### C. Contrato do Evento Kafka `empresa_cadastrada` emitido pelo Outbox (Arquitetura Híbrida - Issues #28 e #29)
 
@@ -387,9 +387,9 @@ Em resposta à bateria de alinhamentos e revisões técnicas abertas pelo Grupo 
 - **Repositório Público:** O repositório oficial do serviço é [`https://github.com/Matheus-Allvz/Identity-Service`](https://github.com/Matheus-Allvz/Identity-Service), encontrando-se 100% público e acessível para consulta de código-fonte, contratos e documentações.
 - **Disponibilidade do JWKS:** A rota `GET /.well-known/jwks.json` está plenamente operacional, servindo o conjunto de chaves públicas ativas com o identificador `kid: key-2026-01` e cabeçalho `Cache-Control: public, max-age=3600`, viabilizando cache público em gateways e validações offline de altíssimo desempenho.
 
-##### 2. Issue #27: Restrição de Cadastro de Produtos Estritamente a `SUPPLIER`
-- **Validação da Regra de Negócio:** Agradecemos profundamente a atenção aos detalhes e conferência dos contratos inter-serviços. Confirmamos que a regra implementada pelo `Produtos-Service` é a correta: **apenas o escopo `SUPPLIER` possui prerrogativa para cadastrar, alterar e excluir produtos**. O papel `BUYER_OPERATOR` opera estritamente como comprador, possuindo acesso exclusivo de consulta ao catálogo e à vitrine de ofertas para criação de demandas e participação em leilões.
-- **Retificação Realizada:** A decisão D-ECO-11 em `Docs/Alinhamento-Ecossistema-B2B.md` e a carga demonstrativa `seed-demo.sql` foram formalmente retificadas no **PR #23 (commit `3cc4cce`)**, removendo em definitivo a permissão `produtos:criar` do perfil `BUYER_OPERATOR`.
+##### 2. Issue #27: Escopo de Cadastro de Produtos (`SUPPLIER` e `BUYER` - Decisão Pedagógica Oficial do Professor em 12/11/2026)
+- **Regra de Negócio Oficial (F14/RF-01/RN-08/P-30):** Em 12/11/2026, o professor chancelou a diretriz pedagógica oficial do ecossistema: **tanto o escopo `SUPPLIER` quanto o escopo `BUYER`** podem cadastrar e gerenciar produtos (`POST`, `PUT`, `DELETE /api/v1/produtos`), uma vez que produtores, cooperativas e indústrias necessitam catalogar insumos e itens de demanda. Escopos restritos como `CARRIER` e `TENANT_ADMIN` devem receber `HTTP 403 Forbidden` com código `PERFIL_NAO_PERMITIDO` (ou RFC 9457 `ERR-CTX-007`).
+- **Retificação Realizada:** O papel `BUYER_OPERATOR` teve a permissão `produtos:criar` restaurada no `seed-demo.sql`, e a diretriz D-ECO-11 em `Docs/Alinhamento-Ecossistema-B2B.md` foi atualizada para formalizar a aceitação de `require_scope(["SUPPLIER", "BUYER"])`.
 
 ##### 3. Issue #28: Arquitetura de Eventos Kafka e Formato de `empresa_cadastrada`
 - **Padrão Transactional Outbox:** O Identity-Service adota arquitetura de mensageria baseada em Outbox Transacional com separação estrita de camadas. Todos os metadados de governança, correlação e auditoria criptográfica (`event_id`, `tenant_id`, `group_id`, `initiator_user_id`, `correlation_id`, `context_jws`) trafegam nos **Kafka Headers** nativos. O corpo da mensagem (`body`) trafega em JSON com nomenclatura `snake_case`, espelhando o schema relacional do banco de dados e otimizando a serialização.
