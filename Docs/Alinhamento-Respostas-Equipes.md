@@ -292,7 +292,7 @@ def get_current_token_payload(credentials: HTTPAuthorizationCredentials = Securi
 def require_scope(allowed_scopes: List[str]):
     """
     Dependency do FastAPI para garantir que a requisição opera no escopo exigido.
-    Exemplo: @app.post("/produtos", dependencies=[Depends(require_scope(["SUPPLIER"]))])
+    Exemplo: @app.post("/produtos", dependencies=[Depends(require_scope(["SUPPLIER", "BUYER"]))])
     """
     def scope_checker(payload: Dict[str, Any] = Security(get_current_token_payload)):
         active_scope = payload.get("active_scope")
@@ -556,3 +556,34 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA usuarios
      newman run Docs/postman-collection-b2b.json --reporters cli
      ```
    - Playground Web Interativo em tempo real: [**`https://pages-identity.matheus-alves.dev`**](https://pages-identity.matheus-alves.dev)
+
+---
+
+### 3.4 Grupo de Mercado, Negociação e Pedidos (`brunnoalexcson/portal-b2b-mercado-negociacao-pedidos`)
+**Referência:** Issue #4 (`Pedidos × Autenticação: iss, aud, JWKS, escopos e formato de erro`).
+
+Em resposta formal à consulta técnica de Daniel Junio (@dev-danielJunio) sobre a especificação ESP-PED-001 v2.1 do `pedidos-service`, consolidamos as seguintes diretrizes de integração homologadas:
+
+1. **Valores Canônicos de `iss`, `aud`, `kid` e JWKS:**
+   - `iss`: `"identity-service"` (configurável via `JWT_ISSUER`).
+   - `aud`: `"b2b-platform"` (configurável via `JWT_AUDIENCE`).
+   - `kid`: `"key-2026-01"` (algoritmo RS256 / RSA-2048 assimétrico).
+   - Endpoint de Produção: `https://identity.matheus-alves.dev/.well-known/jwks.json` (`Cache-Control: public, max-age=3600`).
+   - Endpoint Docker Compose: `http://app1-usuarios:8080/.well-known/jwks.json` (ou via gateway `http://gateway:8080/.well-known/jwks.json` após atualização do Nginx pela Equipe 9).
+2. **Validação de Claims e Escopos Operacionais em Pedidos:**
+   - Claims validadas: `sub` (usuário), `tenant_id` (empresa), `active_scope`.
+   - Tokens pré-contexto (emitidos no `/login` tradicional sem `auto_context`, com `tenant_id: null` e `active_scope: null`): **Devem ser rejeitados com `HTTP 403 Forbidden` (`CONTEXTO_NAO_SELECIONADO`)**, conforme adotado por Produtos e Logística.
+   - Escopos autorizados: `BUYER`, `SUPPLIER` e `TENANT_ADMIN`.
+   - Escopo restrito: `CARRIER` opera na Logística e não fecha pedidos comerciais, devendo receber `HTTP 403 Forbidden` (`PERFIL_NAO_PERMITIDO` / `ERR-CTX-007`).
+3. **Perfil de Suporte da Plataforma (`platform_role = "PLATFORM_ADMIN"`):**
+   - Válido exclusivamente para consultas de suporte e auditoria técnica transversal sem exigência de `tenant_id`. Mutações de negócio (criação, confirmação de pedido, aceite, cancelamento) exigem o contexto de `BUYER` ou `SUPPLIER` titular.
+4. **Exigência do Modo de Visão `view_mode == "SINGLE"`:**
+   - Mutações transacionais em pedidos exigem a responsabilidade jurídica e tributária de um CNPJ único (`SINGLE`). Tokens fora do modo `SINGLE` em operações de escrita devem ser rejeitados com `403 CONTEXTO_NAO_SELECIONADO`.
+5. **Tolerância de Relógio (`leeway = 0 s`):**
+   - Homologado `leeway = 0 s` na validação de expiração do JWT para contêineres sincronizados com NTP.
+6. **Convivência de Formatos de Erro:**
+   - Coexistência pacífica via fallback transparente nos consumidores: `codigo = data.get("codigo") or data.get("code")` e `correlationId = data.get("correlationId") or data.get("correlation_id")`.
+7. **Recursos de Aceleração para Pedidos:**
+   - **Auto-Contexto no Login (`auto_context=true` / QW-01):** Permite obter o token contextualizado definitivo (`SINGLE`) e `refresh_token` em 1 única requisição HTTP para testes automatizados.
+   - **Inspeção de Identidade (`GET /api/v1/auth/me` / QW-02):** Rota autenticada que retorna o contexto ativo decodificado.
+   - **SDK Python para FastAPI:** Disponível em [`Docs/sdks/b2b_auth_fastapi.py`](file:///c:/Users/ACT/Documents/Personal/Identity-Service/Docs/sdks/b2b_auth_fastapi.py).
